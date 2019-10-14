@@ -1,0 +1,6 @@
+# These shouldn't be needed, as Safari.cbp should generate them.
+obj/*
+inputs/*
+bin/Debug/crystal.input
+bin/Debug/sample.data
+bin/Debug/sample.dbug

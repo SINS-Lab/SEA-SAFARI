@@ -1,0 +1,5 @@
+#ifndef SCAT_H_INCLUDED
+#define SCAT_H_INCLUDED
+
+
+#endif // SCAT_H_INCLUDED
