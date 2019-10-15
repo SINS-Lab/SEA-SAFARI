@@ -1,8 +1,12 @@
-# These shouldn't be needed, as Safari.cbp should generate them.
+# This shouldn't be needed, as Safari2.cbp should generate them.
+Safari2.depend
+
+#Don't need anything in here, this compiles.
 obj/*
-inputs/*
+
+#These are generated when you run debug
 bin/Debug/crystal.input
 bin/Debug/sample.data
 bin/Debug/sample.dbug
 bin/Debug/Safari2.exe
-Safari2.depend
+
