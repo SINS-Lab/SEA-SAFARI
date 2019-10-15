@@ -17,11 +17,11 @@ double Vr_r(double r[], int n[], int num)
             //The first atom is listed as 1.
             int index = (n[i]-1)*4;
             a = settings.POTPAR[index];
-            b = -settings.POTPAR[index + 1];
+            b = settings.POTPAR[index + 1];
             c = settings.POTPAR[index + 2];
-            d = -settings.POTPAR[index + 3];
+            d = settings.POTPAR[index + 3];
             x = r[i];
-            out += a*exp(b*x) + c*exp(d*x);
+            out += a*exp(-b*x) + c*exp(-d*x);
         }
     }
     else
@@ -46,11 +46,11 @@ double * dVr_dr(double r[], int n[], int num)
             //The first atom is listed as 1.
             int index = (n[i]-1)*4;
             a = settings.POTPAR[index];
-            b = -settings.POTPAR[index + 1];
+            b = settings.POTPAR[index + 1];
             c = settings.POTPAR[index + 2];
-            d = -settings.POTPAR[index + 3];
+            d = settings.POTPAR[index + 3];
             x = r[i];
-            arr[i] = b*a*exp(b*x) + d*c*exp(d*x);
+            arr[i] = -b*a*exp(-b*x) - d*c*exp(-d*x);
         }
     }
     else
