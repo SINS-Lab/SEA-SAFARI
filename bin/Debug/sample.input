@@ -1,10 +1,10 @@
 100  45.0  0  22.989  Na               E0,THETA0,PHI0,MASS
-0.5  100  1.0   0.5                    EMIN,EMAX,ERES,ARES
+0.5  1625  1.0   0.5                   EMIN,EMAX,ERES,ARES
 1                                      DETECTOR TYPE
 45.0 0.0 3.0 0.0                       DETECTOR PARAMS
-1.00000e-08   10.                      MIN, MAX - TIME STEP
-1.00000  0.   5.00000E-06              DEMAX,DEMIN,ABSERR
-2                                      RADIUS OF CHECK CUBE
+1.00000e-08   10.0                     MIN, MAX - TIME STEP
+1.000   0.   5.00000E-01               DEMAX,DEMIN,ABSERR
+3                                      RADIUS OF CHECK CUBE
 f                                      RECOIL
 5.0000                                 INTERACT.HEIGHT
 30000                                  TABLE ENTRIES
@@ -12,8 +12,8 @@ f                                      RECOIL
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
 1
--14 .04 14                             XStart/Step/End
--14 .04 14                             YStart/Step/End
+0 .04 10                               XStart/Step/End
+0 .04 10                               YStart/Step/End
 666        666                         NWRITX, NWRITY
 .9         .9                          unused
 4 1                                    NPAR, IPOT
