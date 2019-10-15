@@ -164,13 +164,13 @@ void safio::load()
                 }
                 if(n==14)
                 {
-                    FAX = atoi(args[0].c_str());
-                    FAY = atoi(args[1].c_str());
+                    NWRITX = atoi(args[0].c_str());
+                    NWRITY = atoi(args[1].c_str());
                 }
                 if(n==15)
                 {
-                    ZMIN = atof(args[0].c_str());
-                    ZSTEP = atof(args[1].c_str());
+                    FAX = atof(args[0].c_str());
+                    FAY = atof(args[1].c_str());
                 }
                 if(n==16)
                 {

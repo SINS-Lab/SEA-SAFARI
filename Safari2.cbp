@@ -48,6 +48,8 @@
 		<Unit filename="src/potentials.h" />
 		<Unit filename="src/safio.cpp" />
 		<Unit filename="src/safio.h" />
+		<Unit filename="src/scat.cpp" />
+		<Unit filename="src/scat.h" />
 		<Unit filename="src/vec_math.cpp" />
 		<Unit filename="src/vec_math.h" />
 		<Extensions>

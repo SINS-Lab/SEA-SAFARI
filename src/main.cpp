@@ -8,6 +8,7 @@
 #include "vec_math.h"
 #include "ion.h"
 #include <time.h>
+#include "scat.h"
 
 safio settings;
 std::ofstream out_file;
@@ -20,17 +21,17 @@ int main()
 
     char buffer[100];
 
-    lattice l;
-    l.build_lattice();
+    lattice lattice;
+    lattice.build_lattice();
     std::ofstream myfile;
     myfile.open ("crystal.input");
 
-    int num = l.sites.size();
+    int num = lattice.sites.size();
 
     for(int i = 0; i<num; i++)
     {
-        site s = l.sites[i];
-        atom a = l.atoms[i];
+        site s = lattice.sites[i];
+        atom a = lattice.atoms[i];
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",s[0],s[1],s[2],a.charge,a.mass);
         myfile << buffer;
     }
@@ -38,31 +39,37 @@ int main()
 
 
     clock_t start = clock();
-
     int n = 0;
-    srand(1);
-    bool log = settings.NUMCHA == 1;
-    for(double x = settings.XSTART; x <= settings.XSTOP; x+=settings.XSTEP)
-        for(double y = settings.YSTART; y <= settings.YSTOP; y+=settings.YSTEP)
+    srand(settings.SEED);
+
+    if(settings.NWRITX == 666)
+    {
+        if(settings.NUMCHA==1 || settings.NWRITY == 777)
         {
-            double x_0 = rand()%20;
-            double y_0 = rand()%20;
-
-            x_0 = 0;
-            y_0 = 16;
-
-            ion ion;
-            debug_file << "ion: " << n << " x: " << x_0 << " y: "<< y_0 << std::endl;
-            ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x_0, y_0);
-            ion.index = n;
-            debug_file << "fire: "  << ion[0] << " " << ion[1] << " " << ion[2] << std::endl;
-            traj(ion, l, log);
-            n++;
-            if(log || n>1000)
-                goto out;
+            if(settings.NUMCHA==1)
+            {
+                debug_file << "Running Single Shot" << std::endl;
+                std::cout << "Running Single Shot" << std::endl;
+            }
+            else
+            {
+                debug_file << "Running Grid Scat" << std::endl;
+                std::cout << "Running Grid Scat " << std::endl;
+            }
+            gridscat(lattice, &n);
         }
+        else if(settings.NWRITY == 666)
+        {
+            debug_file << "Running Montecarlo " << std::endl;
+            std::cout << "Running Montecarlo " << std::endl;
+            montecarloscat(lattice, &n);
+        }
+        else
+        {
+            chainscat(lattice, &n);
+        }
+    }
 
-out:
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
     printf ( "%f\n", dt );

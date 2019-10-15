@@ -2,7 +2,7 @@
 #define HAMEQ_H_INCLUDED
 #include "ion.h"
 
-void run_hameq(ion &ion, lattice &lattice, double dt, bool at_predicted, double*xp, double*yp, double*zp);
+void run_hameq(ion &ion, lattice &lattice, double dt, double *force);
 
 void apply_hameq(ion &ion, lattice &lattice, double dt);
 

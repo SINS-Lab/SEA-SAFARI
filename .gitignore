@@ -4,3 +4,5 @@ inputs/*
 bin/Debug/crystal.input
 bin/Debug/sample.data
 bin/Debug/sample.dbug
+bin/Debug/Safari2.exe
+Safari2.depend

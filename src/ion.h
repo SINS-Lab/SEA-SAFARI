@@ -17,9 +17,10 @@ public:
     //Charge of the ion
     int q;
 
-
-    //Change in momentum, used during integration
+    //Forces on the ion here
     double dp_dt[3];
+    //Forces on the ion next step
+    double dp_dt_t[3];
 
     int index = 0;
 

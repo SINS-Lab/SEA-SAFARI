@@ -25,7 +25,7 @@ ion::ion()
 
 void ion::check_distances(double x, double y, double z)
 {
-    r_min = 1e3;
+    //r_min = 1e3;
     for(int i = 0; i<near; i++)
     {
         site s = near_sites[i];
@@ -53,7 +53,7 @@ int ion::fill_nearest(lattice &lattice)
         return near;
     last_index = pos_hash;
 
-    int r = 3;
+    int r = settings.NPART;
     int num;
     near = 0;
     for(int i = -r; i<=r; i++)
@@ -185,19 +185,26 @@ void traj(ion &ion, lattice &lattice, bool log)
     //Ion mass
     double mass = ion.atom.mass;
 
-    double dx, dy, dz;
+    double *force_here = ion.dp_dt;
+    double *force_next = ion.dp_dt_t;
 
-    //Momenta changes before time t
-    double dpz_dt, dpy_dt, dpx_dt;
+    force_here[0] = 0;
+    force_here[1] = 0;
+    force_here[2] = 0;
+
+    force_next[0] = 0;
+    force_next[1] = 0;
+    force_next[2] = 0;
+
     //Momenta of particle
     double px, py, pz;
 
-    //Predicted position of ion
-    double xp, yp, zp;
-    //Predicted Momenta changes
-    double dpzp_dt, dpyp_dt, dpxp_dt;
-
     double pp = 0, pzz = 0, theta, phi;
+
+    //Ion velocities
+    double dx_dt, dy_dt, dz_dt;
+    //Ion Accelerations
+    double d2x_dt2, d2y_dt2, d2z_dt2;
 
     //Control conditions
     bool buried = false;
@@ -218,8 +225,6 @@ void traj(ion &ion, lattice &lattice, bool log)
     E = psq * 0.5 / mass;
     ion.steps = 0;
 
-    bool dynamic_dt = false;
-
 start:
 
     //Find nearby lattice atoms
@@ -231,46 +236,20 @@ start:
     validate(ion, &buried, &off_edge, &stuck, &froze, &left, &dt, E);
     if(froze || buried || stuck || left || off_edge)
     {
-        if(log) std::cout << "Exited" << std::endl;
+        if(log)
+            std::cout << "Exited" << std::endl;
         goto end;
     }
 
-    //reset some values.
-    if(!dynamic_dt) dt = 0.001;
-
-    //Initial values for these.
-    px = ion.p[0];
-    py = ion.p[1];
-    pz = ion.p[2];
-
-    //Find the time derivatives.
-    run_hameq(ion, lattice, dt, false, &xp, &yp, &zp);
-
-    //These are needed for error calculations.
-    //after the second pass of run_hameq
-    dpx_dt = ion.dp_dt[0];
-    dpy_dt = ion.dp_dt[1];
-    dpz_dt = ion.dp_dt[2];
-
-    //Check time derivatives at predicted position,
-    //This is to check if we need to reduce time steps.
-    run_hameq(ion, lattice, dt, true, &xp, &yp, &zp);
-
-    dpxp_dt = ion.dp_dt[0];
-    dpyp_dt = ion.dp_dt[1];
-    dpzp_dt = ion.dp_dt[2];
-
-    //Compute differences between initial and predicted
-    //momenta from the two runs of run_hameq
-    //uses average forces
-    px += 0.5 * dt * (dpxp_dt + dpx_dt);
-    px += 0.5 * dt * (dpyp_dt + dpy_dt);
-    px += 0.5 * dt * (dpzp_dt + dpz_dt);
+    //Find the forces at the current location
+    run_hameq(ion, lattice, 0, force_here);
+    //Find the forces at the next location,
+    run_hameq(ion, lattice, dt, force_next);
 
     //Compute the displacements resulting from the forces.
-    ex = 0.25 * dt * dt * (dpxp_dt - dpx_dt) / mass;
-    ey = 0.25 * dt * dt * (dpyp_dt - dpy_dt) / mass;
-    ez = 0.25 * dt * dt * (dpzp_dt - dpz_dt) / mass;
+    ex = 0.25 * dt * dt * (force_next[0] - force_here[0]) / mass;
+    ey = 0.25 * dt * dt * (force_next[1] - force_here[1]) / mass;
+    ez = 0.25 * dt * dt * (force_next[2] - force_here[2]) / mass;
 
     //Compute maximum change.
     err_max = std::max(fabs(ex), std::max(fabs(ez), fabs(ey)));
@@ -278,16 +257,19 @@ start:
     //TODO also include lattice recoil for err_max here.
 
     //Compute amount for time to step by.
-    if(dynamic_dt && err_max!=0)
+    if(err_max!=0)
     {
         change = pow(settings.ABSERR/err_max, settings.DEMAX);
-        if(change >= 2) change = 2;
-        if(change > 1 && change < 2) change = 1;
+        if(change >= 2)
+            change = 2;
+        if(change > 1 && change < 2)
+            change = 1;
         //Large change in energy, try to reduce timestep.
         if(change < .2 && dt > settings.DELLOW)
         {
             dt *= change;
-            if(dt < settings.DELLOW) dt = settings.DELLOW;
+            if(dt < settings.DELLOW)
+                dt = settings.DELLOW;
             goto start;
         }
     }
@@ -296,24 +278,30 @@ start:
         change = 2;
     }
 
+    //If we made it here, set the force to average of the here and next
+    ion.dp_dt[0] = (force_next[0] + force_here[0]) * 0.5;
+    ion.dp_dt[1] = (force_next[1] + force_here[1]) * 0.5;
+    ion.dp_dt[2] = (force_next[2] + force_here[2]) * 0.5;
+
+    //v = p/m
+    dx_dt = ion.p[0] / mass;
+    dy_dt = ion.p[1] / mass;
+    dz_dt = ion.p[2] / mass;
+
+    //a = F/m, F = dp/dt
+    d2x_dt2 = ion.dp_dt[0] / mass;
+    d2y_dt2 = ion.dp_dt[1] / mass;
+    d2z_dt2 = ion.dp_dt[2] / mass;
+
     //New Ion Location
-    xp += ex;
-    yp += ey;
-    zp += ez;
+    ion[0] += dt * (dx_dt + 0.5*d2x_dt2*dt);
+    ion[1] += dt * (dy_dt + 0.5*d2y_dt2*dt);
+    ion[2] += dt * (dz_dt + 0.5*d2z_dt2*dt);
 
-    //Change in position
-    dx = xp - ion[0];
-    dy = yp - ion[1];
-    dz = zp - ion[2];
-
-    ion[0] = xp;
-    ion[1] = yp;
-    ion[2] = zp;
-
-    //Update ion momenta
-    ion.p[0] = mass * dx / dt;
-    ion.p[1] = mass * dy / dt;
-    ion.p[2] = mass * dz / dt;
+    //New Ion Momentum
+    ion.p[0] += ion.dp_dt[0] * dt;
+    ion.p[1] += ion.dp_dt[1] * dt;
+    ion.p[2] += ion.dp_dt[2] * dt;
 
     //Apply changes, this updates energy and lattice loctations.
     apply_hameq(ion, lattice, dt);
@@ -321,6 +309,10 @@ start:
     //Update some parameters for saving.
     ion.r_0[2] = fmin(ion.r[2], ion.r_0[2]);
     ion.time += dt;
+
+    px = ion.p[0];
+    py = ion.p[1];
+    pz = ion.p[2];
 
     //Update kinetic energy.
     psq = px*px + py*py + pz*pz;
@@ -403,14 +395,16 @@ end:
             {
                 phi = atan2(py, px) * 180/M_PI;
             }
-//            sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\n",ion.r_0[0],ion.r_0[1],ion.r_0[2],E,theta,phi,ion.time,ion.steps,ion.max_n);
-//            out_file << buffer;
+            sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
+                    ion.r_0[0],ion.r_0[1],ion.r_0[2],
+                    E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
+            out_file << buffer;
 
         }
     }
-    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\n",
-            ion.r_0[0],ion.r_0[1],ion.r_0[2],
-            E,theta,phi,ion.time,ion.steps,ion.max_n);
-    out_file << buffer;
+//    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
+//            ion.r_0[0],ion.r_0[1],ion.r_0[2],
+//            E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
+//    out_file << buffer;
     return;
 }

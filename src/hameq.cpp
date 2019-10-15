@@ -28,7 +28,7 @@ void apply_hameq(ion &ion, lattice &lattice, double dt)
     ion.v_total += Vr_r(ion.near_dists, ion.near_atoms, nearby);
 }
 
-void run_hameq(ion &ion, lattice &lattice, double dt, bool at_predicted, double *xp, double *yp, double *zp)
+void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
 {
     //Some useful variables.
     double dx, dy, dz, fx, fy, fz, ftx = 0, fty = 0, ftz = 0, rmin = 1e20;
@@ -47,41 +47,31 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool at_predicted, double 
     y = ion[1];
     z = ion[2];
 
-    if(at_predicted)
+    if(dt != 0)
     {
         double mass = ion.atom.mass;
-
-        double px = ion.p[0];
-        double py = ion.p[1];
-        double pz = ion.p[2];
+        //Ion velocities
+        double dx_dt, dy_dt, dz_dt;
+        //Ion Accelerations
+        double dvx_dt, dvy_dt, dvz_dt;
 
         //v = p/m
-        double dx_dt = px / mass;
-        double dy_dt = py / mass;
-        double dz_dt = pz / mass;
+        dx_dt = ion.p[0] / mass;
+        dy_dt = ion.p[1] / mass;
+        dz_dt = ion.p[2] / mass;
+        //a = F/m, F = dp/dt
+        dvx_dt = ion.dp_dt[0] / mass;
+        dvy_dt = ion.dp_dt[1] / mass;
+        dvz_dt = ion.dp_dt[2] / mass;
 
-        double dpx_dt = ion.dp_dt[0];
-        double dpy_dt = ion.dp_dt[1];
-        double dpz_dt = ion.dp_dt[2];
-
-        x += dt * (dx_dt + 0.5 * dpx_dt * dt / mass);
-        y += dt * (dy_dt + 0.5 * dpy_dt * dt / mass);
-        z += dt * (dz_dt + 0.5 * dpz_dt * dt / mass);
-
-        //Stuff those values into the predicted variables.
-        *xp = x;
-        *yp = y;
-        *zp = z;
-
-        //TODO also apply to lattice here
-
+        x += dt * (dx_dt + 0.5*dvx_dt*dt);
+        y += dt * (dy_dt + 0.5*dvy_dt*dt);
+        z += dt * (dz_dt + 0.5*dvz_dt*dt);
     }
 
-    //Initialize forces on ion, after applying correction if needed.
-    ion.dp_dt[0] = 0;
-    ion.dp_dt[1] = 0;
-    ion.dp_dt[2] = 0;
-
+    force[0] = 0;
+    force[1] = 0;
+    force[2] = 0;
     //This was set earlier when looking for nearby sites.
     if(ion.near)
     {
@@ -105,7 +95,8 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool at_predicted, double 
                 continue;
             }
             //Record this for tracking later.
-            if(r < rmin) rmin = r;
+            if(r < rmin)
+                rmin = r;
 
             //Magnitude of force for this location.
             //Scaled by 1/r for use in vector later.
@@ -147,9 +138,9 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool at_predicted, double 
         //debug_file << ftx << " " << fty << " " << ftz << std::endl;
 
         //Superposition of all of the atom-ion interaction
-        ion.dp_dt[0] -= ftx;
-        ion.dp_dt[1] -= fty;
-        ion.dp_dt[2] -= ftz;
+        force[0] -= ftx;
+        force[1] -= fty;
+        force[2] -= ftz;
         //TODO add atom-atom interactions here.
     }
 }
