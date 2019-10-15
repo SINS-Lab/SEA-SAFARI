@@ -242,9 +242,11 @@ start:
     }
 
     //Find the forces at the current location
-    run_hameq(ion, lattice, 0, force_here);
+    run_hameq(ion, lattice, 0);
     //Find the forces at the next location,
-    run_hameq(ion, lattice, dt, force_next);
+    run_hameq(ion, lattice, dt);
+
+    //Now we do some checks to see if the timestep needs to be adjusted
 
     //Compute the displacements resulting from the forces.
     ex = 0.25 * dt * dt * (force_next[0] - force_here[0]) / mass;

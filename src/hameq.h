@@ -9,9 +9,8 @@
  * @param ion - the ion to interact with the lattice
  * @param lattice - the lattice to scatter off
  * @param dt - timestep for interaction
- * @param force - array to populate with the forces.
  */
-void run_hameq(ion &ion, lattice &lattice, double dt, double *force);
+void run_hameq(ion &ion, lattice &lattice, double dt);
 
 /**
  * @param ion - the ion to interact with the lattice

@@ -28,13 +28,21 @@ void apply_hameq(ion &ion, lattice &lattice, double dt)
     ion.v_total += Vr_r(ion.near_dists, ion.near_atoms, nearby);
 }
 
-void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
+void run_hameq(ion &ion, lattice &lattice, double dt)
 {
     //Some useful variables.
     double dx, dy, dz, fx, fy, fz, ftx = 0, fty = 0, ftz = 0, rmin = 1e20;
 
     //Reset v_total
     ion.v_total = 0;
+
+    //Force to populate
+    double *force;
+
+    force = ion.dp_dt;
+
+    //Force on the target.
+    double *F_at;
 
     //Ion coordinates
     double x, y, z;
@@ -47,8 +55,11 @@ void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
     y = ion[1];
     z = ion[2];
 
+    //if not 0, we are computing for the predicted location.
     if(dt != 0)
     {
+        force = ion.dp_dt_t;
+
         double mass = ion.atom.mass;
         //Ion velocities
         double dx_dt, dy_dt, dz_dt;
@@ -69,6 +80,7 @@ void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
         z += dt * (dz_dt + 0.5*dvz_dt*dt);
     }
 
+    //Initialize the force array.
     force[0] = 0;
     force[1] = 0;
     force[2] = 0;
@@ -106,11 +118,20 @@ void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
 
             //Site near us.
             site s = ion.near_sites[i];
+            //Select the force array to populate.
+            F_at = s.dp_dt;
 
             //Site location
             ax = s[0];
             ay = s[1];
             az = s[2];
+
+            if(dt!=0)
+            {
+                F_at = s.dp_dt_t;
+
+                //TODO adjust ax,ay,az if recoil.
+            }
 
             //Distances from site to atom
             dx = ax - x;
@@ -130,9 +151,9 @@ void run_hameq(ion &ion, lattice &lattice, double dt, double* force)
             //Set the initial momentum changes for the sites here.
             //Later other things might adjust them, but this is where
             //they are initialized.
-            s.dp_dt[0] = fx;
-            s.dp_dt[1] = fy;
-            s.dp_dt[2] = fz;
+            F_at[0] = fx;
+            F_at[1] = fy;
+            F_at[2] = fz;
         }
 
         //debug_file << ftx << " " << fty << " " << ftz << std::endl;

@@ -12,9 +12,11 @@ struct site
     //Original site location
     double r_0[3];
     //site momentum
-    double p[3];
-    //Forces on site
+    double p[3];    
+    //Forces on the ion here
     double dp_dt[3];
+    //Forces on the ion next step
+    double dp_dt_t[3];
 
     site()
     {
