@@ -7,14 +7,14 @@
 
 struct site
 {
+    //site position
     double r[3];
-    //Original lattice location
+    //Original site location
     double r_0[3];
+    //site momentum
     double p[3];
+    //Forces on site
     double dp_dt[3];
-
-    double er[3];
-    double ep[3];
 
     site()
     {
@@ -35,7 +35,9 @@ class cell
 public:
     //Sites in this current cell
     site sites[100];
+    //Number of sites in this cell
     int num;
+    //Index for this in hash map
     int pos_hash;
 };
 

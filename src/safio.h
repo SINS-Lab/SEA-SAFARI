@@ -102,7 +102,9 @@ struct safio
 
 //Global settings variable, we only need this loaded once anyway.
 extern safio settings;
+//This is the .data file to store the outputs.
 extern std::ofstream out_file;
+//This is the .dbug file to store extra info.
 extern std::ofstream debug_file;
 
 #endif // SAFIO_H_INCLUDED
