@@ -5,10 +5,22 @@
 #include <vector>
 #include <unordered_map>
 
+
+struct atom
+{
+    double mass;
+    double charge;
+    int index;
+    std::string symbol;
+    double spring[3];
+};
+
 struct site
 {
     //site position
     double r[3];
+    //site position after time dt
+    double r_t[3];
     //Original site location
     double r_0[3];
     //site momentum
@@ -17,6 +29,9 @@ struct site
     double dp_dt[3];
     //Forces on the ion next step
     double dp_dt_t[3];
+
+    //The atom at this site.
+    atom atom;
 
     site()
     {
@@ -43,22 +58,10 @@ public:
     int pos_hash;
 };
 
-struct atom
-{
-    double mass;
-    double charge;
-    int index;
-    std::string symbol;
-    double spring[3];
-};
-
 struct lattice
 {
     //All sites in the lattice
     std::vector<site> sites;
-    //Atoms for the sites,
-    // site index points to here.
-    std::vector<atom> atoms;
     //Basis used for this lattice,
     //Site indices for this are the originals
     std::vector<site> basis;

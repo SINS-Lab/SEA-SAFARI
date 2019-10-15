@@ -121,10 +121,9 @@ void lattice::build_lattice()
                     //Sites are indexed to size, so that they
                     //can be looked up to find their atom later.
                     s.index = sites.size();
+                    s.atom = a;
                     sites.push_back(s);
-                    atoms.push_back(a);
-                    cel.sites[cel.num] = s;
-                    cel.num++;
+                    cel.sites[cel.num++] = s;
                 }
             }
         }
