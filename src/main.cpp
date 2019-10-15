@@ -10,16 +10,18 @@
 #include <time.h>
 #include "scat.h"
 
+//Initialize the global variables.
 safio settings;
 std::ofstream out_file;
 std::ofstream debug_file;
+std::default_random_engine rng;
 
 int main()
 {
     //Load the input file
     settings.load();
 
-    char buffer[100];
+    char buffer[200];
 
     lattice lattice;
     lattice.build_lattice();
@@ -31,16 +33,21 @@ int main()
     for(int i = 0; i<num; i++)
     {
         site s = lattice.sites[i];
-        atom a = lattice.atoms[i];
+        atom a = s.atom;
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",s[0],s[1],s[2],a.charge,a.mass);
         myfile << buffer;
     }
+
     myfile.close();
 
+    //Initialize the RNG
+    rng.seed(settings.SEED);
 
     clock_t start = clock();
     int n = 0;
-    srand(settings.SEED);
+
+    
+    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tt\tsteps\tmax_n\tr_min\n";
 
     if(settings.NWRITX == 666)
     {
@@ -50,6 +57,7 @@ int main()
             {
                 debug_file << "Running Single Shot" << std::endl;
                 std::cout << "Running Single Shot" << std::endl;
+                debug_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tr_min\tdt\tdV\n";
             }
             else
             {

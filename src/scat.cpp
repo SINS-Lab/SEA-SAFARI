@@ -1,19 +1,25 @@
 #include "scat.h"
 #include "safio.h"
 #include "ion.h"
-#include <stdlib.h>     /* srand, rand */
+
+double frand()
+{
+    double max = rng.max();
+    return rng()/max;
+}
 
 void montecarloscat(lattice &lattice, int *num)
 {
-    double x_size = (settings.XSTART - settings.XSTOP)/1e4;
-    double y_size = (settings.YSTART - settings.YSTOP)/1e4;
+    double x_size = (settings.XSTOP - settings.XSTART);
+    double y_size = (settings.YSTOP - settings.YSTART);
 
     for(int i = 0; i < settings.NUMCHA; i++)
     {
-        int rx = rand()%10000;
-        int ry = rand()%10000;
+        double rx = frand();
+        double ry = frand();
         double x = settings.XSTART + x_size * rx;
         double y = settings.YSTART + y_size * ry;
+
         ion ion;
         ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
         *num = i;
