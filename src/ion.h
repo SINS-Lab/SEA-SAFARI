@@ -36,6 +36,7 @@ public:
 
     site near_sites[100];
     double near_dists[100];
+    //This is used for looking up potential for the atoms
     int near_atoms[100];
 
     double v_total = 0;
@@ -63,11 +64,12 @@ public:
     //Returns the number of nearby atom found in the given lattice.
     //This also updates the near_sites and near_atoms arrays.
     //Call check_distances() before using near_dists.
-    int fill_nearest(lattice &lattice);
+    int fill_nearest(lattice &lattice, int radius, int target_number);
     //Updates the values in near_dists for near sites.
     //The coordinates of the ion are the given arguments,
     //This is for running it at possible predicted locations instead.
-    void check_distances(double x, double y, double z);
+    //If predicted, this compares to the site's predicted location.
+    void check_distances(double x, double y, double z, bool predicted);
 };
 
 /**

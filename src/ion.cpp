@@ -6,6 +6,8 @@
 #include "lattice.h"
 #include "vec_math.h"
 
+#include <functional> // std::minus 
+#include <algorithm> // std::transform 
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -15,24 +17,36 @@
 
 #define M_PI           3.14159265358979323846  /* pi */
 
+double sqr(double *V)
+{
+    return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
+}
+
 ion::~ion()
 {
 }
 
 ion::ion()
 {
+    near = 0;
 }
 
-void ion::check_distances(double x, double y, double z)
+void ion::check_distances(double x, double y, double z, bool predicted)
 {
     //r_min = 1e3;
+    double ax, ay, az;
+
     for(int i = 0; i<near; i++)
     {
         site s = near_sites[i];
 
-        double dx = x - s[0];
-        double dy = y - s[1];
-        double dz = z - s[2];
+        ax = predicted? s.r_t[0] : s.r[0];
+        ay = predicted? s.r_t[1] : s.r[1];
+        az = predicted? s.r_t[2] : s.r[2];
+
+        double dx = x - ax;
+        double dy = y - ay;
+        double dz = z - az;
 
         double r = sqrt(dx*dx + dy*dy + dz*dz);
         near_dists[i] = r;
@@ -40,7 +54,7 @@ void ion::check_distances(double x, double y, double z)
     }
 }
 
-int ion::fill_nearest(lattice &lattice)
+int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 {
     ion ion = *this;
 
@@ -53,16 +67,27 @@ int ion::fill_nearest(lattice &lattice)
         return near;
     last_index = pos_hash;
 
-    int r = settings.NPART;
+    int r = radius;
     int num;
-    near = 0;
-    for(int i = -r; i<=r; i++)
+    int near = 0;
+
+    //This ensures we at least track the surface atoms.
+    int k_max = std::min(cell_z + radius, radius);
+    int k_min = k_max - 2*radius;
+
+    int i_min = cell_x - r;
+    int i_max = cell_x + r;
+
+    int j_min = cell_y - r;
+    int j_max = cell_y + r;
+
+    for(int i = i_min; i<=i_max; i++)
     {
-        for(int j = -r; j<=r; j++)
+        for(int j = j_min; i<=j_max; i++)
         {
-            for(int k = -r; k<=r; k++)
+            for(int k = k_min; k<=k_max; k++)
             {
-                pos_hash = to_hash(cell_x + i, cell_y + j,cell_z + k);
+                pos_hash = to_hash(i, j, k);
                 cell cel;
 
                 if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
@@ -91,12 +116,13 @@ int ion::fill_nearest(lattice &lattice)
                     s.p[2] = 0;
 
                     near_sites[near] = s;
-                    near_atoms[near] = lattice.atoms[s.index].index;
+                    near_atoms[near] = s.atom.index;
                     near++;
                 }
             }
         }
     }
+
     return near;
 }
 
@@ -177,7 +203,7 @@ bool validate(ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
 void traj(ion &ion, lattice &lattice, bool log)
 {
     //Time step
-    double dt = 0.001;
+    double dt = 0.01;
     //Kinetic Energy of the ion
     double E;
     //Magnitude squared of the ion momentum
@@ -185,26 +211,7 @@ void traj(ion &ion, lattice &lattice, bool log)
     //Ion mass
     double mass = ion.atom.mass;
 
-    double *force_here = ion.dp_dt;
-    double *force_next = ion.dp_dt_t;
-
-    force_here[0] = 0;
-    force_here[1] = 0;
-    force_here[2] = 0;
-
-    force_next[0] = 0;
-    force_next[1] = 0;
-    force_next[2] = 0;
-
-    //Momenta of particle
-    double px, py, pz;
-
     double pp = 0, pzz = 0, theta, phi;
-
-    //Ion velocities
-    double dx_dt, dy_dt, dz_dt;
-    //Ion Accelerations
-    double d2x_dt2, d2y_dt2, d2z_dt2;
 
     //Control conditions
     bool buried = false;
@@ -215,20 +222,21 @@ void traj(ion &ion, lattice &lattice, bool log)
 
     //Parameters for checking
     //how much things are changing by.
-    double err_max, ex, ey, ez, change;
+    double V, V_t, dV;
+    double change;
 
     //Used for printing output.
     char buffer[200];
 
     //Some initial conditions.
-    psq = ion.p[0]*ion.p[0] + ion.p[1]*ion.p[1] + ion.p[2]*ion.p[2];
+    psq = sqr(ion.p);
     E = psq * 0.5 / mass;
     ion.steps = 0;
 
 start:
 
     //Find nearby lattice atoms
-    ion.fill_nearest(lattice);
+    ion.fill_nearest(lattice, 2, settings.NPART);
     //Increment counter for how many steps we have taken
     ion.steps++;
 
@@ -243,35 +251,58 @@ start:
 
     //Find the forces at the current location
     run_hameq(ion, lattice, 0);
+    V = ion.v_total;
     //Find the forces at the next location,
     run_hameq(ion, lattice, dt);
+    V_t = ion.v_total;
 
     //Now we do some checks to see if the timestep needs to be adjusted
-
-    //Compute the displacements resulting from the forces.
-    ex = 0.25 * dt * dt * (force_next[0] - force_here[0]) / mass;
-    ey = 0.25 * dt * dt * (force_next[1] - force_here[1]) / mass;
-    ez = 0.25 * dt * dt * (force_next[2] - force_here[2]) / mass;
-
-    //Compute maximum change.
-    err_max = std::max(fabs(ex), std::max(fabs(ez), fabs(ey)));
-
-    //TODO also include lattice recoil for err_max here.
+    dV = V_t - V;
 
     //Compute amount for time to step by.
-    if(err_max!=0)
+    if(dV!=0)
     {
-        change = pow(settings.ABSERR/err_max, settings.DEMAX);
+        dV = fabs(dV);
+        //If we have exceeded max change, drop timestep.
+        if(dV > settings.DEMAX && dt > settings.DELLOW)
+        {
+            dt = settings.DELLOW;
+            //Reset potential counter to previous loctation
+            ion.v_total = V;
+            //Reset these, as it means we are passing into the surface.
+            ion.last_index = -1;
+            ion.near = 0;
+            goto start;
+        }
+        if(V == 0)
+        {
+            //Reset these, as it means we are passing into the surface.
+            ion.last_index = -1;
+            ion.near = 0;
+            //Set to low time step for entering this region
+            change = 0.1;
+        }
+        else
+        {
+            //get ratio of change in f to f.
+            dV /= V;
+            //Change based on relative value of that to abserr option
+            change = settings.ABSERR/dV;
+        }
+
         if(change >= 2)
             change = 2;
         if(change > 1 && change < 2)
             change = 1;
+        
         //Large change in energy, try to reduce timestep.
         if(change < .2 && dt > settings.DELLOW)
         {
             dt *= change;
             if(dt < settings.DELLOW)
                 dt = settings.DELLOW;
+            //Reset potential counter to previous loctation
+            ion.v_total = V;
             goto start;
         }
     }
@@ -280,31 +311,6 @@ start:
         change = 2;
     }
 
-    //If we made it here, set the force to average of the here and next
-    ion.dp_dt[0] = (force_next[0] + force_here[0]) * 0.5;
-    ion.dp_dt[1] = (force_next[1] + force_here[1]) * 0.5;
-    ion.dp_dt[2] = (force_next[2] + force_here[2]) * 0.5;
-
-    //v = p/m
-    dx_dt = ion.p[0] / mass;
-    dy_dt = ion.p[1] / mass;
-    dz_dt = ion.p[2] / mass;
-
-    //a = F/m, F = dp/dt
-    d2x_dt2 = ion.dp_dt[0] / mass;
-    d2y_dt2 = ion.dp_dt[1] / mass;
-    d2z_dt2 = ion.dp_dt[2] / mass;
-
-    //New Ion Location
-    ion[0] += dt * (dx_dt + 0.5*d2x_dt2*dt);
-    ion[1] += dt * (dy_dt + 0.5*d2y_dt2*dt);
-    ion[2] += dt * (dz_dt + 0.5*d2z_dt2*dt);
-
-    //New Ion Momentum
-    ion.p[0] += ion.dp_dt[0] * dt;
-    ion.p[1] += ion.dp_dt[1] * dt;
-    ion.p[2] += ion.dp_dt[2] * dt;
-
     //Apply changes, this updates energy and lattice loctations.
     apply_hameq(ion, lattice, dt);
 
@@ -312,20 +318,16 @@ start:
     ion.r_0[2] = fmin(ion.r[2], ion.r_0[2]);
     ion.time += dt;
 
-    px = ion.p[0];
-    py = ion.p[1];
-    pz = ion.p[2];
-
     //Update kinetic energy.
-    psq = px*px + py*py + pz*pz;
+    psq = sqr(ion.p);
     E = psq * 0.5 / mass;
 
     //Log things if needed
     if(log)
     {
-        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\n",
+        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t\%f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
-                ion.time,ion.steps,E,ion.v_total,(E+ion.v_total), ion.r_min,dt);
+                ion.time,ion.steps,E,ion.v_total,(E+ion.v_total), ion.r_min,dt,dV);
         debug_file << buffer;
     }
 
@@ -364,9 +366,9 @@ end:
     else
     {
         double px = ion.p[0];
-        double  py = ion.p[1];
-        double  pz = ion.p[2];
-        psq = px*px + py*py + pz*pz;
+        double py = ion.p[1];
+        double pz = ion.p[2];
+        psq = sqr(ion.p);
         //Find the momentum at infinity
         if(settings.IMAGE)
         {
@@ -397,16 +399,15 @@ end:
             {
                 phi = atan2(py, px) * 180/M_PI;
             }
-            sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
-                    ion.r_0[0],ion.r_0[1],ion.r_0[2],
-                    E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
-            out_file << buffer;
-
+            // sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
+            //         ion.r_0[0],ion.r_0[1],ion.r_0[2],
+            //         E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
+            // out_file << buffer;
         }
     }
-//    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
-//            ion.r_0[0],ion.r_0[1],ion.r_0[2],
-//            E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
-//    out_file << buffer;
+   sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
+           ion.r_0[0],ion.r_0[1],ion.r_0[2],
+           E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
+   out_file << buffer;
     return;
 }
