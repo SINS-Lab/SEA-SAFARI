@@ -72,8 +72,11 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
     int near = 0;
 
     //This ensures we at least track the surface atoms.
-    int k_max = std::min(cell_z + radius, radius);
-    int k_min = k_max - 2*radius;
+    int k_max = std::min(cell_z + r, r);
+    int k_min = k_max - 2*r;
+
+    k_min = cell_z - r;
+    k_max = cell_z + r;
 
     int i_min = cell_x - r;
     int i_max = cell_x + r;
@@ -83,7 +86,7 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 
     for(int i = i_min; i<=i_max; i++)
     {
-        for(int j = j_min; i<=j_max; i++)
+        for(int j = j_min; j<=j_max; j++)
         {
             for(int k = k_min; k<=k_max; k++)
             {
