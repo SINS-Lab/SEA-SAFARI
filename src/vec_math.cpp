@@ -1,12 +1,13 @@
 #include "vec_math.h"
+#include "safio.h"
 #include <vector>
 #include <math.h>
 
 int to_hash(double x, double y, double z)
 {
-    int i = (int)(x + 512);
-    int j = (int)(y + 512);
-    int k = (int)(z + 512);
+    int i = (int)(x/settings.AX + 512);
+    int j = (int)(y/settings.AZ + 512);
+    int k = (int)(z/settings.AY + 512);
     return i + (j << 10) + (k << 20);
 }
 

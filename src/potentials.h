@@ -6,6 +6,27 @@ const double eqsr = 14.398;
 
 /**
  * Computes the potential for the
+ * given radial separation
+ *
+ * @param r the radial separation
+ * @param n the lattice index
+ * @return the value of the potential
+ */
+double Vr_r(double r, int n);
+
+/**
+ * Computes the derivative of the potential
+ * with respect to the position, for the given
+ * radial separation.
+ *
+ * @param r the radial separation
+ * @param n the lattice index
+ * @return the derivative of the potential
+ */
+double dVr_dr(double r, int n);
+
+/**
+ * Computes the potential for the
  * given radial separations
  *
  * @param r the radial separations

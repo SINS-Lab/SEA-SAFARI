@@ -2,25 +2,17 @@
 #define ION_H_INCLUDED
 #include "lattice.h"
 
-class ion
+/**
+ * This is a particle which can fly by the lattice.
+ * It inherits the site class, which gives it the same
+ * position/momentum variables. it then also track
+ * additional information, such as charge and nearby things
+ */
+class ion : public site
 {
 public:
-    //Initial "position", this is the impact parameter
-    double r_0[3];
-    //Position of the ion
-    double r[3];
-    //Momentum of the ion
-    double p[3];
-
-    //Atom for this ion
-    atom atom;
     //Charge of the ion
     int q;
-
-    //Forces on the ion here
-    double dp_dt[3];
-    //Forces on the ion next step
-    double dp_dt_t[3];
 
     int index = 0;
 
@@ -32,14 +24,15 @@ public:
     int near = 0;
     //Nearest distance
     double r_min = 1e3;
+    //This is the last place the near things were updated.
     int last_index = -1;
+    //Last distance checked for nearby atoms.
+    int last_radius = 1;
 
-    site near_sites[100];
-    double near_dists[100];
-    //This is used for looking up potential for the atoms
-    int near_atoms[100];
+    site near_sites[1000];
 
-    double v_total = 0;
+    //potential energy the particle is in.
+    double V = 0;
 
     /**
      * Sets the initial conditions for the ion.
@@ -52,14 +45,6 @@ public:
      * @param y - y impact parameter
      */
     void set_KE(double eV, double theta0, double phi0,double x, double y);
-
-    double &operator[](int index)
-    {
-        return r[index];
-    }
-
-    ion();  // Constructor
-    ~ion(); // Destructor
 
     //Returns the number of nearby atom found in the given lattice.
     //This also updates the near_sites and near_atoms arrays.

@@ -3,31 +3,56 @@
 #include <math.h>
 #include <iostream>
 
-
-double Vr_r(double r[], int n[], int num)
+double Vr_r(double r, int n)
 {
-    double out = 0;
     if(settings.IPOT==1)
     {
-        double a,b,c,d,x;
-        for(int i = 0; i < num; i++)
-        {
-            //The potpars are in groups of 4,
-            //in order of the listed basis atoms
-            //The first atom is listed as 1.
-            int index = (n[i]-1)*4;
-            a = settings.POTPAR[index];
-            b = settings.POTPAR[index + 1];
-            c = settings.POTPAR[index + 2];
-            d = settings.POTPAR[index + 3];
-            x = r[i];
-            out += a*exp(-b*x) + c*exp(-d*x);
-        }
+        double a,b,c,d;
+        //The potpars are in groups of 4,
+        //in order of the listed basis atoms
+        //The first atom is listed as 1.
+        int index = (n-1)*4;
+        a = settings.POTPAR[index];
+        b = settings.POTPAR[index + 1];
+        c = settings.POTPAR[index + 2];
+        d = settings.POTPAR[index + 3];
+        return a*exp(-b*r) + c*exp(-d*r);
     }
     else
     {
         debug_file << "ERROR WITH Vr_r" << std::endl;
         exit(EXIT_FAILURE);
+    }
+}
+
+double dVr_dr(double r, int n)
+{
+    if(settings.IPOT==1)
+    {
+        double a,b,c,d;
+        //The potpars are in groups of 4,
+        //in order of the listed basis atoms
+        //The first atom is listed as 1.
+        int index = (n-1)*4;
+        a = settings.POTPAR[index];
+        b = settings.POTPAR[index + 1];
+        c = settings.POTPAR[index + 2];
+        d = settings.POTPAR[index + 3];
+        return -b*a*exp(-b*r) - d*c*exp(-d*r);
+    }
+    else
+    {
+        debug_file << "ERROR WITH dVr_dr" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+double Vr_r(double r[], int n[], int num)
+{
+    double out = 0;
+    for(int i = 0; i < num; i++)
+    {
+        out += Vr_r(r[i], n[i]);
     }
     return out;
 }
@@ -35,28 +60,9 @@ double Vr_r(double r[], int n[], int num)
 double * dVr_dr(double r[], int n[], int num)
 {
     double arr[num];
-
-    if(settings.IPOT==1)
+    for(int i = 0; i < num; i++)
     {
-        double a,b,c,d,x;
-        for(int i = 0; i < num; i++)
-        {
-            //The potpars are in groups of 4,
-            //in order of the listed basis atoms
-            //The first atom is listed as 1.
-            int index = (n[i]-1)*4;
-            a = settings.POTPAR[index];
-            b = settings.POTPAR[index + 1];
-            c = settings.POTPAR[index + 2];
-            d = settings.POTPAR[index + 3];
-            x = r[i];
-            arr[i] = -b*a*exp(-b*x) - d*c*exp(-d*x);
-        }
-    }
-    else
-    {
-        debug_file << "ERROR WITH dVr_dr" << std::endl;
-        exit(EXIT_FAILURE);
+        arr[i] = dVr_dr(r[i], n[i]);
     }
     double *out = arr;
     return out;

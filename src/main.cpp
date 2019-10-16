@@ -14,19 +14,21 @@
 safio settings;
 std::ofstream out_file;
 std::ofstream debug_file;
+std::ofstream traj_file;
 std::default_random_engine rng;
+std::ofstream crystal_file;
 
 int main()
 {
     //Load the input file
     settings.load();
 
+    crystal_file.open ("crystal.input");
+
     char buffer[200];
 
     lattice lattice;
     lattice.build_lattice();
-    std::ofstream myfile;
-    myfile.open ("crystal.input");
 
     int num = lattice.sites.size();
 
@@ -35,10 +37,10 @@ int main()
         site s = lattice.sites[i];
         atom a = s.atom;
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",s[0],s[1],s[2],a.charge,a.mass);
-        myfile << buffer;
+        crystal_file << buffer;
     }
 
-    myfile.close();
+    crystal_file.close();
 
     //Initialize the RNG
     rng.seed(settings.SEED);
@@ -57,7 +59,6 @@ int main()
             {
                 debug_file << "Running Single Shot" << std::endl;
                 std::cout << "Running Single Shot" << std::endl;
-                debug_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tr_min\tdt\tdV\n";
             }
             else
             {
@@ -80,10 +81,14 @@ int main()
 
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
+    //Convert to ms;
+    dt *= 1000;
+
     printf ( "%f\n", dt );
 
-    debug_file << "Time per run: "<<dt<<"ms"<<std::endl;
+    debug_file << "Time per run: "<< dt <<"ms"<<std::endl;
     out_file.close();
     debug_file.close();
+    traj_file.close();
     return 0;
 }

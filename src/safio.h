@@ -104,7 +104,11 @@ struct safio
 extern safio settings;
 //This is the .data file to store the outputs.
 extern std::ofstream out_file;
+//This is the .traj file to ion trajectory to.
+extern std::ofstream traj_file;
 //This is the .dbug file to store extra info.
 extern std::ofstream debug_file;
+//This is the .dbug file to lattice info in
+extern std::ofstream crystal_file;
 
 #endif // SAFIO_H_INCLUDED

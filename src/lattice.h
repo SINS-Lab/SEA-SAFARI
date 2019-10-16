@@ -5,7 +5,6 @@
 #include <vector>
 #include <unordered_map>
 
-
 struct atom
 {
     double mass;
@@ -15,35 +14,44 @@ struct atom
     double spring[3];
 };
 
-struct site
+class site
 {
-    //site position
-    double r[3];
-    //site position after time dt
-    double r_t[3];
-    //Original site location
+public:
+    //Original location
     double r_0[3];
-    //site momentum
-    double p[3];    
-    //Forces on the ion here
-    double dp_dt[3];
-    //Forces on the ion next step
-    double dp_dt_t[3];
-
-    //The atom at this site.
+    //The atom here
     atom atom;
+
+    //position
+    double r[3];
+    //momentum
+    double p[3];    
+    //forces
+    double dp_dt[3];
+
+    //position after time dt
+    double r_t[3];
+    //momentum after dt
+    double p_t[3];    
+    //forces after dt
+    double dp_dt_t[3];
 
     site()
     {
-        p[0] = 0;
-        p[1] = 0;
-        p[2] = 0;
+        reset();
     }
 
     double &operator[](int index)
     {
         return r[index];
     }
+
+    double distance(site other, bool predicted);
+
+    void reset();
+
+    void write_info();
+
     int index;
 };
 
@@ -51,11 +59,21 @@ class cell
 {
 public:
     //Sites in this current cell
-    site sites[100];
+    site *sites;
     //Number of sites in this cell
     int num;
     //Index for this in hash map
     int pos_hash;
+
+    cell()
+    {
+        sites = new site[100];
+    }
+
+    ~cell()
+    {
+        delete []sites;
+    }
 };
 
 struct lattice
@@ -67,7 +85,7 @@ struct lattice
     std::vector<site> basis;
 
     //All cells in the lattice
-    std::unordered_map<int,cell> cell_map;
+    std::unordered_map<int,cell*> cell_map;
 
     //Rotation matrix for lattice
     mat3d R;

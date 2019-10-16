@@ -3,91 +3,64 @@
 #include "potentials.h"
 #include <iostream>
 
+
+void update_site(site &s)
+{
+    //New Location
+    s[0] = s.r_t[0];
+    s[1] = s.r_t[1];
+    s[2] = s.r_t[2];
+
+    //New Momentum
+    s.p[0] = s.p_t[0];
+    s.p[1] = s.p_t[1];
+    s.p[2] = s.p_t[2];
+}
+
 void apply_hameq(ion &ion, lattice &lattice, double dt)
 {
-
-    //velocities
-    double dr_dt[3];
-    //Accelerations
-    double d2r_dt2[3];
-
-    double mass = ion.atom.mass;
-
-    //set the force to average of the here and next
-    ion.dp_dt[0] = (ion.dp_dt[0] + ion.dp_dt_t[0]) * 0.5;
-    ion.dp_dt[1] = (ion.dp_dt[1] + ion.dp_dt_t[1]) * 0.5;
-    ion.dp_dt[2] = (ion.dp_dt[2] + ion.dp_dt_t[2]) * 0.5;
-
-    //v = p/m
-    dr_dt[0] = ion.p[0] / mass;
-    dr_dt[1] = ion.p[1] / mass;
-    dr_dt[2] = ion.p[2] / mass;
-
-    //a = F/m, F = dp/dt
-    d2r_dt2[0] = ion.dp_dt[0] / mass;
-    d2r_dt2[1] = ion.dp_dt[1] / mass;
-    d2r_dt2[2] = ion.dp_dt[2] / mass;
-
-    //New Ion Location
-    ion[0] += dt * (dr_dt[0] + 0.5*d2r_dt2[0]*dt);
-    ion[1] += dt * (dr_dt[1] + 0.5*d2r_dt2[1]*dt);
-    ion[2] += dt * (dr_dt[2] + 0.5*d2r_dt2[2]*dt);
-
-    //New Ion Momentum
-    ion.p[0] += ion.dp_dt[0] * dt;
-    ion.p[1] += ion.dp_dt[1] * dt;
-    ion.p[2] += ion.dp_dt[2] * dt;
-
+    update_site(ion);
     int nearby = ion.near;
     if(settings.RECOIL)
         for(int i = 0; i<nearby; i++)
         {
             site s = ion.near_sites[i];
-            atom a = s.atom;
-
-            mass = a.mass;
-
-            //set the force to average of the here and next
-            s.dp_dt[0] = (s.dp_dt[0] + s.dp_dt_t[0]) * 0.5;
-            s.dp_dt[1] = (s.dp_dt[1] + s.dp_dt_t[1]) * 0.5;
-            s.dp_dt[2] = (s.dp_dt[2] + s.dp_dt_t[2]) * 0.5;
-
-            //v = p/m
-            dr_dt[0] = s.p[0] / mass;
-            dr_dt[1] = s.p[1] / mass;
-            dr_dt[2] = s.p[2] / mass;
-
-            //a = F/m, F = dp/dt
-            d2r_dt2[0] = s.dp_dt[0] / mass;
-            d2r_dt2[1] = s.dp_dt[1] / mass;
-            d2r_dt2[2] = s.dp_dt[2] / mass;
-
-            //New Ion Location
-            s[0] += dt * (dr_dt[0] + 0.5*d2r_dt2[0]*dt);
-            s[1] += dt * (dr_dt[1] + 0.5*d2r_dt2[1]*dt);
-            s[2] += dt * (dr_dt[2] + 0.5*d2r_dt2[2]*dt);
-
-            //New Ion Momentum
-            s.p[0] += s.dp_dt[0] * dt;
-            s.p[1] += s.dp_dt[1] * dt;
-            s.p[2] += s.dp_dt[2] * dt;
+            update_site(s);
         }
 }
 
-void run_hameq(ion &ion, lattice &lattice, double dt)
+void predict_site(site &s, double dt)
+{
+    //Site near us.
+    atom atom = s.atom;
+    double mass = atom.mass;
+
+    //v = p/m
+    //a = F/m, F = dp/dt
+    //r_t = r + vt + 0.5at^2
+    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*s.dp_dt[0]*dt) / mass;
+    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*s.dp_dt[1]*dt) / mass;
+    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
+
+    //p_t = p + dt * F
+    s.p_t[0] = s.p[0] +  dt * s.dp_dt[0];
+    s.p_t[1] = s.p[1] +  dt * s.dp_dt[1];
+    s.p_t[2] = s.p[2] +  dt * s.dp_dt[2];
+}
+
+void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
 {
     //Some useful variables.
     double dx, dy, dz, 
            fx, fy, fz, 
-           ftx = 0, fty = 0, ftz = 0, 
-           rmin = 1e20;
+           ftx = 0, fty = 0, ftz = 0;
 
-    //Reset v_total
-    ion.v_total = 0;
+    //Reset V
+    ion.V = 0;
 
     //Force to populate
     double *force;
-
+    //Normally is this.
     force = ion.dp_dt;
 
     //Force on the target.
@@ -103,38 +76,41 @@ void run_hameq(ion &ion, lattice &lattice, double dt)
     x = ion[0];
     y = ion[1];
     z = ion[2];
+    
+    double mass = ion.atom.mass;
+    double psq;
+
+    double px = ion.p[0];
+    double py = ion.p[1];
+    double pz = ion.p[2];
 
     //if not 0, we are computing for the predicted location.
     if(dt != 0)
     {
+        //Use the one for next time step
         force = ion.dp_dt_t;
 
-        double mass = ion.atom.mass;
-        //Ion velocities
-        double dx_dt, dy_dt, dz_dt;
-        //Ion Accelerations
-        double dvx_dt, dvy_dt, dvz_dt;
+        predict_site(ion, dt);
 
-        //v = p/m
-        dx_dt = ion.p[0] / mass;
-        dy_dt = ion.p[1] / mass;
-        dz_dt = ion.p[2] / mass;
-        //a = F/m, F = dp/dt
-        dvx_dt = ion.dp_dt[0] / mass;
-        dvy_dt = ion.dp_dt[1] / mass;
-        dvz_dt = ion.dp_dt[2] / mass;
+        x = ion.r_t[0];
+        y = ion.r_t[1];
+        z = ion.r_t[2];
 
-        x += dt * (dx_dt + 0.5*dvx_dt*dt);
-        y += dt * (dy_dt + 0.5*dvy_dt*dt);
-        z += dt * (dz_dt + 0.5*dvz_dt*dt);
+        px = ion.p_t[0];
+        py = ion.p_t[1];
+        pz = ion.p_t[2];
     }
+
+    psq = px*px + py*py + pz*pz;
+    *T = 0.5 * psq / mass;
 
     //Initialize the force array.
     force[0] = 0;
     force[1] = 0;
     force[2] = 0;
 
-    ion.v_total = 0;
+    ion.V = 0;
+    // debug_file << "Sites Near?: " << ion.near << std::endl;
 
     //This was set earlier when looking for nearby sites.
     if(ion.near)
@@ -143,60 +119,12 @@ void run_hameq(ion &ion, lattice &lattice, double dt)
         if(ion.near > ion.max_n)
             ion.max_n = ion.near;
 
-        if(settings.RECOIL)
-            for(int i = 0; i<ion.near; i++)
-            {
-                //Site near us.
-                site s = ion.near_sites[i];
-                atom atom = s.atom;
-                double mass = atom.mass;
-                //Ion velocities
-                double dr_dt[3];
-                //Ion Accelerations
-                double d2r_dt2[3];
-
-                //v = p/m
-                dr_dt[0] = s.p[0] / mass;
-                dr_dt[1] = s.p[1] / mass;
-                dr_dt[2] = s.p[2] / mass;
-                //a = F/m, F = dp/dt
-                d2r_dt2[0] = s.dp_dt[0] / mass;
-                d2r_dt2[1] = s.dp_dt[1] / mass;
-                d2r_dt2[2] = s.dp_dt[2] / mass;
-
-                s.r_t[0] = s.r[0] + dt * (dr_dt[0] + 0.5*d2r_dt2[0]*dt);
-                s.r_t[1] = s.r[1] + dt * (dr_dt[1] + 0.5*d2r_dt2[1]*dt);
-                s.r_t[2] = s.r[2] + dt * (dr_dt[2] + 0.5*d2r_dt2[2]*dt);
-            }
-
-        //Update distances to the ion.
-        ion.check_distances(x,y,z, dt!=0 && settings.RECOIL);
-
-        double *forces = dVr_dr(ion.near_dists, ion.near_atoms, ion.near);
-
         for(int i = 0; i<ion.near; i++)
         {
-            //Atom-Ion distance.
-            double r = ion.near_dists[i];
-
-            //No force if ion is on an atom.
-            if(r==0)
-            {
-                debug_file << "Ion intersected with atom?" <<std::endl;
-                continue;
-            }
-            //Record this for tracking later.
-            if(r < rmin)
-                rmin = r;
-
-            //Magnitude of force for this location.
-            double dV_dr = *(forces + i);
-
-            //Scaled by 1/r for converting to cartesian
-            dV_dr /= r;
-
             //Site near us.
             site s = ion.near_sites[i];
+            
+
             //Select the force array to populate.
             F_at = s.dp_dt;
 
@@ -207,12 +135,31 @@ void run_hameq(ion &ion, lattice &lattice, double dt)
 
             if(dt!=0 && settings.RECOIL)
             {
+                predict_site(s, dt);
                 //Get predicted loctations instead.
                 ax = s.r_t[0];
                 ay = s.r_t[1];
                 az = s.r_t[2];
                 F_at = s.dp_dt_t;
             }
+
+            double r = s.distance(ion, dt!=0);
+
+            //No force if ion is on an atom.
+            if(r==0)
+            {
+                debug_file << "Ion intersected with atom?" <<std::endl;
+                continue;
+            }
+
+            //Magnitude of force for this location.
+            double dV_dr = dVr_dr(r, s.atom.index);
+
+            //Potential for this location.
+            ion.V += Vr_r(r, s.atom.index);
+
+            //Scaled by 1/r for converting to cartesian
+            dV_dr /= r;
 
             //Distances from site to atom
             dx = ax - x;
@@ -241,10 +188,6 @@ void run_hameq(ion &ion, lattice &lattice, double dt)
         force[0] = -ftx;
         force[1] = -fty;
         force[2] = -ftz;
-
-        //Add the ion-atom potential to the v_total.
-       // if(dt != 0) 
-        ion.v_total += Vr_r(ion.near_dists, ion.near_atoms, ion.near);
 
         //TODO add atom-atom interactions here.
     }

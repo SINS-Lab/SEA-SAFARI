@@ -68,6 +68,8 @@ void lattice::build_lattice()
     vec3d cell_pos;
     cell_pos.set(0,0,0);
 
+    int max_in_cell = 0;
+
     int ns = -n;
     int ne = n;
     double px, py, pz;
@@ -98,38 +100,91 @@ void lattice::build_lattice()
                     px = cell_pos[0] + old[0];
                     py = cell_pos[1] + old[1];
 
-                    cell cel;
-                    int pos_hash = to_hash(px,py,pz);
+                    //This hashes to the current cube
+                    int pos_hash = to_hash(px, py, pz);
+
+                    int *cel_num;
+                    int num = 0;
+                    site *cel_sites;
 
                     if(cell_map.find(pos_hash) == cell_map.end())
                     {
+                        cell *cel = new cell();
                         cell_map[pos_hash] = cel;
-                        cel.num = 0;
+                        cel->num = num;
+                        cel_num = &(cel->num);
+                        cel->pos_hash = pos_hash;
+                        cel_sites = (cel->sites);
                     }
                     else
                     {
-                        cel = cell_map[pos_hash];
+                        cel_num = &(cell_map[pos_hash]->num);
+                        num = *cel_num;
+                        cel_sites = (cell_map[pos_hash]->sites);
                     }
-                    cel.pos_hash = pos_hash;
 
                     site s;
                     atom a;
-                    s[0] = s.r_0[0] = px;
-                    s[1] = s.r_0[1] = py;
-                    s[2] = s.r_0[2] = pz;
+                    s.r_0[0] = px;
+                    s.r_0[1] = py;
+                    s.r_0[2] = pz;
+                    s.reset();
                     a = settings.ATOMS[old.index-1];
                     //Sites are indexed to size, so that they
                     //can be looked up to find their atom later.
                     s.index = sites.size();
                     s.atom = a;
                     sites.push_back(s);
-                    cel.sites[cel.num++] = s;
+                    cel_sites[num] = s;
+                    num++;
+                    *cel_num = num;
+                    if(num > max_in_cell) max_in_cell = num;
                 }
             }
         }
     }
     std::cout << "built lattice" << std::endl;
     debug_file << "built lattice" << std::endl;
+}
+
+void site::reset()
+{
+    double zeros[3] = {0,0,0};
+    std::copy(std::begin(r_0), std::end(r_0), r);
+    std::copy(std::begin(r_0), std::end(r_0), r_t);
+
+    std::copy(std::begin(zeros), std::end(zeros), dp_dt);
+    std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
+
+    //TODO set the momentum for the site
+    //base on thermal stuff
+    std::copy(std::begin(zeros), std::end(zeros), p);
+    std::copy(std::begin(zeros), std::end(zeros), p_t);
+}
+
+double site::distance(site other, bool predicted)
+{
+    if(predicted)
+    {
+        return sqrt((r_t[0]-other.r_t[0])*(r_t[0]-other.r_t[0])+
+                    (r_t[1]-other.r_t[1])*(r_t[1]-other.r_t[2])+
+                    (r_t[2]-other.r_t[2])*(r_t[2]-other.r_t[1]));
+    }
+    else
+    {
+        return sqrt((r[0]-other.r[0])*(r[0]-other.r[0])+
+                    (r[1]-other.r[1])*(r[1]-other.r[2])+
+                    (r[2]-other.r[2])*(r[2]-other.r[1]));
+    }
+}
+
+void site::write_info()
+{
+    debug_file << "Atom: " << atom.symbol << std::endl;
+    debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
+    debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+    debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
+    debug_file << "p_t: " << p_t[0] << " " << p_t[1] << " " << p_t[2] << std::endl;
 }
 
 void lattice::reset()

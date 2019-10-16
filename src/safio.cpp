@@ -26,6 +26,8 @@ void safio::load()
         out_file.open(output);
         output.replace(output.end()-4, output.end(), "dbug");
         debug_file.open(output);
+        output.replace(output.end()-4, output.end(), "traj");
+        traj_file.open(output);
 
         if (safio_input.is_open())
         {

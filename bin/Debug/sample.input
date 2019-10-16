@@ -3,15 +3,15 @@
 1                                      DETECTOR TYPE
 45.0 0.0 3.0 0.0                       DETECTOR PARAMS
 1.00000e-08   10.0                     MIN, MAX - TIME STEP
-1.000   0.   5.00000E-01               DEMAX,DEMIN,ABSERR
-3                                      RADIUS OF CHECK CUBE
-f                                      RECOIL
+0.30000   0.   0.5                     DEMAX,DEMIN,ABSERR
+10                                     Target Interaction Number
+t                                      RECOIL
 5.0000                                 INTERACT.HEIGHT
 30000                                  TABLE ENTRIES
 0.   2.50000e-03                       R MIN,STEP
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
-1
+100
 0 .04 10                               XStart/Step/End
 0 .04 10                               YStart/Step/End
 666        666                         NWRITX, NWRITY

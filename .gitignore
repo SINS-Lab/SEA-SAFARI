@@ -9,5 +9,6 @@ obj/*
 bin/Debug/crystal.input
 bin/Debug/sample.data
 bin/Debug/sample.dbug
+bin/Debug/sample.traj
 bin/Debug/*.exe
 
