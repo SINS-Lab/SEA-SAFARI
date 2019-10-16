@@ -129,6 +129,42 @@ double vec3d::operator*(vec3d b)
     return v[0]*b[0] + v[1]*b[1] + v[2]*b[2];
 }
 
+vec3d vec3d::operator+(vec3d b)
+{
+    vec3d sum;
+    sum[0] = v[0] + b[0];
+    sum[1] = v[1] + b[1];
+    sum[2] = v[2] + b[2];
+    return sum;
+}
+
+vec3d vec3d::operator-(vec3d b)
+{
+    vec3d diff;
+    diff[0] = v[0] - b[0];
+    diff[1] = v[1] - b[1];
+    diff[2] = v[2] - b[2];
+    return diff;
+}
+
+vec3d vec3d::operator-(double b[])
+{
+    vec3d diff;
+    diff[0] = v[0] - b[0];
+    diff[1] = v[1] - b[1];
+    diff[2] = v[2] - b[2];
+    return diff;
+}
+
+vec3d vec3d::operator/(double b)
+{
+    vec3d mult;
+    mult[0] = v[0]/b;
+    mult[1] = v[1]/b;
+    mult[2] = v[2]/b;
+    return mult;
+}
+
 vec3d vec3d::operator*(double b)
 {
     vec3d mult;

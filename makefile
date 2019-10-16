@@ -4,7 +4,7 @@ SRCDIR = src
 OUTDIR = bin/Debug
 
 _FILES = main.cpp \
-      safio.cpp vec_math.cpp \
+      safio.cpp vec_math.cpp space_math.cpp\
       lattice.cpp ion.cpp \
       potentials.cpp hameq.cpp \
       scat.cpp

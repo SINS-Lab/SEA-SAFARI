@@ -1,6 +1,6 @@
 #include "lattice.h"
 #include "safio.h"
-#include <math.h>
+#include <cmath>
 #include <cstdio>
 #include <algorithm>    //std::sort
 #include <vector>
@@ -162,29 +162,31 @@ void site::reset()
     std::copy(std::begin(zeros), std::end(zeros), p_t);
 }
 
-double site::distance(site other, bool predicted)
+double site::distance(site &other, bool predicted)
 {
     if(predicted)
     {
         return sqrt((r_t[0]-other.r_t[0])*(r_t[0]-other.r_t[0])+
-                    (r_t[1]-other.r_t[1])*(r_t[1]-other.r_t[2])+
-                    (r_t[2]-other.r_t[2])*(r_t[2]-other.r_t[1]));
+                    (r_t[1]-other.r_t[1])*(r_t[1]-other.r_t[1])+
+                    (r_t[2]-other.r_t[2])*(r_t[2]-other.r_t[2]));
     }
     else
     {
         return sqrt((r[0]-other.r[0])*(r[0]-other.r[0])+
-                    (r[1]-other.r[1])*(r[1]-other.r[2])+
-                    (r[2]-other.r[2])*(r[2]-other.r[1]));
+                    (r[1]-other.r[1])*(r[1]-other.r[1])+
+                    (r[2]-other.r[2])*(r[2]-other.r[2]));
     }
 }
 
 void site::write_info()
 {
-    debug_file << "Atom: " << atom.symbol << std::endl;
-    debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
-    debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-    debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
-    debug_file << "p_t: " << p_t[0] << " " << p_t[1] << " " << p_t[2] << std::endl;
+    debug_file <<"Atom: "<< atom.symbol << std::endl;
+    debug_file <<"r  : "<< r[0] <<" "<< r[1] <<" "<< r[2] << std::endl;
+    debug_file <<"p  : "<< p[0] <<" "<< p[1] <<" "<< p[2] << std::endl;
+    debug_file <<"r_t: "<< r_t[0] <<" "<< r_t[1] <<" "<< r_t[2] << std::endl;
+    debug_file <<"p_t: "<< p_t[0] <<" "<< p_t[1] <<" "<< p_t[2] << std::endl;
+    debug_file <<"F: "<< dp_dt[0] <<" "<< dp_dt[1] <<" "<< dp_dt[2] << std::endl;
+    debug_file <<"F_t: "<< dp_dt_t[0] <<" "<< dp_dt_t[1] <<" "<< dp_dt_t[2] << std::endl;
 }
 
 void lattice::reset()

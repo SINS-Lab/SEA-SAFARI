@@ -10,8 +10,12 @@ public:
     void scale(double s);
     double operator*(vec3d b);
     vec3d operator*(double b);
+    vec3d operator/(double b);
     vec3d normalize();
     vec3d cross(vec3d b);
+    vec3d operator+(vec3d b);
+    vec3d operator-(vec3d b);
+    vec3d operator-(double b[]);
     void set(double x, double y, double z);
     void set(double arr[]);
     double& operator[](int i)

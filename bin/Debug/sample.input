@@ -3,7 +3,7 @@
 1                                      DETECTOR TYPE
 45.0 0.0 3.0 0.0                       DETECTOR PARAMS
 1.00000e-08   10.0                     MIN, MAX - TIME STEP
-0.30000   0.   0.5                     DEMAX,DEMIN,ABSERR
+0.30000   0.   1e-6                    DEMAX,DEMIN,ABSERR
 10                                     Target Interaction Number
 t                                      RECOIL
 5.0000                                 INTERACT.HEIGHT
@@ -11,10 +11,10 @@ t                                      RECOIL
 0.   2.50000e-03                       R MIN,STEP
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
-1
-2.189592 .04 10                               XStart/Step/End
-6.788647 .04 10                               YStart/Step/End
-666        666                         NWRITX, NWRITY
+1000
+3.877253 .04 10                               XStart/Step/End
+3.858147 .04 10                               YStart/Step/End
+666        666                         NWRITX, NWRITY 	
 .9         .9                          unused
 4 1                                    NPAR, IPOT
 9125.84 4.44 66703.59 11.24            Pars ^

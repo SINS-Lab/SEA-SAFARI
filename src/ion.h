@@ -29,10 +29,12 @@ public:
     //Last distance checked for nearby atoms.
     int last_radius = 1;
 
-    site near_sites[1000];
+    site near_sites[100];
 
     //potential energy the particle is in.
     double V = 0;
+    //potential energy the particle is in.
+    double V_t = 0;
 
     /**
      * Sets the initial conditions for the ion.
@@ -50,11 +52,6 @@ public:
     //This also updates the near_sites and near_atoms arrays.
     //Call check_distances() before using near_dists.
     int fill_nearest(lattice &lattice, int radius, int target_number);
-    //Updates the values in near_dists for near sites.
-    //The coordinates of the ion are the given arguments,
-    //This is for running it at possible predicted locations instead.
-    //If predicted, this compares to the site's predicted location.
-    void check_distances(double x, double y, double z, bool predicted);
 };
 
 /**

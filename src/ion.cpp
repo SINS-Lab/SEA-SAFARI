@@ -5,6 +5,7 @@
 #include "hameq.h"
 #include "lattice.h"
 #include "vec_math.h"
+#include "space_math.h"
 
 #include <functional> // std::minus 
 #include <algorithm> // std::transform 
@@ -22,9 +23,12 @@ double sqr(double *V)
     return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
 }
 
-void ion::check_distances(double x, double y, double z, bool predicted)
+double diff_sqr(double *V, double *Y)
 {
-    //TODO this should cull the sites if they are out of range?
+    double dx = V[0] - Y[0];
+    double dy = V[1] - Y[1];
+    double dz = V[2] - Y[2];
+    return dx*dx + dy*dy + dz*dz;
 }
 
 int ion::fill_nearest(lattice &lattice, int radius, int target_num)
@@ -45,66 +49,51 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 
     near = 0;
 
-    double k_max;
-    double k_min;
+    vec3d loc;
 
-    double i_min;
-    double i_max;
+    double near_distance_sq = 5*5;
+    double rr_min = near_distance_sq;
 
-    double j_min;
-    double j_max;
+    int nmax = pow(2*r+1, 3);
 
-    i_min = cell_x - r;
-    i_max = cell_x + r;
-    j_min = cell_y - r;
-    j_max = cell_y + r;
+    //Centre the cell on the surface if it is above it.
+    cell_z = std::min(cell_z, 0);
 
-    //This ensures we at least track the surface atoms.
-    k_min = std::min(cell_z - r, -r);
-    k_max = cell_z + r;
-
-    double near_distance_sq = 10*10;
-
-    for(int i = i_min; i<=i_max; i++)
+    for(int n = 0; n < nmax; n++)
     {
-        for(int j = j_min; j<=j_max; j++)
+        index_to_loc(n, loc);
+        double x = loc[0] + cell_x;
+        double y = loc[1] + cell_y;
+        double z = loc[2] + cell_z;
+
+        pos_hash = to_hash(x, y, z);
+        
+        site *cel_sites;
+        num = 0;
+
+        if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
         {
-            for(int k = k_min; k<=k_max; k++)
-            {
-                pos_hash = to_hash(i, j, k);
-                
-                site *cel_sites;
-                num = 0;
+            continue;
+        }
+        else
+        {
+            cell *cel = lattice.cell_map[pos_hash];
+            num = cel->num;
+            cel_sites = cel->sites;
+        }
 
-                if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
-                {
-                    continue;
-                }
-                else
-                {
-                    cell *cel = lattice.cell_map[pos_hash];
-                    num = cel->num;
-                    cel_sites = cel->sites;
-                }
-
-                for(int i = 0; i<num; i++)
-                {
-                    site s = cel_sites[i];
-                    double rr = (s[0] - ion[0])*(s[0] - ion[0])
-                               +(s[1] - ion[1])*(s[0] - ion[1])
-                               +(s[2] - ion[2])*(s[0] - ion[2]);
-
-                    if(rr > near_distance_sq) continue;
-
-                    //Reset the site to original location.
-                    s.reset();
-
-                    near_sites[near] = s;
-                    near++;
-                }
-            }
+        for(int i = 0; i<num; i++)
+        {
+            site s = cel_sites[i];
+            double rr = diff_sqr(ion.r, s.r);
+            if(rr > near_distance_sq) continue;
+            rr_min = std::min(rr_min, rr);
+            near_sites[near] = s;
+            near++;
+            if(near > 90) goto end;
         }
     }
+end:
     return near;
 }
 
@@ -145,11 +134,8 @@ void ion::set_KE(double eV, double theta0, double phi0,double x, double y)
     p[2] = p_z0;
 }
 
-bool validate(ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, bool *left, double *dt, double E)
+bool validate(ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, bool *left, double E)
 {
-    //Verify time step is in range.
-    *dt = std::min(std::max(*dt, settings.DELLOW), settings.DELT0);
-
     //left crystal
     if(ion[2] > settings.Z1)
     {
@@ -187,8 +173,6 @@ void traj(ion &ion, lattice &lattice, bool log)
 {
     //Time step
     double dt = 0.1;
-    //Energy of the ion
-    double E, dE;
     //Magnitude squared of the ion momentum
     double psq;
     //Ion mass
@@ -203,11 +187,24 @@ void traj(ion &ion, lattice &lattice, bool log)
     bool off_edge = false;
     bool left = false;
 
-    //Parameters for checking
-    //how much things are changing by.
-    double V, V_t, dV;
-    //how much things are changing by.
-    double T, T_t, dT;
+    //Potential Energy
+    double V, dV;
+    //Kinetic Energy
+    double T;
+    
+    //Parameters for checking if things need re-calculating
+    vec3d r;
+    vec3d dr;
+    double diff;
+    double dxp, dyp, dzp;
+    double dpx, dpy, dpz;
+    double dr_max;
+
+    //Distance in angstroms to consider far enough moved.
+    //After it moves this far, it will re-calculate nearest.
+    double r_reset = 0;
+
+    //Multiplier on timestep.
     double change;
 
     //Used for printing output.
@@ -215,7 +212,7 @@ void traj(ion &ion, lattice &lattice, bool log)
 
     //Some initial conditions.
     psq = sqr(ion.p);
-    E = psq * 0.5 / mass;
+    T = psq * 0.5 / mass;
     ion.steps = 0;
     ion.V = 0;
 
@@ -223,18 +220,22 @@ void traj(ion &ion, lattice &lattice, bool log)
     {
         debug_file << "\n\nStarting Ion Trajectory Output\n";
         ion.write_info();
-        traj_file << "\n\nx\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tr_min\tdt\tdV\n";
+        traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\tdV\n";
     }
+    r.set(ion.r);
 
 start:
 
     //Find nearby lattice atoms
-    ion.fill_nearest(lattice, 1, settings.NPART);
+    ion.fill_nearest(lattice, 4, settings.NPART);
     //Increment counter for how many steps we have taken
     ion.steps++;
+    
+    //Verify time step is in range.
+    dt = std::min(std::max(dt, settings.DELLOW), settings.DELT0);
 
     //check if we are still in a good state to run.
-    validate(ion, &buried, &off_edge, &stuck, &froze, &left, &dt, E);
+    validate(ion, &buried, &off_edge, &stuck, &froze, &left, T);
 
     if(froze || buried || stuck || left || off_edge)
     {
@@ -242,52 +243,66 @@ start:
         goto end;
     }
 
+    ion.V = 0;
+    ion.V_t = 0;
+
     //Find the forces at the current location
-    V = ion.V;
-    run_hameq(ion, lattice, &T, 0);
+    run_hameq(ion, lattice, dt, false);
+
+    dpx = ion.dp_dt[0];
+    dpy = ion.dp_dt[1];
+    dpz = ion.dp_dt[2];
 
     if(log)
     {
-        debug_file << "\nBetween hameq" << dt << std::endl;
+        debug_file << "\nBetween hameq, dt: " << dt << std::endl;
         ion.write_info();
     }
 
     //Find the forces at the next location,
-    run_hameq(ion, lattice, &T_t, dt);
-    V_t = ion.V;
+    run_hameq(ion, lattice, dt, true);
+    V = ion.V;
+
+    dpx = dpx - ion.dp_dt_t[0];
+    dpy = dpy - ion.dp_dt_t[1];
+    dpz = dpz - ion.dp_dt_t[2];
+
+    dxp = 0.25 * dt * dt * dpx / mass;
+    dyp = 0.25 * dt * dt * dpy / mass;
+    dzp = 0.25 * dt * dt * dpz / mass;
+
+    dr_max = std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 
     if(log)
     {
         debug_file << "\nAfter hameq " << dt << std::endl;
+        debug_file << "V: " << V << std::endl;
+        debug_file << "T: " << T << std::endl;
+        debug_file << "dR: " << dr_max << std::endl;
         ion.write_info();
     }
 
     //Now we do some checks to see if the timestep needs to be adjusted
-    dV = V_t - V;
-    dT = T_t - T;
-
-    E = T + V;
-    dE = std::max(fabs(dV), fabs(dT));
-
-    //Compute amount for time to step by.
-    if(dE != 0)
+    if(dr_max != 0)
     {
         //check if energy has changed too much.
-        change = settings.DEMAX / dE;
-        
+        change = pow(settings.ABSERR/dr_max, settings.DEMAX);
         if(change >= 2)
             change = 2;
         if(change > 1 && change < 2)
             change = 1;
-        
+
         //Large change in energy, try to reduce timestep.
         if(change < .2 && dt > settings.DELLOW)
         {
             dt *= change;
             if(dt < settings.DELLOW)
                 dt = settings.DELLOW;
-            //Reset potential counter to previous loctation
-            ion.V = V;
+            if(log)
+            {
+                debug_file << "change_down: " << change << std::endl;
+            }
+            ion.last_index = -1;
             goto start;
         }
     }
@@ -296,11 +311,26 @@ start:
         change = 2;
     }
 
-    //Check if displacement has changed too much
-
-
     //Apply changes, this updates energy and lattice loctations.
     apply_hameq(ion, lattice, dt);
+    if(log)
+    {
+        debug_file << "Applied hameq, dt: " << dt << std::endl;
+        debug_file << "change: " << change << std::endl;
+        ion.write_info();
+    }
+
+    //check if we have gone too far, and need tp re-calculate nearby atoms
+    dr = r - ion.r;
+    diff = sqr(dr.v);
+    if(diff > r_reset)
+    {
+        //Update ion location for last check
+        r.set(ion.r);
+        //Reset the index considered as "last found",
+        //This forces it to re-calculate nearest atoms
+        ion.last_index = -1;
+    }
 
     //Update some parameters for saving.
     ion.r_0[2] = fmin(ion.r[2], ion.r_0[2]);
@@ -308,14 +338,17 @@ start:
 
     //Update kinetic energy.
     psq = sqr(ion.p);
-    E = psq * 0.5 / mass;
+    T = psq * 0.5 / mass;
+    V = ion.V;
 
     //Log things if needed
     if(log)
     {
-        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%d\t%f\t\%f\n",
+        V = (ion.V + ion.V_t) / 2;
+        dV = ion.V_t - ion.V;
+        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%d\t%f\t%f\t%f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
-                ion.time,ion.steps,E,ion.V,(E+ion.V), ion.near,dt,dV);
+                ion.time,ion.steps,T,V,(T+V),ion.near,dt,dr_max,dV);
         traj_file << buffer;
     }
 
@@ -326,7 +359,7 @@ start:
     goto start;
 
 end:
-
+    double E = T;
     if(froze)
     {
         theta = 0;

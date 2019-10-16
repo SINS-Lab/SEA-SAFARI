@@ -1,31 +1,52 @@
 #include "safio.h"
 #include "hameq.h"
 #include "potentials.h"
+#include "vec_math.h"
 #include <iostream>
+#include <cmath>
 
 
-void update_site(site &s)
+void update_site(site &s, double dt)
 {
-    //New Location
-    s[0] = s.r_t[0];
-    s[1] = s.r_t[1];
-    s[2] = s.r_t[2];
+    //Site near us.
+    atom atom = s.atom;
+    double mass = atom.mass;
 
-    //New Momentum
-    s.p[0] = s.p_t[0];
-    s.p[1] = s.p_t[1];
-    s.p[2] = s.p_t[2];
+    vec3d dp;
+    vec3d dr;
+
+    vec3d F;
+    vec3d F_t;
+
+    F.set(s.dp_dt);
+    F_t.set(s.dp_dt_t);
+
+    //Average force * dt
+    dp = (F + F_t) * 0.5 * dt;
+
+    //Error in predicted and corrected positions
+    dr = (F_t - F) * 0.25 * dt * dt / mass;
+
+    //New Location, adjusted by dr
+    s[0] = s.r_t[0] - dr[0];
+    s[1] = s.r_t[1] - dr[1];
+    s[2] = s.r_t[2] - dr[2];
+
+    //New Momentum, not corrected, just using averages
+    s.p[0] += dp[0];
+    s.p[1] += dp[1];
+    s.p[2] += dp[2];
 }
 
 void apply_hameq(ion &ion, lattice &lattice, double dt)
 {
-    update_site(ion);
+    update_site(ion, dt);
     int nearby = ion.near;
     if(settings.RECOIL)
         for(int i = 0; i<nearby; i++)
         {
             site s = ion.near_sites[i];
-            update_site(s);
+            update_site(s, dt);
         }
 }
 
@@ -39,42 +60,13 @@ void predict_site_location(site &s, double dt)
 
     //v = p/m
     //a = F/m, F = dp/dt
-    //r_t = r + vt + 0.5at^2
+    //r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m 
     s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*s.dp_dt[0]*dt) / mass;
     s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*s.dp_dt[1]*dt) / mass;
     s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
-
-    //p_t = p + dt * F
-    s.p_t[0] = s.p[0] +  dt * s.dp_dt[0];
-    s.p_t[1] = s.p[1] +  dt * s.dp_dt[1];
-    s.p_t[2] = s.p[2] +  dt * s.dp_dt[2];
 }
 
-//Sets the next-time-step values to where the particle would be, given
-//the average forces between current and next site.
-void update_prediction(site &s, double dt)
-{
-    //Site near us.
-    atom atom = s.atom;
-    double mass = atom.mass;
-
-    double dp_dt[3];
-    //Average between the two forces.
-    dp_dt[0] = 0.5*(s.dp_dt[0] + s.dp_dt_t[0]);
-    dp_dt[1] = 0.5*(s.dp_dt[1] + s.dp_dt_t[1]);
-    dp_dt[2] = 0.5*(s.dp_dt[2] + s.dp_dt_t[2]);
-
-    //Update predicted momentum to be based on average force,
-    s.p_t[0] = s.p[0] +  dt * dp_dt[0];
-    s.p_t[1] = s.p[1] +  dt * dp_dt[1];
-    s.p_t[2] = s.p[2] +  dt * dp_dt[2];
-    //Update predicted location based on average force.
-    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*dp_dt[0]*dt) / mass;
-    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*dp_dt[1]*dt) / mass;
-    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*dp_dt[2]*dt) / mass;
-}
-
-void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
+void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
 {
     //Some useful variables.
     double dx, dy, dz, 
@@ -85,9 +77,10 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
     ion.V = 0;
 
     //Force to populate
-    double *force;
+    double *F;
+
     //Normally is this.
-    force = ion.dp_dt;
+    F = ion.dp_dt;
 
     //Force on the target.
     double *F_at;
@@ -103,28 +96,22 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
     y = ion[1];
     z = ion[2];
     
-    double mass = ion.atom.mass;
-    double psq;
-
     //if not 0, we are computing for the predicted location.
-    if(dt != 0)
+    if(predicted)
     {
         //Use the one for next time step
-        force = ion.dp_dt_t;
-
-        predict_site_location(ion, dt);
-
+        F = ion.dp_dt_t;
+        //Use predictions
         x = ion.r_t[0];
         y = ion.r_t[1];
         z = ion.r_t[2];
     }
 
     //Initialize the force array.
-    force[0] = 0;
-    force[1] = 0;
-    force[2] = 0;
+    F[0] = 0;
+    F[1] = 0;
+    F[2] = 0;
 
-    ion.V = 0;
     // debug_file << "Sites Near?: " << ion.near << std::endl;
 
     //This was set earlier when looking for nearby sites.
@@ -139,7 +126,6 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
             //Site near us.
             site s = ion.near_sites[i];
             
-
             //Select the force array to populate.
             F_at = s.dp_dt;
 
@@ -148,17 +134,25 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
             ay = s.r[1];
             az = s.r[2];
 
-            if(dt!=0 && settings.RECOIL)
+            if(settings.RECOIL)
             {
-                predict_site_location(s, dt);
-                //Get predicted loctations instead.
-                ax = s.r_t[0];
-                ay = s.r_t[1];
-                az = s.r_t[2];
-                F_at = s.dp_dt_t;
+                if(predicted)
+                {
+                    //Get predicted loctations instead.
+                    ax = s.r_t[0];
+                    ay = s.r_t[1];
+                    az = s.r_t[2];
+                    //Set predicted force instead.
+                    F_at = s.dp_dt_t;
+                }
             }
 
-            double r = s.distance(ion, dt!=0);
+            //Distances from site to atom
+            dx = ax - x;
+            dy = ay - y;
+            dz = az - z;
+
+            double r = sqrt(dx*dx + dy*dy + dz*dz);
 
             //No force if ion is on an atom.
             if(r==0)
@@ -171,15 +165,11 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
             double dV_dr = dVr_dr(r, s.atom.index);
 
             //Potential for this location.
-            ion.V += Vr_r(r, s.atom.index);
+            if(predicted) ion.V_t += Vr_r(r, s.atom.index);
+            else ion.V += Vr_r(r, s.atom.index);
 
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
-
-            //Distances from site to atom
-            dx = ax - x;
-            dy = ay - y;
-            dz = az - z;
 
             //Convert from magnitude to components of vector
             fx = -2 * dV_dr * dx;
@@ -198,30 +188,28 @@ void run_hameq(ion &ion, lattice &lattice, double *T, double dt)
             F_at[1] = fy;
             F_at[2] = fz;
 
-            //Update prediction for the site.
-            if(dt!=0 && settings.RECOIL) update_prediction(s, dt);
+            F[0] -= fx;
+            F[1] -= fy;
+            F[2] -= fz;
+
+            if(settings.RECOIL && !predicted)
+            {
+                //set the predictions
+                predict_site_location(s, dt);
+            }
         }
 
         //Superposition of all of the atom-ion interaction
-        force[0] = -ftx;
-        force[1] = -fty;
-        force[2] = -ftz;
+        // F[0] = -ftx;
+        // F[1] = -fty;
+        // F[2] = -ftz;
 
         //TODO add atom-atom interactions here.
     }
 
-    double px = ion.p[0];
-    double py = ion.p[1];
-    double pz = ion.p[2];
-    //if not 0, we are computing for the predicted location.
-    if(dt != 0)
+    if(!predicted)
     {
-        update_prediction(ion, dt);
-        px = ion.p_t[0];
-        py = ion.p_t[1];
-        pz = ion.p_t[2];
+        //set the predictions
+        predict_site_location(ion, dt);
     }
-    //Update kinetic energy.
-    psq = px*px + py*py + pz*pz;
-    *T = 0.5 * psq / mass;
 }

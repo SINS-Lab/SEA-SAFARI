@@ -46,7 +46,7 @@ public:
         return r[index];
     }
 
-    double distance(site other, bool predicted);
+    double distance(site &other, bool predicted);
 
     void reset();
 

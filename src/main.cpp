@@ -6,6 +6,7 @@
 #include <cstdio>
 #include "safio.h"
 #include "vec_math.h"
+#include "space_math.h"
 #include "ion.h"
 #include <time.h>
 #include "scat.h"
@@ -78,6 +79,20 @@ int main()
             chainscat(lattice, &n);
         }
     }
+    else
+    {
+        n = 1;
+        //Testing stuff
+        vec3d loc;
+        int r = 2;
+        int var = pow(2*r + 1, 3);
+        for(int n = 0; n < var; n++)
+        {
+            index_to_loc(n, loc);
+            // debug_file << loc[0] << " " << loc[1] << " " << loc[2] << std::endl;
+        }
+    }
+    
 
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
