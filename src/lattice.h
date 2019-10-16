@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 
-struct atom
+struct Atom
 {
     double mass;
     double charge;
@@ -14,13 +14,13 @@ struct atom
     double spring[3];
 };
 
-class site
+class Site
 {
 public:
     //Original location
     double r_0[3];
     //The atom here
-    atom atom;
+    Atom atom;
 
     //position
     double r[3];
@@ -36,7 +36,7 @@ public:
     //forces after dt
     double dp_dt_t[3];
 
-    site()
+    Site()
     {
         reset();
     }
@@ -46,7 +46,7 @@ public:
         return r[index];
     }
 
-    double distance(site &other, bool predicted);
+    double distance(Site &other, bool predicted);
 
     void reset();
 
@@ -55,11 +55,11 @@ public:
     int index;
 };
 
-class cell
+class Cell
 {
 public:
     //Sites in this current cell
-    site *sites;
+    Site *sites;
     //Number of sites in this cell
     int num;
     //Index for this in hash map
@@ -67,37 +67,37 @@ public:
     //Used to check if this cell has been checked
     int check_stamp = -1;
 
-    cell()
+    Cell()
     {
-        sites = new site[100];
+        sites = new Site[100];
     }
 
-    ~cell()
+    ~Cell()
     {
         delete []sites;
     }
 };
 
-struct lattice
+struct Lattice
 {
     //All sites in the lattice
-    std::vector<site> sites;
+    std::vector<Site> sites;
     //Basis used for this lattice,
     //Site indices for this are the originals
-    std::vector<site> basis;
+    std::vector<Site> basis;
 
     //All cells in the lattice
-    std::unordered_map<int,cell*> cell_map;
+    std::unordered_map<int,Cell*> cell_map;
 
     //Rotation matrix for lattice
-    mat3d R;
+    Mat3d R;
     //Inverse of the rotation matrix
-    mat3d R_inv;
+    Mat3d R_inv;
 
     //Basis vectors for lattice.
-    vec3d ex;
-    vec3d ey;
-    vec3d ez;
+    Vec3d ex;
+    Vec3d ey;
+    Vec3d ez;
 
     void build_lattice();
 

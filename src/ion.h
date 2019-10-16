@@ -8,7 +8,7 @@
  * position/momentum variables. it then also track
  * additional information, such as charge and nearby things
  */
-class ion : public site
+class Ion : public Site
 {
 public:
     //Charge of the ion
@@ -29,7 +29,7 @@ public:
     //Last distance checked for nearby atoms.
     int last_radius = 1;
 
-    site near_sites[100];
+    Site near_sites[100];
 
     //potential energy the particle is in.
     double V = 0;
@@ -53,7 +53,7 @@ public:
     //Returns the number of nearby atom found in the given lattice.
     //This also updates the near_sites and near_atoms arrays.
     //Call check_distances() before using near_dists.
-    int fill_nearest(lattice &lattice, int radius, int target_number);
+    int fill_nearest(Lattice &lattice, int radius, int target_number);
 };
 
 /**
@@ -64,6 +64,6 @@ public:
  * @param lattice - the lattice to scatter off
  * @param log - if true, will log the individual trajectory
  */
-void traj(ion &ion, lattice &lattice, bool log);
+void traj(Ion &ion, Lattice &lattice, bool log);
 
 #endif // ION_H_INCLUDED

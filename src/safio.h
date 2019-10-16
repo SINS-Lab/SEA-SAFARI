@@ -9,7 +9,7 @@
 #include <vector>
 #include "lattice.h"
 
-struct safio
+struct Safio
 {
     //Parameters for the beam
     double E0;
@@ -69,13 +69,13 @@ struct safio
 
     //Basis Coordinates
     int NBASIS;
-    std::vector<site> BASIS;
+    std::vector<Site> BASIS;
     int NTYPES;
 
     double face[3];
 
     //Basis Atoms
-    std::vector<atom> ATOMS;
+    std::vector<Atom> ATOMS;
     bool CORR;
     double ATOMK;
     double RNEIGH;
@@ -101,7 +101,7 @@ struct safio
 };
 
 //Global settings variable, we only need this loaded once anyway.
-extern safio settings;
+extern Safio settings;
 //This is the .data file to store the outputs.
 extern std::ofstream out_file;
 //This is the .traj file to ion trajectory to.

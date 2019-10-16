@@ -12,7 +12,7 @@
 #include "scat.h"
 
 //Initialize the global variables.
-safio settings;
+Safio settings;
 std::ofstream out_file;
 std::ofstream debug_file;
 std::ofstream traj_file;
@@ -28,15 +28,15 @@ int main()
 
     char buffer[200];
 
-    lattice lattice;
+    Lattice lattice;
     lattice.build_lattice();
 
     int num = lattice.sites.size();
 
     for(int i = 0; i<num; i++)
     {
-        site s = lattice.sites[i];
-        atom a = s.atom;
+        Site s = lattice.sites[i];
+        Atom a = s.atom;
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",s[0],s[1],s[2],a.charge,a.mass);
         crystal_file << buffer;
     }
@@ -83,7 +83,7 @@ int main()
     {
         n = 1;
         //Testing stuff
-        vec3d loc;
+        Vec3d loc;
         int r = 2;
         int var = pow(2*r + 1, 3);
         for(int n = 0; n < var; n++)

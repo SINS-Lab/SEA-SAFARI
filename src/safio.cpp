@@ -1,7 +1,7 @@
 #include "safio.h"
 #include <vector>
 
-void safio::load()
+void Safio::load()
 {
     settings = *this;
     std::string safio_file = "safari.input";
@@ -281,7 +281,7 @@ void safio::load()
                     }
                     else
                     {
-                        site s;
+                        Site s;
                         s[0] = atof(args[0].c_str());
                         s[1] = atof(args[1].c_str());
                         s[2] = atof(args[2].c_str());
@@ -300,7 +300,7 @@ void safio::load()
                     {
                         if(o%2==0)
                         {
-                            atom a;
+                            Atom a;
                             a.mass = atof(args[0].c_str());
                             a.charge = atof(args[1].c_str());
                             a.symbol = args[2];
@@ -309,7 +309,7 @@ void safio::load()
                         }
                         else
                         {
-                            atom a = ATOMS.back();
+                            Atom a = ATOMS.back();
                             a.spring[0] = atof(args[0].c_str());
                             a.spring[1] = atof(args[1].c_str());
                             a.spring[2] = atof(args[2].c_str());

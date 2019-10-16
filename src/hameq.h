@@ -10,13 +10,13 @@
  * @param lattice - the lattice to scatter off
  * @param dt - timestep for interaction
  */
-void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted);
+void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted);
 
 /**
  * @param ion - the ion to interact with the lattice
  * @param lattice - the lattice to scatter off
  * @param dt - timestep for interaction
  */
-void apply_hameq(ion &ion, lattice &lattice, double dt);
+void apply_hameq(Ion &ion, Lattice &lattice, double dt);
 
 #endif // HAMEQ_H_INCLUDED

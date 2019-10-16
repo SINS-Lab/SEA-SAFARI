@@ -5,8 +5,8 @@
 
 extern std::default_random_engine rng;
 
-void montecarloscat(lattice &lattice, int *num);
-void gridscat(lattice &lattice, int *num);
-void chainscat(lattice &lattice, int *num);
+void montecarloscat(Lattice &lattice, int *num);
+void gridscat(Lattice &lattice, int *num);
+void chainscat(Lattice &lattice, int *num);
 
 #endif // SCAT_H_INCLUDED

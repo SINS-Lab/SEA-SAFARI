@@ -6,7 +6,7 @@
 #include <vector>
 #include "vec_math.h"
 
-void lattice::build_lattice()
+void Lattice::build_lattice()
 {
     //TODO add some way to define this in safio.
     int n = 20;
@@ -15,18 +15,18 @@ void lattice::build_lattice()
     double zTop = settings.AZ * 0.1;
     double zBottom = -settings.AZ * 4;
 
-    vec3d dir;
+    Vec3d dir;
     //We like "Up"
     dir.set(0,0,1);
-    vec3d axis;
+    Vec3d axis;
     axis.set(settings.face);
 
     //Basis vectors in the basis coordinates
-    vec3d ex_basis;
+    Vec3d ex_basis;
     ex_basis.set(1,0,0);
-    vec3d ey_basis;
+    Vec3d ey_basis;
     ey_basis.set(0,1,0);
-    vec3d ez_basis;
+    Vec3d ez_basis;
     ez_basis.set(0,0,1);
 
     //Rotation matrix and inverse.
@@ -43,15 +43,15 @@ void lattice::build_lattice()
 
     for(int i = 0; i<settings.NBASIS; i++)
     {
-        site s;
-        vec3d tmp;
+        Site s;
+        Vec3d tmp;
 
         //Make basis of correct size.
         tmp.set(settings.BASIS[i].r);
         tmp[0] *= settings.AX;
         tmp[1] *= settings.AY;
         tmp[2] *= settings.AZ;
-        vec3d v = R * tmp;
+        Vec3d v = R * tmp;
         s[0] = v[0];
         s[1] = v[1];
         s[2] = v[2];
@@ -65,7 +65,7 @@ void lattice::build_lattice()
         }
     }
 
-    vec3d cell_pos;
+    Vec3d cell_pos;
     cell_pos.set(0,0,0);
 
     int max_in_cell = 0;
@@ -90,7 +90,7 @@ void lattice::build_lattice()
 
                 for(int i = 0; i<settings.NBASIS; i++)
                 {
-                    site old = basis[i];
+                    Site old = basis[i];
                     pz = cell_pos[2] + old[2];
 
                     //Cut off bottom of the crystal at some point.
@@ -105,11 +105,11 @@ void lattice::build_lattice()
 
                     int *cel_num;
                     int num = 0;
-                    site *cel_sites;
+                    Site *cel_sites;
 
                     if(cell_map.find(pos_hash) == cell_map.end())
                     {
-                        cell *cel = new cell();
+                        Cell *cel = new Cell();
                         cell_map[pos_hash] = cel;
                         cel->num = num;
                         cel_num = &(cel->num);
@@ -123,8 +123,8 @@ void lattice::build_lattice()
                         cel_sites = (cell_map[pos_hash]->sites);
                     }
                     
-                    site s;
-                    atom a;
+                    Site s;
+                    Atom a;
                     s.r_0[0] = px;
                     s.r_0[1] = py;
                     s.r_0[2] = pz;
@@ -148,7 +148,7 @@ void lattice::build_lattice()
     debug_file << "built lattice" << std::endl;
 }
 
-void site::reset()
+void Site::reset()
 {
     double zeros[3] = {0,0,0};
     std::copy(std::begin(r_0), std::end(r_0), r);
@@ -163,7 +163,7 @@ void site::reset()
     std::copy(std::begin(zeros), std::end(zeros), p_t);
 }
 
-double site::distance(site &other, bool predicted)
+double Site::distance(Site &other, bool predicted)
 {
     if(predicted)
     {
@@ -179,7 +179,7 @@ double site::distance(site &other, bool predicted)
     }
 }
 
-void site::write_info()
+void Site::write_info()
 {
     debug_file <<"Atom: "<< atom.symbol << std::endl;
     debug_file <<"r  : "<< r[0] <<" "<< r[1] <<" "<< r[2] << std::endl;
@@ -190,7 +190,7 @@ void site::write_info()
     debug_file <<"F_t: "<< dp_dt_t[0] <<" "<< dp_dt_t[1] <<" "<< dp_dt_t[2] << std::endl;
 }
 
-void lattice::reset()
+void Lattice::reset()
 {
 
 }

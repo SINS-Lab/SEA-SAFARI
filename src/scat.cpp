@@ -8,7 +8,7 @@ double frand()
     return rng()/max;
 }
 
-void montecarloscat(lattice &lattice, int *num)
+void montecarloscat(Lattice &lattice, int *num)
 {
     double x_size = (settings.XSTOP - settings.XSTART);
     double y_size = (settings.YSTOP - settings.YSTART);
@@ -20,7 +20,7 @@ void montecarloscat(lattice &lattice, int *num)
         double x = settings.XSTART + x_size * rx;
         double y = settings.YSTART + y_size * ry;
 
-        ion ion;
+        Ion ion;
         ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
         *num = i;
         ion.index = *num;
@@ -28,13 +28,13 @@ void montecarloscat(lattice &lattice, int *num)
     }
 }
 
-void gridscat(lattice &lattice, int *num)
+void gridscat(Lattice &lattice, int *num)
 {
     bool log = settings.NUMCHA == 1;
     for(double x = settings.XSTART; x <= settings.XSTOP; x+=settings.XSTEP)
         for(double y = settings.YSTART; y <= settings.YSTOP; y+=settings.YSTEP)
         {
-            ion ion;
+            Ion ion;
             ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
             ion.index = *num;
             *num = *num + 1;
@@ -45,7 +45,7 @@ out:
     return;
 }
 
-void chainscat(lattice &lattice, int *num)
+void chainscat(Lattice &lattice, int *num)
 {
 
 }

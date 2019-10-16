@@ -31,9 +31,9 @@ double diff_sqr(double *V, double *Y)
     return dx*dx + dy*dy + dz*dz;
 }
 
-int ion::fill_nearest(lattice &lattice, int radius, int target_num)
+int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 {
-    ion ion = *this;
+    Ion ion = *this;
 
     int cell_x = ion[0];
     int cell_y = ion[1];
@@ -49,7 +49,7 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 
     near = 0;
 
-    vec3d loc;
+    Vec3d loc;
 
     double near_distance_sq = 5*5;
     double rr_min = near_distance_sq;
@@ -68,7 +68,7 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 
         pos_hash = to_hash(x, y, z);
         
-        site *cel_sites;
+        Site *cel_sites;
         num = 0;
 
         if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
@@ -77,7 +77,7 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
         }
         else
         {
-            cell *cel = lattice.cell_map[pos_hash];
+            Cell *cel = lattice.cell_map[pos_hash];
             //Already seen this cell this step.
             if(cel->check_stamp == ion.steps) continue;
             cel->check_stamp = ion.steps;
@@ -87,12 +87,14 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
 
         for(int i = 0; i<num; i++)
         {
-            site s = cel_sites[i];
+            Site s = cel_sites[i];
             double rr = diff_sqr(ion.r, s.r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             near_sites[near] = s;
-            std::cout << "Sites Momentum: " << s.p << " ion: " << ion.p << std::endl;
+            std::cout << "i: " << i  << " n: " << i << std::endl;
+            std::cout << "Site Position: " << s.r << std::endl;
+            std::cout << "values:        " << s.r[0] << " "  << s.r[1] << " " << s.r[2] << std::endl;
             near++;
             if(near > 90) goto end;
         }
@@ -102,7 +104,7 @@ end:
 }
 
 
-void ion::set_KE(double eV, double theta0, double phi0,double x, double y)
+void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
 {
     atom.mass = settings.MASS;
     atom.symbol = settings.SYMION;
@@ -138,7 +140,7 @@ void ion::set_KE(double eV, double theta0, double phi0,double x, double y)
     p[2] = p_z0;
 }
 
-bool validate(ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, bool *left, double E)
+bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, bool *left, double E)
 {
     //left crystal
     if(ion[2] > settings.Z1)
@@ -173,7 +175,7 @@ bool validate(ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
     return true;
 }
 
-void traj(ion &ion, lattice &lattice, bool log)
+void traj(Ion &ion, Lattice &lattice, bool log)
 {
     //Time step
     double dt = 0.1;
@@ -197,8 +199,8 @@ void traj(ion &ion, lattice &lattice, bool log)
     double T;
     
     //Parameters for checking if things need re-calculating
-    vec3d r;
-    vec3d dr;
+    Vec3d r;
+    Vec3d dr;
     double diff;
     double dxp, dyp, dzp;
     double dpx, dpy, dpz;

@@ -11,7 +11,7 @@ int to_hash(double x, double y, double z)
     return i + (j << 10) + (k << 20);
 }
 
-void mat3d::identity()
+void Mat3d::identity()
 {
     /*
     m = {1,0,0,
@@ -30,9 +30,9 @@ void mat3d::identity()
     m[8] = 1;
 }
 
-mat3d mat3d::invert()
+Mat3d Mat3d::invert()
 {
-    mat3d A = *this;
+    Mat3d A = *this;
     // computes the inverse of a matrix m
     double det = A(0, 0) * (A(1, 1) * A(2, 2) - A(2, 1) * A(1, 2)) -
                  A(0, 1) * (A(1, 0) * A(2, 2) - A(1, 2) * A(2, 0)) +
@@ -40,7 +40,7 @@ mat3d mat3d::invert()
 
     double invdet = 1 / det;
 
-    mat3d minv; // inverse of matrix m
+    Mat3d minv; // inverse of matrix m
     minv(0, 0) = (A(1, 1) * A(2, 2) - A(2, 1) * A(1, 2)) * invdet;
     minv(0, 1) = (A(0, 2) * A(2, 1) - A(0, 1) * A(2, 2)) * invdet;
     minv(0, 2) = (A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1)) * invdet;
@@ -54,9 +54,9 @@ mat3d mat3d::invert()
     return minv;
 }
 
-mat3d mat3d::operator*(double d)
+Mat3d Mat3d::operator*(double d)
 {
-    mat3d M;
+    Mat3d M;
     for(int i = 0; i<9; i++)
     {
         M[i] = m[i] * d;
@@ -64,9 +64,9 @@ mat3d mat3d::operator*(double d)
     return M;
 }
 
-mat3d mat3d::operator+(mat3d d)
+Mat3d Mat3d::operator+(Mat3d d)
 {
-    mat3d M;
+    Mat3d M;
     for(int i = 0; i<9; i++)
     {
         M[i] = m[i] + d[i];
@@ -74,10 +74,10 @@ mat3d mat3d::operator+(mat3d d)
     return M;
 }
 
-mat3d mat3d::operator*(mat3d B)
+Mat3d Mat3d::operator*(Mat3d B)
 {
-    mat3d R;
-    mat3d A = *this;
+    Mat3d R;
+    Mat3d A = *this;
     for(int i = 0; i<9; i++)
     {
         int r = i/3;
@@ -89,28 +89,28 @@ mat3d mat3d::operator*(mat3d B)
     return R;
 }
 
-vec3d mat3d::operator*(vec3d v)
+Vec3d Mat3d::operator*(Vec3d v)
 {
-    vec3d x;
+    Vec3d x;
     x[0] = v[0]*m[0] + v[1]*m[1] + v[2]*m[2];
     x[1] = v[0]*m[3] + v[1]*m[4] + v[2]*m[5];
     x[2] = v[0]*m[6] + v[1]*m[7] + v[2]*m[8];
     return x;
 }
 
-double vec3d::norm_sq()
+double Vec3d::norm_sq()
 {
     return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
 }
 
-double vec3d::norm()
+double Vec3d::norm()
 {
     return sqrt(norm_sq());
 }
 
-vec3d vec3d::normalize()
+Vec3d Vec3d::normalize()
 {
-    vec3d n;
+    Vec3d n;
     double length = norm();
     if(length>0)
     {
@@ -124,98 +124,98 @@ vec3d vec3d::normalize()
     return n;
 }
 
-double vec3d::operator*(vec3d b)
+double Vec3d::operator*(Vec3d b)
 {
     return v[0]*b[0] + v[1]*b[1] + v[2]*b[2];
 }
 
-vec3d vec3d::operator+(vec3d b)
+Vec3d Vec3d::operator+(Vec3d b)
 {
-    vec3d sum;
+    Vec3d sum;
     sum[0] = v[0] + b[0];
     sum[1] = v[1] + b[1];
     sum[2] = v[2] + b[2];
     return sum;
 }
 
-vec3d vec3d::operator-(vec3d b)
+Vec3d Vec3d::operator-(Vec3d b)
 {
-    vec3d diff;
+    Vec3d diff;
     diff[0] = v[0] - b[0];
     diff[1] = v[1] - b[1];
     diff[2] = v[2] - b[2];
     return diff;
 }
 
-vec3d vec3d::operator-(double b[])
+Vec3d Vec3d::operator-(double b[])
 {
-    vec3d diff;
+    Vec3d diff;
     diff[0] = v[0] - b[0];
     diff[1] = v[1] - b[1];
     diff[2] = v[2] - b[2];
     return diff;
 }
 
-vec3d vec3d::operator/(double b)
+Vec3d Vec3d::operator/(double b)
 {
-    vec3d mult;
+    Vec3d mult;
     mult[0] = v[0]/b;
     mult[1] = v[1]/b;
     mult[2] = v[2]/b;
     return mult;
 }
 
-vec3d vec3d::operator*(double b)
+Vec3d Vec3d::operator*(double b)
 {
-    vec3d mult;
+    Vec3d mult;
     mult[0] = v[0]*b;
     mult[1] = v[1]*b;
     mult[2] = v[2]*b;
     return mult;
 }
 
-void vec3d::set(double x, double y, double z)
+void Vec3d::set(double x, double y, double z)
 {
     v[0] = x;
     v[1] = y;
     v[2] = z;
 }
 
-void vec3d::set(double x[])
+void Vec3d::set(double x[])
 {
     v[0] = x[0];
     v[1] = x[1];
     v[2] = x[2];
 }
 
-void vec3d::scale(double x)
+void Vec3d::scale(double x)
 {
     v[0] *= x;
     v[1] *= x;
     v[2] *= x;
 }
 
-vec3d vec3d::cross(vec3d b)
+Vec3d Vec3d::cross(Vec3d b)
 {
-    vec3d c;
+    Vec3d c;
     c[0] = v[1]*b[2] - v[2]*b[1];
     c[1] = v[2]*b[0] - v[0]*b[2];
     c[2] = v[0]*b[1] - v[1]*b[0];
     return c;
 }
 
-mat3d make_rot_matrix(vec3d a, vec3d b)
+Mat3d make_rot_matrix(Vec3d a, Vec3d b)
 {
-    mat3d I;
+    Mat3d I;
     I.identity();
     a = a.normalize();
     b = b.normalize();
 
-    vec3d v = a.cross(b);
+    Vec3d v = a.cross(b);
     double c = a*b;
     c = 1.0d/(1.0d+c);
 
-    mat3d V;
+    Mat3d V;
 
     V[0] = 0;
     V[1] = -v[2];

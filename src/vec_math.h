@@ -1,21 +1,21 @@
 #ifndef VEC_MATH_H_INCLUDED
 #define VEC_MATH_H_INCLUDED
 
-class vec3d
+class Vec3d
 {
 public:
     double v[3];
     double norm_sq();
     double norm();
     void scale(double s);
-    double operator*(vec3d b);
-    vec3d operator*(double b);
-    vec3d operator/(double b);
-    vec3d normalize();
-    vec3d cross(vec3d b);
-    vec3d operator+(vec3d b);
-    vec3d operator-(vec3d b);
-    vec3d operator-(double b[]);
+    double operator*(Vec3d b);
+    Vec3d operator*(double b);
+    Vec3d operator/(double b);
+    Vec3d normalize();
+    Vec3d cross(Vec3d b);
+    Vec3d operator+(Vec3d b);
+    Vec3d operator-(Vec3d b);
+    Vec3d operator-(double b[]);
     void set(double x, double y, double z);
     void set(double arr[]);
     double& operator[](int i)
@@ -24,15 +24,15 @@ public:
     }
 };
 
-class mat3d
+class Mat3d
 {
 public:
     double m[9];
     void identity();
-    mat3d operator+(mat3d b);
-    mat3d operator*(double d);
-    mat3d operator*(mat3d d);
-    vec3d operator*(vec3d x);
+    Mat3d operator+(Mat3d b);
+    Mat3d operator*(double d);
+    Mat3d operator*(Mat3d d);
+    Vec3d operator*(Vec3d x);
     double& operator[](int i)
     {
         return m[i];
@@ -41,16 +41,16 @@ public:
     {
         return m[(row*3) + (col%3)];
     }
-    mat3d invert();
-    mat3d dot(mat3d m);
+    Mat3d invert();
+    Mat3d dot(Mat3d m);
 };
 
 
-mat3d make_rot_matrix(vec3d direction, vec3d axis);
+Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
 
 int to_hash(double x, double y, double z);
 
-void print(mat3d R, char* header);
-void print(vec3d V, char* header);
+void print(Mat3d R, char* header);
+void print(Vec3d V, char* header);
 
 #endif // VEC_MATH_H_INCLUDED

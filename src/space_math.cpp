@@ -9,7 +9,7 @@ double cube_root(double val)
     return pow(val, 1.0/3.0);
 }
 
-void index_to_loc(int radius, int index, int diffSq, int diffCb, vec3d &location)
+void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location)
 {
     location[0] = 0;
     location[1] = 0; 
@@ -119,7 +119,7 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, vec3d &location
     }
 }
 
-void index_to_loc(int index, vec3d &location)
+void index_to_loc(int index, Vec3d &location)
 {
     if (index > 0)
     {

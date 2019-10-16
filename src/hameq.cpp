@@ -6,17 +6,17 @@
 #include <cmath>
 
 
-void update_site(site &s, double dt)
+void update_site(Site &s, double dt)
 {
     //Site near us.
-    atom atom = s.atom;
+    Atom atom = s.atom;
     double mass = atom.mass;
 
-    vec3d dp;
-    vec3d dr;
+    Vec3d dp;
+    Vec3d dr;
 
-    vec3d F;
-    vec3d F_t;
+    Vec3d F;
+    Vec3d F_t;
 
     F.set(s.dp_dt);
     F_t.set(s.dp_dt_t);
@@ -38,7 +38,7 @@ void update_site(site &s, double dt)
     s.p[2] += dp[2];
 }
 
-void apply_hameq(ion &ion, lattice &lattice, double dt)
+void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
     update_site(ion, dt);
     if(settings.RECOIL)
@@ -46,9 +46,9 @@ void apply_hameq(ion &ion, lattice &lattice, double dt)
         int nearby = ion.near;
         for(int i = 0; i<nearby; i++)
         {
-            site s = ion.near_sites[i];
-            vec3d r;
-            vec3d p;
+            Site s = ion.near_sites[i];
+            Vec3d r;
+            Vec3d p;
             r.set(s.r);
             update_site(s, dt);
             p.set(s.p);
@@ -64,10 +64,10 @@ void apply_hameq(ion &ion, lattice &lattice, double dt)
 
 //Sets the next-time-step values to where the particle would be, given
 //the current forces and momenta.
-void predict_site_location(site &s, double dt)
+void predict_site_location(Site &s, double dt)
 {
     //Site near us.
-    atom atom = s.atom;
+    Atom atom = s.atom;
     double mass = atom.mass;
 
     //v = p/m
@@ -78,7 +78,7 @@ void predict_site_location(site &s, double dt)
     s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
 }
 
-void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
+void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 {
     //Some useful variables.
     double dx, dy, dz, 
@@ -134,7 +134,7 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
         for(int i = 0; i<ion.near; i++)
         {
             //Site near us.
-            site s = ion.near_sites[i];
+            Site s = ion.near_sites[i];
             
             //Select the force array to populate.
             F_at = s.dp_dt;
