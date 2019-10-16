@@ -273,7 +273,7 @@ start:
     if(dE != 0)
     {
         //check if energy has changed too much.
-        change = settings.DEMAX/dE;
+        change = settings.DEMAX / dE;
         
         if(change >= 2)
             change = 2;

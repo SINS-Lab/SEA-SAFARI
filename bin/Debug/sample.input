@@ -11,9 +11,9 @@ t                                      RECOIL
 0.   2.50000e-03                       R MIN,STEP
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
-100
-0 .04 10                               XStart/Step/End
-0 .04 10                               YStart/Step/End
+1
+2.189592 .04 10                               XStart/Step/End
+6.788647 .04 10                               YStart/Step/End
 666        666                         NWRITX, NWRITY
 .9         .9                          unused
 4 1                                    NPAR, IPOT
