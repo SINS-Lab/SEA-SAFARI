@@ -64,6 +64,8 @@ public:
     int num;
     //Index for this in hash map
     int pos_hash;
+    //Used to check if this cell has been checked
+    int check_stamp = -1;
 
     cell()
     {

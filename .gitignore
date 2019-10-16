@@ -2,6 +2,8 @@
 Safari2.depend
 Safari2.layout
 
+*.vs*
+
 #Don't need anything in here, this compiles.
 obj/*
 

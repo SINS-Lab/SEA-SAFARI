@@ -28,9 +28,9 @@ void update_site(site &s, double dt)
     dr = (F_t - F) * 0.25 * dt * dt / mass;
 
     //New Location, adjusted by dr
-    s[0] = s.r_t[0] - dr[0];
-    s[1] = s.r_t[1] - dr[1];
-    s[2] = s.r_t[2] - dr[2];
+    s.r[0] = s.r_t[0] - dr[0];
+    s.r[1] = s.r_t[1] - dr[1];
+    s.r[2] = s.r_t[2] - dr[2];
 
     //New Momentum, not corrected, just using averages
     s.p[0] += dp[0];
@@ -41,13 +41,25 @@ void update_site(site &s, double dt)
 void apply_hameq(ion &ion, lattice &lattice, double dt)
 {
     update_site(ion, dt);
-    int nearby = ion.near;
     if(settings.RECOIL)
+    {
+        int nearby = ion.near;
         for(int i = 0; i<nearby; i++)
         {
             site s = ion.near_sites[i];
+            vec3d r;
+            vec3d p;
+            r.set(s.r);
             update_site(s, dt);
+            p.set(s.p);
+            r = r - s.r;
+            ion.max_site_displacement = std::max(ion.max_site_displacement, r.norm());
+            ion.max_site_momentum = std::max(ion.max_site_momentum, p.norm());
+            // std::cout << "Position UD: "<< s.r[0]<<" "<< s.r[1]<<" "<< s.r[2] << std::endl;
+            // std::cout << "Momentum UD: "<< s.p[0]<<" "<< s.p[1]<<" "<< s.p[2] << std::endl;
+            // std::cout << "Force UD: "<< s.dp_dt[0]<<" "<< s.dp_dt[1]<<" "<< s.dp_dt[2] << std::endl;
         }
+    }
 }
 
 //Sets the next-time-step values to where the particle would be, given
@@ -112,8 +124,6 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
     F[1] = 0;
     F[2] = 0;
 
-    // debug_file << "Sites Near?: " << ion.near << std::endl;
-
     //This was set earlier when looking for nearby sites.
     if(ion.near)
     {
@@ -134,17 +144,14 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
             ay = s.r[1];
             az = s.r[2];
 
-            if(settings.RECOIL)
+            if(predicted)
             {
-                if(predicted)
-                {
-                    //Get predicted loctations instead.
-                    ax = s.r_t[0];
-                    ay = s.r_t[1];
-                    az = s.r_t[2];
-                    //Set predicted force instead.
-                    F_at = s.dp_dt_t;
-                }
+                //Set predicted force instead.
+                F_at = s.dp_dt_t;
+                //Get predicted loctations instead.
+                ax = s.r_t[0];
+                ay = s.r_t[1];
+                az = s.r_t[2];
             }
 
             //Distances from site to atom
@@ -176,11 +183,6 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
             fy = -2 * dV_dr * dy;
             fz = -2 * dV_dr * dz;
 
-            //Add force components to net force.
-            ftx += fx;
-            fty += fy;
-            ftz += fz;
-
             //Set the initial momentum changes for the sites here.
             //Later other things might adjust them, but this is where
             //they are initialized.
@@ -188,9 +190,10 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
             F_at[1] = fy;
             F_at[2] = fz;
 
-            F[0] -= fx;
-            F[1] -= fy;
-            F[2] -= fz;
+            //Add force components to net force.
+            ftx += fx;
+            fty += fy;
+            ftz += fz;
 
             if(settings.RECOIL && !predicted)
             {
@@ -200,9 +203,9 @@ void run_hameq(ion &ion, lattice &lattice, double dt, bool predicted)
         }
 
         //Superposition of all of the atom-ion interaction
-        // F[0] = -ftx;
-        // F[1] = -fty;
-        // F[2] = -ftz;
+        F[0] = -ftx;
+        F[1] = -fty;
+        F[2] = -ftz;
 
         //TODO add atom-atom interactions here.
     }

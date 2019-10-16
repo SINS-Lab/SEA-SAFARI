@@ -122,7 +122,7 @@ void lattice::build_lattice()
                         num = *cel_num;
                         cel_sites = (cell_map[pos_hash]->sites);
                     }
-
+                    
                     site s;
                     atom a;
                     s.r_0[0] = px;
@@ -136,6 +136,7 @@ void lattice::build_lattice()
                     s.atom = a;
                     sites.push_back(s);
                     cel_sites[num] = s;
+
                     num++;
                     *cel_num = num;
                     if(num > max_in_cell) max_in_cell = num;

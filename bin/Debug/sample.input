@@ -11,7 +11,7 @@ t                                      RECOIL
 0.   2.50000e-03                       R MIN,STEP
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
-1000
+1
 3.877253 .04 10                               XStart/Step/End
 3.858147 .04 10                               YStart/Step/End
 666        666                         NWRITX, NWRITY 	
@@ -30,7 +30,7 @@ f                                      IMAGE
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
 1                                      NUMBER OF ATOM TYPES *4
-196.967  79    Au                      MASS,CHARGE
+16.967  79    Au                      MASS,CHARGE
 5. 5. 5.                               SPRING(X,Y,Z)
 t  0  8.36405                          CORR,ATOMK,RNEIGH
 1 0 0                                  Face Direction

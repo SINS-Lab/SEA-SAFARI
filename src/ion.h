@@ -36,6 +36,8 @@ public:
     //potential energy the particle is in.
     double V_t = 0;
 
+    double max_site_displacement = 0;
+    double max_site_momentum = 0;
     /**
      * Sets the initial conditions for the ion.
      *

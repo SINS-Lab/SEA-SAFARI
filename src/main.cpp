@@ -24,7 +24,7 @@ int main()
     //Load the input file
     settings.load();
 
-    crystal_file.open ("crystal.input");
+    crystal_file.open("crystal.input");
 
     char buffer[200];
 

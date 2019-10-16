@@ -78,6 +78,9 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
         else
         {
             cell *cel = lattice.cell_map[pos_hash];
+            //Already seen this cell this step.
+            if(cel->check_stamp == ion.steps) continue;
+            cel->check_stamp = ion.steps;
             num = cel->num;
             cel_sites = cel->sites;
         }
@@ -89,6 +92,7 @@ int ion::fill_nearest(lattice &lattice, int radius, int target_num)
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             near_sites[near] = s;
+            std::cout << "Sites Momentum: " << s.p << " ion: " << ion.p << std::endl;
             near++;
             if(near > 90) goto end;
         }
@@ -218,7 +222,9 @@ void traj(ion &ion, lattice &lattice, bool log)
 
     if(log)
     {
-        debug_file << "\n\nStarting Ion Trajectory Output\n";
+        debug_file << "\n\nStarting Ion Trajectory Output\n\n";
+        debug_file << "Recoil: " << settings.RECOIL << "\n";
+        debug_file << "\nIon:\n";
         ion.write_info();
         traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\tdV\n";
     }
@@ -248,39 +254,21 @@ start:
 
     //Find the forces at the current location
     run_hameq(ion, lattice, dt, false);
-
-    dpx = ion.dp_dt[0];
-    dpy = ion.dp_dt[1];
-    dpz = ion.dp_dt[2];
-
-    if(log)
-    {
-        debug_file << "\nBetween hameq, dt: " << dt << std::endl;
-        ion.write_info();
-    }
-
     //Find the forces at the next location,
     run_hameq(ion, lattice, dt, true);
+    
     V = ion.V;
 
-    dpx = dpx - ion.dp_dt_t[0];
-    dpy = dpy - ion.dp_dt_t[1];
-    dpz = dpz - ion.dp_dt_t[2];
+    //Find difference in the forces.
+    dpx = ion.dp_dt[0] - ion.dp_dt_t[0];
+    dpy = ion.dp_dt[1] - ion.dp_dt_t[1];
+    dpz = ion.dp_dt[2] - ion.dp_dt_t[2];
 
     dxp = 0.25 * dt * dt * dpx / mass;
     dyp = 0.25 * dt * dt * dpy / mass;
     dzp = 0.25 * dt * dt * dpz / mass;
 
     dr_max = std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
-
-    if(log)
-    {
-        debug_file << "\nAfter hameq " << dt << std::endl;
-        debug_file << "V: " << V << std::endl;
-        debug_file << "T: " << T << std::endl;
-        debug_file << "dR: " << dr_max << std::endl;
-        ion.write_info();
-    }
 
     //Now we do some checks to see if the timestep needs to be adjusted
     if(dr_max != 0)
@@ -313,12 +301,6 @@ start:
 
     //Apply changes, this updates energy and lattice loctations.
     apply_hameq(ion, lattice, dt);
-    if(log)
-    {
-        debug_file << "Applied hameq, dt: " << dt << std::endl;
-        debug_file << "change: " << change << std::endl;
-        ion.write_info();
-    }
 
     //check if we have gone too far, and need tp re-calculate nearby atoms
     dr = r - ion.r;
@@ -359,6 +341,17 @@ start:
     goto start;
 
 end:
+
+    if(log)
+    {
+        debug_file << "\n\nFinished Traj Run\n\n";
+        debug_file << "\nIon:\n";
+        ion.write_info();
+        debug_file << "\nMax Site Displacement: " << ion.max_site_displacement << "\n";
+        debug_file << "Max Site Momentum: " << ion.max_site_momentum << "\n";
+    }
+
+
     double E = T;
     if(froze)
     {
