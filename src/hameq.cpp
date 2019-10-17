@@ -193,6 +193,25 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             fty += fy;
             ftz += fz;
 
+            //Apply spring forces.
+            if(settings.CORR)
+            {
+                //Use einstein springs.
+                if(settings.ATOMK <= 1e-30)
+                {   
+                    //F = -kx
+                    F_at[0] -= s.atom.spring[0] * (s.r - s.r_0);
+                    F_at[1] -= s.atom.spring[1] * (s.r - s.r_0);
+                    F_at[2] -= s.atom.spring[2] * (s.r - s.r_0);
+                }
+                else
+                {
+                    //Need to loop over all and do some calculation.
+                }
+                
+            }
+
+
             if(settings.RECOIL && !predicted)
             {
                 //set the predictions
