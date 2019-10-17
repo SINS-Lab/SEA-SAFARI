@@ -1,4 +1,4 @@
-250.0  45.0  0  22.989  Na             E0,THETA0,PHI0,MASS
+250.0  45.0  0  22.989  Na             E0,THETA0,PHI0,MASS,SYMBOL
 0.5  250  1.0   0.5                    EMIN,EMAX,ERES,ARES
 1                                      DETECTOR TYPE
 45.0 0.0 3.0 0.0                       DETECTOR PARAMS
@@ -7,15 +7,15 @@
 45                                     Target Interaction Number
 t                                      RECOIL
 5.0000                                 INTERACT.HEIGHT
-2000                                   Max Step Count
-0.   2.50000e-03                       R MIN,STEP
-0.   3.00000e-04                       Z MIN,STEP
-1 1                                    MAXDIV, MINDIV *1
-100000
--10 .04 10                             XStart/Step/End
--10 .04 10                             YStart/Step/End
-666        666                         NWRITX, NWRITY 	
-.9         .9                          unused
+4000                                   Max Step Count
+0.   2.50000e-03                       R MIN,STEP unused
+0.   3.00000e-04                       Z MIN,STEP unused
+1 1                                    MAXDIV, MINDIV *1 unused
+10                                     numcha, if 1, does single shot (SS)
+0 .01 4.0786                           XStart/Step/End SS at XStart
+0 .01 4.0786                           YStart/Step/End SS at YStart
+666        777                         NWRITX, NWRITY 	
+5.0     5.0                            RAX RAY
 4 1                                    NPAR, IPOT
 9125.84 4.44 66703.59 11.24            Pars ^
 2 1                                    NIMPAR, IIMPOT
@@ -24,13 +24,13 @@ t                                      RECOIL
 f                                      IMAGE
 -1.5 8.18                              SENRGY,BDIST
 4.0786 4.0786 4.0786                   AX,AY
-4                                      NBASIS *3
+4                                      NBASIS, Followed by x, y, z, index
 1.0 1.0 1.0 1
 1.0 0.5 0.5 1
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
-1                                      NUMBER OF ATOM TYPES *4
-196.967  79    Au                      MASS,CHARGE
-5. 5. 5.                               SPRING(X,Y,Z)
+1                                      NUMBER OF ATOM TYPES
+196.967  79    Au                      MASS,CHARGE,SYMBOL for each index
+5. 5. 5.                               SPRING(X,Y,Z), for each index
 t  0  8.36405                          CORR,ATOMK,RNEIGH
 1 0 0                                  Face Direction
