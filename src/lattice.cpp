@@ -1,10 +1,9 @@
 #include "lattice.h"
-#include "safio.h"
 #include <cmath>
 #include <cstdio>
 #include <algorithm>    //std::sort
 #include <vector>
-#include "vec_math.h"
+#include "space_math.h"
 
 void Lattice::build_lattice()
 {

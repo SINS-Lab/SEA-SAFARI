@@ -21,10 +21,11 @@ std::ofstream xyz_file;
 std::ofstream crystal_file;
 
 std::default_random_engine rng;
-double space_lookup[3375][3];
+double space_mask[3375][3];
 
 int main()
 {
+    //Starts total runtime timer.
     clock_t load = clock();
     //Load the input file
     settings.load();
@@ -52,9 +53,9 @@ int main()
     //Initialize the space_math's lookup table
     init_lookup();
 
+    //Starts trajectory timer.
     clock_t start = clock();
     int n = 0;
-
     
     out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
 
@@ -85,9 +86,10 @@ int main()
             chainscat(lattice, &n);
         }
     }
-
+    //Forces output of remaining trajectories.
     save(NULL);
     
+    //Compute time per trajectory.
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
     //Convert to ms;
@@ -95,11 +97,14 @@ int main()
 
     std::cout << "\nFinished Running\n"<<std::endl;
     std::cout << "Time per particle: " << std::setprecision(2) << dt <<"ms"<<std::endl;
-    debug_file << "Time per run: " << std::setprecision(2) << dt <<"ms"<<std::endl;
-    
+    debug_file << "\nTotal number particles: " << n <<"ms"<<std::endl;
+    debug_file << "Time per particle: " << std::setprecision(2) << dt <<"ms"<<std::endl;
+    //End final timer.
     dt = ( (double)clock() - load ) / CLOCKS_PER_SEC;
     std::cout << "Total Runtime: " << std::setprecision(2) << dt <<"s"<<std::endl;
+    debug_file << "\nTotal Runtime: " << std::setprecision(2) << dt <<"s"<<std::endl;
     
+    //Close files.
     out_file.close();
     debug_file.close();
     traj_file.close();

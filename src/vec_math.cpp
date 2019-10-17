@@ -3,12 +3,9 @@
 #include <vector>
 #include <math.h>
 
-int to_hash(double x, double y, double z)
+double sqr(double *V)
 {
-    int i = (int)(x/settings.AX + 512);
-    int j = (int)(y/settings.AZ + 512);
-    int k = (int)(z/settings.AY + 512);
-    return i + (j << 10) + (k << 20);
+    return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
 }
 
 void Mat3d::identity()
@@ -33,23 +30,23 @@ void Mat3d::identity()
 Mat3d Mat3d::invert()
 {
     Mat3d &A = *this;
-    // computes the inverse of a matrix m
-    double det = A(0, 0) * (A(1, 1) * A(2, 2) - A(2, 1) * A(1, 2)) -
-                 A(0, 1) * (A(1, 0) * A(2, 2) - A(1, 2) * A(2, 0)) +
-                 A(0, 2) * (A(1, 0) * A(2, 1) - A(1, 1) * A(2, 0));
+    // computes the determinant of A
+    double det = A(0,0) * (A(1,1) * A(2,2) - A(2,1) * A(1,2)) -
+                 A(0,1) * (A(1,0) * A(2,2) - A(1,2) * A(2,0)) +
+                 A(0,2) * (A(1,0) * A(2,1) - A(1,1) * A(2,0));
 
     double invdet = 1 / det;
 
-    Mat3d minv; // inverse of matrix m
-    minv(0, 0) = (A(1, 1) * A(2, 2) - A(2, 1) * A(1, 2)) * invdet;
-    minv(0, 1) = (A(0, 2) * A(2, 1) - A(0, 1) * A(2, 2)) * invdet;
-    minv(0, 2) = (A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1)) * invdet;
-    minv(1, 0) = (A(1, 2) * A(2, 0) - A(1, 0) * A(2, 2)) * invdet;
-    minv(1, 1) = (A(0, 0) * A(2, 2) - A(0, 2) * A(2, 0)) * invdet;
-    minv(1, 2) = (A(1, 0) * A(0, 2) - A(0, 0) * A(1, 2)) * invdet;
-    minv(2, 0) = (A(1, 0) * A(2, 1) - A(2, 0) * A(1, 1)) * invdet;
-    minv(2, 1) = (A(2, 0) * A(0, 1) - A(0, 0) * A(2, 1)) * invdet;
-    minv(2, 2) = (A(0, 0) * A(1, 1) - A(1, 0) * A(0, 1)) * invdet;
+    Mat3d minv; // inverse of matrix A
+    minv(0,0) = (A(1,1) * A(2,2) - A(2,1) * A(1,2)) * invdet;
+    minv(0,1) = (A(0,2) * A(2,1) - A(0,1) * A(2,2)) * invdet;
+    minv(0,2) = (A(0,1) * A(1,2) - A(0,2) * A(1,1)) * invdet;
+    minv(1,0) = (A(1,2) * A(2,0) - A(1,0) * A(2,2)) * invdet;
+    minv(1,1) = (A(0,0) * A(2,2) - A(0,2) * A(2,0)) * invdet;
+    minv(1,2) = (A(1,0) * A(0,2) - A(0,0) * A(1,2)) * invdet;
+    minv(2,0) = (A(1,0) * A(2,1) - A(2,0) * A(1,1)) * invdet;
+    minv(2,1) = (A(2,0) * A(0,1) - A(0,0) * A(2,1)) * invdet;
+    minv(2,2) = (A(0,0) * A(1,1) - A(1,0) * A(0,1)) * invdet;
 
     return minv;
 }
@@ -202,32 +199,4 @@ Vec3d Vec3d::cross(Vec3d b)
     c[1] = v[2]*b[0] - v[0]*b[2];
     c[2] = v[0]*b[1] - v[1]*b[0];
     return c;
-}
-
-Mat3d make_rot_matrix(Vec3d a, Vec3d b)
-{
-    Mat3d I;
-    I.identity();
-    a = a.normalize();
-    b = b.normalize();
-
-    Vec3d v = a.cross(b);
-    double c = a*b;
-    c = 1.0d/(1.0d+c);
-
-    Mat3d V;
-
-    V[0] = 0;
-    V[1] = -v[2];
-    V[2] = v[1];
-
-    V[3] = v[2];
-    V[4] = 0;
-    V[5] = -v[0];
-
-    V[6] = -v[1];
-    V[7] = v[0];
-    V[8] = 0;
-
-    return I + V + V*V*c;
 }

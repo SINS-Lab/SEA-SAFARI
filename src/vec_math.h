@@ -45,9 +45,12 @@ public:
     Mat3d dot(Mat3d m);
 };
 
-Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
-int to_hash(double x, double y, double z);
 void print(Mat3d R, char* header);
 void print(Vec3d V, char* header);
+
+/**
+ * Squares the given array, assuming it is 3x1
+ */
+double sqr(double*V);
 
 #endif // VEC_MATH_H_INCLUDED

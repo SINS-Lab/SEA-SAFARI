@@ -82,7 +82,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
            ftx = 0, fty = 0, ftz = 0;
 
     //Reset V
-    ion.V = 0;
+    if(predicted) ion.V_t = 0;
+    else ion.V = 0;
 
     //Force to populate
     double *F;

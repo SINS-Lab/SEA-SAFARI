@@ -2,58 +2,9 @@
 #define LATTICE_H_INCLUDED
 #include <iostream>
 #include "vec_math.h"
+#include "safio.h"
 #include <vector>
 #include <unordered_map>
-
-struct Atom
-{
-    double mass;
-    double charge;
-    int index;
-    std::string symbol;
-    double spring[3];
-};
-
-class Site
-{
-public:
-    //Original location
-    double r_0[3];
-    //Original Momentum
-    double p_0[3];
-    //The atom here
-    Atom atom;
-
-    //position
-    double r[3];
-    //momentum
-    double p[3];    
-    //forces
-    double dp_dt[3];
-
-    //position after time dt
-    double r_t[3];
-    //forces after dt
-    double dp_dt_t[3];
-
-    int last_ion = -1;
-
-    Site()
-    {
-        reset();
-    }
-
-    double &operator[](int index)
-    {
-        return r[index];
-    }
-
-    void reset();
-
-    void write_info();
-
-    int index;
-};
 
 class Cell
 {

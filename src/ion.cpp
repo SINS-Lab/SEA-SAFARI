@@ -4,7 +4,6 @@
 #include "safio.h"
 #include "hameq.h"
 #include "lattice.h"
-#include "vec_math.h"
 #include "space_math.h"
 
 #include <functional> // std::minus 
@@ -19,22 +18,14 @@
 #define M_PI           3.14159265358979323846  /* pi */
 
 /**
- * Squares the given array, assuming it is 3x1
- */
-double sqr(double *V)
-{
-    return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
-}
-
-/**
- * Squares the difference of the given arrays, 
+ * Computes the squared difference of the given arrays
  * assuming they are 3x1
  */
-double diff_sqr(double *V, double *Y)
+double diff_sqr(double *X, double *Y)
 {
-    double dx = V[0] - Y[0];
-    double dy = V[1] - Y[1];
-    double dz = V[2] - Y[2];
+    double dx = X[0] - Y[0];
+    double dy = X[1] - Y[1];
+    double dz = X[2] - Y[2];
     return dx*dx + dy*dy + dz*dz;
 }
 
@@ -52,6 +43,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         return near;
     last_index = pos_hash;
 
+    //Number in current cell being checked.
     int num;
 
     //Reset number nearby.
@@ -59,6 +51,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 
     ion.rr_min_find = 1e6;
 
+    //Location of mask
     Vec3d loc;
 
     //TODO make this in safio somewhere.
@@ -72,7 +65,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //Centre the cell on the surface if it is above it.
     cell_z = std::min(cell_z, 0);
 
-    //Loop over the cube, radially
+    //Loop over the mask, this is a radial loop.
     for(int n = 0; n < nmax; n++)
     {
         //Gets x,y,z for the centered cube.
@@ -163,12 +156,14 @@ void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
         p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom.mass * Vi_z(settings.Z1, q)));
     }
 
+    //Set the initial momentum of the ion
     p[0] = p_x0;
     p[1] = p_y0;
     p[2] = p_z0;
 }
 
-bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, bool *left, double E)
+bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
+                        bool *froze, bool *left, double E)
 {
     //left crystal
     if(ion[2] > settings.Z1)
@@ -208,8 +203,10 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
     return true;
 }
 
+//File output cache related things
 int save_index = 0;
-std::string save_cache[1000];
+const int cache_size = 100;
+std::string save_cache[cache_size];
 
 void save(char* buffer)
 {
@@ -223,7 +220,7 @@ void save(char* buffer)
     }
     else
     {
-        if(save_index < 1000)
+        if(save_index < cache_size)
         {
             save_cache[save_index] = buffer;
             save_index++;
@@ -241,16 +238,14 @@ void save(char* buffer)
 
 void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 {
-    //Time step
+    //Time step, initialized at 0.1
     double dt = 0.1;
     //Magnitude squared of the ion momentum
     double psq;
     //Ion mass
     double mass = ion.atom.mass;
 
-    double pp = 0, pzz = 0, theta, phi;
-
-    //Control conditions
+    //exit conditions
     bool buried = false;
     bool froze = false;
     bool stuck = false;
@@ -263,11 +258,17 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     double T;
     
     //Parameters for checking if things need re-calculating
+    //Location of last nearby update
     Vec3d r;
+    //change in location since last nearby update
     Vec3d dr;
+    //Distancesq we travelled since last nearby update
     double diff;
+    //Error in the associated coordinate.
     double dxp, dyp, dzp;
+    //difference in forces between here and destination
     double dpx, dpy, dpz;
+    //Maximum error on displacment for the ion.
     double dr_max;
 
     //Distance in angstroms to consider far enough moved.
@@ -314,9 +315,6 @@ start:
         if(log) debug_file << "Exited" << std::endl;
         goto end;
     }
-
-    ion.V = 0;
-    ion.V_t = 0;
 
     //Find the forces at the current location
     run_hameq(ion, lattice, dt, false);
@@ -444,6 +442,7 @@ end:
     }
 
     double E = T;
+    double pp = 0, pzz = 0, theta, phi;
     if(froze)
     {
         theta = 0;

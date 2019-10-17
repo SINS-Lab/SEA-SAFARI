@@ -4,17 +4,42 @@
 #include "safio.h"
 #include <iostream>
 
-double cube_root(double val)
+int to_hash(double x, double y, double z)
 {
-    return pow(val, 1.0/3.0);
+    int i = (int)(x/settings.AX + 512);
+    int j = (int)(y/settings.AZ + 512);
+    int k = (int)(z/settings.AY + 512);
+    return i + (j << 10) + (k << 20);
 }
 
-/**
- * This fills the location based on the given shell and index on the current shell.
- * 
- * diffSq is the difference in areas between this shell and previous.
- * diffCb is the difference in volumes between this shell and previous.
- */
+Mat3d make_rot_matrix(Vec3d a, Vec3d b)
+{
+    Mat3d I;
+    I.identity();
+    a = a.normalize();
+    b = b.normalize();
+
+    Vec3d v = a.cross(b);
+    double c = a*b;
+    c = 1.0d/(1.0d+c);
+
+    Mat3d V;
+
+    V[0] = 0;
+    V[1] = -v[2];
+    V[2] = v[1];
+
+    V[3] = v[2];
+    V[4] = 0;
+    V[5] = -v[0];
+
+    V[6] = -v[1];
+    V[7] = v[0];
+    V[8] = 0;
+
+    return I + V + V*V*c;
+}
+
 void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location)
 {
     location[0] = 0;
@@ -128,28 +153,23 @@ void init_lookup()
     {
         Vec3d loc;
         index_to_loc(i, loc);
-        space_lookup[i][0] = loc[0] * settings.AX/4;
-        space_lookup[i][1] = loc[1] * settings.AY/4;
-        space_lookup[i][2] = loc[2] * settings.AZ/4;
+        space_mask[i][0] = loc[0];
+        space_mask[i][1] = loc[1];
+        space_mask[i][2] = loc[2];
     }
     populated = true;
 }
 
-/**
- * This converts the index given to a location in space.
- * This is done such that the location given increases in
- * radius from 0, as cubic shells.
- */
 void index_to_loc(int index, Vec3d &location)
 {
-    if(populated)
+    if(populated && index < 3375)
     {
-        location.set(space_lookup[index]);
+        location.set(space_mask[index]);
     }
     else if (index > 0)
     {
         //Radius of cube we are on.
-        int radius = floor(ceil(cube_root(index)/2.0));
+        int radius = floor(ceil(pow(index, 1.0/3.0)/2.0));
 
         //Area of a face of the current cube.
         int current_area = (2*radius + 1) *  (2*radius + 1); 
