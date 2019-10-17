@@ -9,11 +9,12 @@
 void Lattice::build_lattice()
 {
     //TODO add some way to define this in safio.
-    int n = 20;
+    int n = 40;
     // This adds some leeway to account for
     // floating point error in the matrix multiplications
     double zTop = settings.AZ * 0.1;
-    double zBottom = -settings.AZ * 4;
+    //Set the bottom of the slab to twice the buried distance
+    double zBottom = -settings.BDIST * 2;
 
     Vec3d dir;
     //We like "Up"
@@ -123,19 +124,25 @@ void Lattice::build_lattice()
                         cel_sites = (cell_map[pos_hash]->sites);
                     }
                     
-                    Site s;
+                    Site *s = new Site();
                     Atom a;
-                    s.r_0[0] = px;
-                    s.r_0[1] = py;
-                    s.r_0[2] = pz;
-                    s.reset();
+                    s->r_0[0] = px;
+                    s->r_0[1] = py;
+                    s->r_0[2] = pz;
+
+                    //TODO instead do some thermal distribution.
+                    s->p_0[0] = 0;
+                    s->p_0[1] = 0;
+                    s->p_0[2] = 0;
+
+                    s->reset();
                     a = settings.ATOMS[old.index-1];
                     //Sites are indexed to size, so that they
                     //can be looked up to find their atom later.
-                    s.index = sites.size();
-                    s.atom = a;
+                    s->index = sites.size();
+                    s->atom = a;
                     sites.push_back(s);
-                    cel_sites[num] = s;
+                    cel_sites[num] = *s;
 
                     num++;
                     *cel_num = num;
@@ -148,9 +155,9 @@ void Lattice::build_lattice()
     debug_file << "built lattice" << std::endl;
 }
 
+double zeros[3] = {0,0,0};
 void Site::reset()
 {
-    double zeros[3] = {0,0,0};
     std::copy(std::begin(r_0), std::end(r_0), r);
     std::copy(std::begin(r_0), std::end(r_0), r_t);
 
@@ -159,24 +166,7 @@ void Site::reset()
 
     //TODO set the momentum for the site
     //base on thermal stuff
-    std::copy(std::begin(zeros), std::end(zeros), p);
-    std::copy(std::begin(zeros), std::end(zeros), p_t);
-}
-
-double Site::distance(Site &other, bool predicted)
-{
-    if(predicted)
-    {
-        return sqrt((r_t[0]-other.r_t[0])*(r_t[0]-other.r_t[0])+
-                    (r_t[1]-other.r_t[1])*(r_t[1]-other.r_t[1])+
-                    (r_t[2]-other.r_t[2])*(r_t[2]-other.r_t[2]));
-    }
-    else
-    {
-        return sqrt((r[0]-other.r[0])*(r[0]-other.r[0])+
-                    (r[1]-other.r[1])*(r[1]-other.r[1])+
-                    (r[2]-other.r[2])*(r[2]-other.r[2]));
-    }
+    std::copy(std::begin(p_0), std::end(p_0), p);
 }
 
 void Site::write_info()
@@ -185,12 +175,6 @@ void Site::write_info()
     debug_file <<"r  : "<< r[0] <<" "<< r[1] <<" "<< r[2] << std::endl;
     debug_file <<"p  : "<< p[0] <<" "<< p[1] <<" "<< p[2] << std::endl;
     debug_file <<"r_t: "<< r_t[0] <<" "<< r_t[1] <<" "<< r_t[2] << std::endl;
-    debug_file <<"p_t: "<< p_t[0] <<" "<< p_t[1] <<" "<< p_t[2] << std::endl;
     debug_file <<"F: "<< dp_dt[0] <<" "<< dp_dt[1] <<" "<< dp_dt[2] << std::endl;
     debug_file <<"F_t: "<< dp_dt_t[0] <<" "<< dp_dt_t[1] <<" "<< dp_dt_t[2] << std::endl;
-}
-
-void Lattice::reset()
-{
-
 }
