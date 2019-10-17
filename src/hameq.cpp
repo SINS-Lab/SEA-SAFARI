@@ -177,9 +177,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             dV_dr /= r;
 
             //Convert from magnitude to components of vector
-            fx = -2 * dV_dr * dx;
-            fy = -2 * dV_dr * dy;
-            fz = -2 * dV_dr * dz;
+            //Note, fx = -dV_dr * 2dx, however,
+            //we set the force to half of this.
+            fx = -dV_dr * dx;
+            fy = -dV_dr * dy;
+            fz = -dV_dr * dz;
 
             //Set the initial momentum changes for the sites here.
             //Later other things might adjust them, but this is where
