@@ -1,5 +1,8 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++11 -O2
+
+#-Ofast cuts runtime to approximately 1/3.
+CXXFLAGS = -Wall -std=c++11 -Ofast
+
 SRCDIR = src
 OUTDIR = bin/Debug
 
