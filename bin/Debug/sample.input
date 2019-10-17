@@ -1,17 +1,17 @@
-100  45.0  0  22.989  Na               E0,THETA0,PHI0,MASS
-0.5  1625  1.0   0.5                   EMIN,EMAX,ERES,ARES
+250.0  45.0  0  22.989  Na             E0,THETA0,PHI0,MASS
+0.5  250  1.0   0.5                    EMIN,EMAX,ERES,ARES
 1                                      DETECTOR TYPE
 45.0 0.0 3.0 0.0                       DETECTOR PARAMS
 1.00000e-08   10.0                     MIN, MAX - TIME STEP
 0.30000   0.   1e-6                    DEMAX,DEMIN,ABSERR
-90                                     Target Interaction Number
+45                                     Target Interaction Number
 t                                      RECOIL
 5.0000                                 INTERACT.HEIGHT
-30000                                  TABLE ENTRIES
+2000                                   Max Step Count
 0.   2.50000e-03                       R MIN,STEP
 0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1
-10000
+100000
 -10 .04 10                             XStart/Step/End
 -10 .04 10                             YStart/Step/End
 666        666                         NWRITX, NWRITY 	
