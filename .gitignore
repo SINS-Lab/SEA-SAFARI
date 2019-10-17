@@ -13,11 +13,10 @@ analysis/safari.input
 *_pycache_*
 
 #These are generated when you run debug
-bin/Debug/crystal.input
-bin/Debug/sample.data
-bin/Debug/sample.dbug
-bin/Debug/sample.traj
-bin/Debug/sample.xyz
-bin/Debug/sample.crys
+bin/Debug/*.data
+bin/Debug/*.dbug
+bin/Debug/*.traj
+bin/Debug/*.xyz
+bin/Debug/*.crys
 *.exe
 

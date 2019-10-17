@@ -1,7 +1,7 @@
-250.0  45.0  0  22.989  Na             E0,THETA0,PHI0,MASS,SYMBOL
+250.0  45.0  45.0  22.989  Na          E0,THETA0,PHI0,MASS,SYMBOL
 0.5  250  1.0   0.5                    EMIN,EMAX,ERES,ARES
 1                                      DETECTOR TYPE
-45.0 0.0 3.0 0.0                       DETECTOR PARAMS
+45.0 45.0 3.0 0.0                      DETECTOR PARAMS
 1.00000e-08   10.0                     MIN, MAX - TIME STEP
 0.30000   0.   1e-6                    DEMAX,DEMIN,ABSERR
 45                                     Target Interaction Number
