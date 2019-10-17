@@ -19,6 +19,8 @@ class Site
 public:
     //Original location
     double r_0[3];
+    //Original Momentum
+    double p_0[3];
     //The atom here
     Atom atom;
 
@@ -31,8 +33,6 @@ public:
 
     //position after time dt
     double r_t[3];
-    //momentum after dt
-    double p_t[3];    
     //forces after dt
     double dp_dt_t[3];
 
@@ -47,8 +47,6 @@ public:
     {
         return r[index];
     }
-
-    double distance(Site &other, bool predicted);
 
     void reset();
 
@@ -83,7 +81,7 @@ public:
 struct Lattice
 {
     //All sites in the lattice
-    std::vector<Site> sites;
+    std::vector<Site*> sites;
     //Basis used for this lattice,
     //Site indices for this are the originals
     std::vector<Site> basis;
@@ -102,8 +100,6 @@ struct Lattice
     Vec3d ez;
 
     void build_lattice();
-
-    void reset();
 
 };
 
