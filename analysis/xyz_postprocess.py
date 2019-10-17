@@ -299,6 +299,8 @@ def process_file(fileIn, fileOut=None, color="", load_vmd=False):
     xyz.save(fileOut)
     if load_vmd:
         # MAKE THE FILENAME INCLUDE DIRECTORY
+        #Replace \ with / in filenames
+        fileOut = fileOut.replace('\\','/')
         if color != "":
             commands = ["topo readvarxyz {}\n".format(fileOut)]
         else:

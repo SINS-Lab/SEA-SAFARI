@@ -9,6 +9,7 @@ obj/*
 
 #Don't include all the random test data
 analysis/tests/*
+analysis/safari.input
 *_pycache_*
 
 #These are generated when you run debug
