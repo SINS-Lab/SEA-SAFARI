@@ -7,11 +7,16 @@ Safari2.layout
 #Don't need anything in here, this compiles.
 obj/*
 
+#Don't include all the random test data
+analysis/tests/*
+*_pycache_*
+
 #These are generated when you run debug
 bin/Debug/crystal.input
 bin/Debug/sample.data
 bin/Debug/sample.dbug
 bin/Debug/sample.traj
 bin/Debug/sample.xyz
-bin/Debug/*.exe
+bin/Debug/sample.crys
+*.exe
 
