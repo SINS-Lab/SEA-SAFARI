@@ -5,26 +5,23 @@ void Safio::load()
 {
     settings = *this;
     std::string safio_file = "safari.input";
-    char* file = &safio_file[0];
     std::ifstream input;
-    input.open(file);
+    input.open(safio_file.c_str());
     if (input.is_open())
     {
+        std::string input_file;
         while(getline(input,safio_file))
         {
             std::cout << "Loading Info From: " << safio_file << '\n';
+            input_file = safio_file;
             break;
         }
-        file = &safio_file[0];
         input.close();
         std::ifstream safio_input;
-        safio_input.open(file);
-
-        std::string output = safio_file;
-        output.replace(output.end()-5, output.end(), "data");
-        out_file.open(output);
-        output.replace(output.end()-4, output.end(), "dbug");
-        debug_file.open(output);
+        safio_input.open(input_file + ".input");
+        out_file.open(safio_file + ".data");
+        crystal_file.open(safio_file + ".crys");
+        debug_file.open(safio_file + ".dbug");
 
         if (safio_input.is_open())
         {
@@ -168,8 +165,8 @@ void Safio::load()
                 }
                 if(n==15)
                 {
-                    FAX = atof(args[0].c_str());
-                    FAY = atof(args[1].c_str());
+                    RAX = atof(args[0].c_str());
+                    RAY = atof(args[1].c_str());
                 }
                 if(n==16)
                 {
@@ -264,10 +261,7 @@ void Safio::load()
                 {
                     AX = atof(args[0].c_str());
                     AY = atof(args[1].c_str());
-                    if(i>2)
-                        AZ = atof(args[2].c_str());
-                    else
-                        AZ = AX;
+                    AZ = atof(args[2].c_str());
                 }
                 if(n==24)
                 {
@@ -337,10 +331,8 @@ void Safio::load()
             //Then we need these files.
             if(NUMCHA == 1)
             {
-                output.replace(output.end()-4, output.end(), "traj");
-                traj_file.open(output);
-                output.replace(output.end()-4, output.end(), "xyz");
-                xyz_file.open(output);
+                traj_file.open(safio_file+".traj");
+                xyz_file.open(safio_file+".xyz");
             }
         }
         else

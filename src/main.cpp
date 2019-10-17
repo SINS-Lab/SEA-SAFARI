@@ -18,8 +18,9 @@ std::ofstream out_file;
 std::ofstream debug_file;
 std::ofstream traj_file;
 std::ofstream xyz_file;
-std::default_random_engine rng;
 std::ofstream crystal_file;
+
+std::default_random_engine rng;
 double space_lookup[3375][3];
 
 int main()
@@ -27,8 +28,6 @@ int main()
     clock_t load = clock();
     //Load the input file
     settings.load();
-
-    crystal_file.open("crystal.input");
 
     char buffer[200];
 

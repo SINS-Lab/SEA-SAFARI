@@ -176,8 +176,13 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
         *left = true;
         return false;
     }
+    
+    double x_max = settings.AX * settings.RAX;
+    double y_max = settings.AY * settings.RAY;
+    
     //Fell of the edge
-    if(ion[0] > 100 || ion[0] < -100 || ion[1] > 100 || ion[1] < -100)
+    if(ion[0] > x_max || ion[0] < -x_max ||
+       ion[1] > y_max || ion[1] < -y_max)
     {
         *off_edge = true;
         return false;

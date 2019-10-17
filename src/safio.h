@@ -46,8 +46,13 @@ struct Safio
 
     int NWRITX;
     int NWRITY;
-    double FAX;
-    double FAY;
+
+    //This is how many AX and AY
+    //to build the lattice for,
+    //The "radius" of the slab
+    double RAY;
+    double RAX;
+
     int NPAR;
     int IPOT;
     std::vector<double>POTPAR;
@@ -88,6 +93,7 @@ struct Safio
     double YSTART;
     double YSTEP;
     double YSTOP;
+    
     int NBZ;
     double TOL;
     int NBG;

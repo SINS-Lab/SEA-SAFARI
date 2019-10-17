@@ -8,8 +8,8 @@
 
 void Lattice::build_lattice()
 {
-    //TODO add some way to define this in safio.
-    int n = 40;
+    //Use maximum, with some extra room, for the radius.
+    int n = std::max(settings.RAX * 3, settings.RAY * 3);
     // This adds some leeway to account for
     // floating point error in the matrix multiplications
     double zTop = settings.AZ * 0.1;
@@ -75,6 +75,9 @@ void Lattice::build_lattice()
     int ne = n;
     double px, py, pz;
 
+    double x_max = settings.AX * settings.RAX;
+    double y_max = settings.AY * settings.RAY;
+
     for(int x = ns; x<= ne; x++)
     {
         for(int y = ns; y<= ne; y++)
@@ -99,7 +102,16 @@ void Lattice::build_lattice()
                         continue;
 
                     px = cell_pos[0] + old[0];
+
+                    //Out of bounds in x
+                    if(px > x_max || px < -x_max)
+                        continue;
+
                     py = cell_pos[1] + old[1];
+
+                    //Out of bounds in y
+                    if(py > y_max || py < -y_max)
+                        continue;
 
                     //This hashes to the current cube
                     int pos_hash = to_hash(px, py, pz);
