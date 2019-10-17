@@ -57,6 +57,8 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //Reset number nearby.
     near = 0;
 
+    ion.rr_min_find = 1e6;
+
     Vec3d loc;
 
     //TODO make this in safio somewhere.
@@ -110,6 +112,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
             double rr = diff_sqr(ion.r, s.r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
+            ion.rr_min_find = std::min(rr, ion.rr_min_find);
             near_sites[near] = &s;
             //If some other ion has seen the site, reset it here.
             if(s.last_ion!=ion.index)
@@ -119,10 +122,12 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
             }
             near++;
             //If we have enough, goto end.
-            if(near >= target_num) goto end;
+            if(near >= target_num - 1) goto end;
         }
     }
 end:
+    //Sets this to 0, so that the max check later is fine.
+    if(ion.rr_min_find == 1e6) ion.rr_min_find = 0;
     return near;
 }
 
@@ -184,7 +189,7 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
         return false;
     }
     //Too many steps
-    if(ion.steps > 4000)
+    if(ion.steps > settings.MAX_STEPS)
     {
         *froze = true;
         return false;
@@ -198,7 +203,38 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
     return true;
 }
 
-void traj(Ion &ion, Lattice &lattice, bool log)
+int save_index = 0;
+std::string save_cache[1000];
+
+void save(char* buffer)
+{
+    if(buffer==NULL)
+    {
+        for(int n = 0; n<save_index; n++)
+        {
+            out_file << save_cache[n];
+        }
+        save_index = 0;
+    }
+    else
+    {
+        if(save_index < 1000)
+        {
+            save_cache[save_index] = buffer;
+            save_index++;
+        }
+        else
+        {
+            for(int n = 0; n<save_index; n++)
+            {
+                out_file << save_cache[n];
+            }
+            save_index = 0;
+        }
+    }
+}
+
+void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 {
     //Time step
     double dt = 0.1;
@@ -231,7 +267,7 @@ void traj(Ion &ion, Lattice &lattice, bool log)
 
     //Distance in angstroms to consider far enough moved.
     //After it moves this far, it will re-calculate nearest.
-    double r_reset = 0;
+    double r_reset = 1;
 
     //Multiplier on timestep.
     double change;
@@ -256,7 +292,6 @@ void traj(Ion &ion, Lattice &lattice, bool log)
     r.set(ion.r);
 
 start:
-
     //Find nearby lattice atoms
     ion.fill_nearest(lattice, 4, settings.NPART);
     //Increment counter for how many steps we have taken
@@ -334,6 +369,8 @@ start:
     //check if we have gone too far, and need tp re-calculate nearby atoms
     dr = r - ion.r;
     diff = sqr(dr.v);
+    //Reset at either 1A, or 1/3 the distance to nearest, whichever is larger.
+    r_reset = std::max(1.0, ion.rr_min_find / 9.0);
     if(diff > r_reset)
     {
         //Update ion location for last check
@@ -357,10 +394,33 @@ start:
     {
         V = (ion.V + ion.V_t) / 2;
         dV = ion.V_t - ion.V;
+        //This log file is just the ion itself, not the full xyz including the lattice
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%d\t%f\t%f\t%f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
                 ion.time,ion.steps,T,V,(T+V),ion.near,dt,dr_max,dV);
         traj_file << buffer;
+    }
+    if(xyz)
+    {
+        //First line for xyz file is number involved.
+        xyz_file << (1+ion.near) << "\n";
+        //Next line is a "comment", we will stuff the time here.
+        sprintf(buffer, "%f\t%d\t%f\t%f\t%d\t%f\t%f\n",
+                ion.time,ion.steps,T,V,ion.near,dt,dr_max);
+        xyz_file << buffer;
+        //Next stuff the symbol, position, momentum and mass for the ion itself
+        sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+                ion.atom.symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom.mass);
+        xyz_file << buffer;
+        //Then stuff in the nearby atoms
+        for(int i = 0; i<ion.near; i++)
+        {
+            Site &s = *ion.near_sites[i];
+            //Note that this is same format as the ion, except also contains the index.
+            sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",
+                    s.atom.symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom.mass,s.index);
+            xyz_file << buffer;
+        }
     }
 
     //Apply differences to timestep;
@@ -442,11 +502,15 @@ end:
             }
         }
     }
-    //Output data. TODO maybe move this to stuffing in array to bulk output
-    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\n",
+
+    //Output data.
+    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%d\t%f\t%d\t%f\n",
             ion.r_0[0],ion.r_0[1],ion.r_0[2],
             E,theta,phi,
-            1,1.0/settings.NUMCHA);
-    out_file << buffer;
+            1,1.0/settings.NUMCHA,
+            ion.max_n, ion.r_min, ion.steps, ion.time);
+
+    save(buffer);
+
     return;
 }

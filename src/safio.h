@@ -36,7 +36,7 @@ struct Safio
     int NPART;
     bool RECOIL;
     double Z1;
-    int NTAB;
+    int MAX_STEPS;
     double RRMIN;
     double RRSTEP;
     double ZMIN;
@@ -106,6 +106,8 @@ extern Safio settings;
 extern std::ofstream out_file;
 //This is the .traj file to ion trajectory to.
 extern std::ofstream traj_file;
+//This is the .traj file to ion xyz to.
+extern std::ofstream xyz_file;
 //This is the .dbug file to store extra info.
 extern std::ofstream debug_file;
 //This is the .dbug file to lattice info in

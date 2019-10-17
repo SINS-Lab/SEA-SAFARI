@@ -2,6 +2,9 @@
 #define SPACE_MATH_H_INCLUDED
 #include "vec_math.h"
 
+extern double space_lookup[3375][3];
+
+void init_lookup();
 double cube_root(double value);
 void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location);
 void index_to_loc(int index, Vec3d &location);

@@ -22,8 +22,10 @@ public:
     int max_n = 0;
 
     int near = 0;
-    //Nearest distance
+    //Nearest distance ever
     double r_min = 1e3;
+    //Nearest distance when finding nearby, squared
+    double rr_min_find = 1e3;
     //This is the last place the near things were updated.
     int last_index = -1;
     //Last distance checked for nearby atoms.
@@ -62,6 +64,8 @@ public:
  * @param lattice - the lattice to scatter off
  * @param log - if true, will log the individual trajectory
  */
-void traj(Ion &ion, Lattice &lattice, bool log);
+void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
+
+void save(char* buffer);
 
 #endif // ION_H_INCLUDED

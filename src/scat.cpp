@@ -20,10 +20,10 @@ void montecarloscat(Lattice &lattice, int *num)
         double x = settings.XSTART + x_size * rx;
         double y = settings.YSTART + y_size * ry;
         Ion ion;
-        ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
+        ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
         *num = i;
         ion.index = *num;
-        traj(ion, lattice, false);
+        traj(ion, lattice, false, false);
 
     }
 }
@@ -35,10 +35,10 @@ void gridscat(Lattice &lattice, int *num)
         for(double y = settings.YSTART; y <= settings.YSTOP; y+=settings.YSTEP)
         {
             Ion ion;
-            ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
+            ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
             ion.index = *num;
             *num = *num + 1;
-            traj(ion, lattice, log);
+            traj(ion, lattice, log, log);
             if(log) goto out;
         }
 out:

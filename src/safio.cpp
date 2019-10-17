@@ -12,13 +12,12 @@ void Safio::load()
     {
         while(getline(input,safio_file))
         {
-            std::cout << safio_file << '\n';
+            std::cout << "Loading Info From: " << safio_file << '\n';
             break;
         }
         file = &safio_file[0];
         input.close();
         std::ifstream safio_input;
-        std::cout << file << std::endl;
         safio_input.open(file);
 
         std::string output = safio_file;
@@ -26,8 +25,6 @@ void Safio::load()
         out_file.open(output);
         output.replace(output.end()-4, output.end(), "dbug");
         debug_file.open(output);
-        output.replace(output.end()-4, output.end(), "traj");
-        traj_file.open(output);
 
         if (safio_input.is_open())
         {
@@ -120,7 +117,7 @@ void Safio::load()
                 }
                 if(n==10)
                 {
-                    NTAB = atoi(args[0].c_str());
+                    MAX_STEPS = atoi(args[0].c_str());
                 }
                 if(n==11)
                 {
@@ -336,6 +333,15 @@ void Safio::load()
 
             }
             safio_input.close();
+
+            //Then we need these files.
+            if(NUMCHA == 1)
+            {
+                output.replace(output.end()-4, output.end(), "traj");
+                traj_file.open(output);
+                output.replace(output.end()-4, output.end(), "xyz");
+                xyz_file.open(output);
+            }
         }
         else
         {

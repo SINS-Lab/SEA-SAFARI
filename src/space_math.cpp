@@ -118,6 +118,23 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
     }
 }
 
+//If not populated, do so.
+bool populated = false;
+
+void init_lookup()
+{
+    populated = false;
+    for(int i = 0; i<3375; i++)
+    {
+        Vec3d loc;
+        index_to_loc(i, loc);
+        space_lookup[i][0] = loc[0] * settings.AX/4;
+        space_lookup[i][1] = loc[1] * settings.AY/4;
+        space_lookup[i][2] = loc[2] * settings.AZ/4;
+    }
+    populated = true;
+}
+
 /**
  * This converts the index given to a location in space.
  * This is done such that the location given increases in
@@ -125,7 +142,11 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
  */
 void index_to_loc(int index, Vec3d &location)
 {
-    if (index > 0)
+    if(populated)
+    {
+        location.set(space_lookup[index]);
+    }
+    else if (index > 0)
     {
         //Radius of cube we are on.
         int radius = floor(ceil(cube_root(index)/2.0));

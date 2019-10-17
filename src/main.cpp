@@ -9,6 +9,7 @@
 #include "space_math.h"
 #include "ion.h"
 #include <time.h>
+#include <iomanip>
 #include "scat.h"
 
 //Initialize the global variables.
@@ -16,11 +17,14 @@ Safio settings;
 std::ofstream out_file;
 std::ofstream debug_file;
 std::ofstream traj_file;
+std::ofstream xyz_file;
 std::default_random_engine rng;
 std::ofstream crystal_file;
+double space_lookup[3375][3];
 
 int main()
 {
+    clock_t load = clock();
     //Load the input file
     settings.load();
 
@@ -35,8 +39,8 @@ int main()
 
     for(int i = 0; i<num; i++)
     {
-        Site s = lattice.sites[i];
-        Atom a = s.atom;
+        Site s = *lattice.sites[i];
+        Atom &a = s.atom;
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",s[0],s[1],s[2],a.charge,a.mass);
         crystal_file << buffer;
     }
@@ -46,11 +50,14 @@ int main()
     //Initialize the RNG
     rng.seed(settings.SEED);
 
+    //Initialize the space_math's lookup table
+    init_lookup();
+
     clock_t start = clock();
     int n = 0;
 
     
-    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\n";
+    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
 
     if(settings.NWRITX == 666)
     {
@@ -79,15 +86,21 @@ int main()
             chainscat(lattice, &n);
         }
     }
+
+    save(NULL);
     
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
     //Convert to ms;
     dt *= 1000;
 
-    printf ( "%f\n", dt );
-
-    debug_file << "Time per run: "<< dt <<"ms"<<std::endl;
+    std::cout << "\nFinished Running\n"<<std::endl;
+    std::cout << "Time per particle: " << std::setprecision(2) << dt <<"ms"<<std::endl;
+    debug_file << "Time per run: " << std::setprecision(2) << dt <<"ms"<<std::endl;
+    
+    dt = ( (double)clock() - load ) / CLOCKS_PER_SEC;
+    std::cout << "Total Runtime: " << std::setprecision(2) << dt <<"s"<<std::endl;
+    
     out_file.close();
     debug_file.close();
     traj_file.close();
