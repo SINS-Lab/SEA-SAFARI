@@ -45,11 +45,8 @@ public:
     Mat3d dot(Mat3d m);
 };
 
-
 Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
-
 int to_hash(double x, double y, double z);
-
 void print(Mat3d R, char* header);
 void print(Vec3d V, char* header);
 

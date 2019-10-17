@@ -9,6 +9,12 @@ double cube_root(double val)
     return pow(val, 1.0/3.0);
 }
 
+/**
+ * This fills the location based on the given shell and index on the current shell.
+ * 
+ * diffSq is the difference in areas between this shell and previous.
+ * diffCb is the difference in volumes between this shell and previous.
+ */
 void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location)
 {
     location[0] = 0;
@@ -33,14 +39,7 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
         }
         else
         {
-            if (index > layerSize)
-            {
-                location[2] = -radius;
-            }
-            else
-            {
-                location[2] = radius;
-            }
+            location[2] = index > layerSize ? -radius : radius;
         }
     }
     // Fill x
@@ -119,6 +118,11 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
     }
 }
 
+/**
+ * This converts the index given to a location in space.
+ * This is done such that the location given increases in
+ * radius from 0, as cubic shells.
+ */
 void index_to_loc(int index, Vec3d &location)
 {
     if (index > 0)
@@ -138,6 +142,7 @@ void index_to_loc(int index, Vec3d &location)
         //Volume of previous cube.
         int prev_volume = prev_area * (2*radius_p + 1);
 
+        //Fill from here.
         index_to_loc(radius, index - prev_volume, 
                              current_area - prev_area, 
                              current_volume - prev_volume, location);

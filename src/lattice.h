@@ -36,6 +36,8 @@ public:
     //forces after dt
     double dp_dt_t[3];
 
+    int last_ion = -1;
+
     Site()
     {
         reset();

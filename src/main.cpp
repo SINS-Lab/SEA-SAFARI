@@ -50,7 +50,7 @@ int main()
     int n = 0;
 
     
-    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tt\tsteps\tmax_n\tr_min\n";
+    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\n";
 
     if(settings.NWRITX == 666)
     {
@@ -79,21 +79,7 @@ int main()
             chainscat(lattice, &n);
         }
     }
-    else
-    {
-        n = 1;
-        //Testing stuff
-        Vec3d loc;
-        int r = 2;
-        int var = pow(2*r + 1, 3);
-        for(int n = 0; n < var; n++)
-        {
-            index_to_loc(n, loc);
-            // debug_file << loc[0] << " " << loc[1] << " " << loc[2] << std::endl;
-        }
-    }
     
-
     double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
     dt /= n;
     //Convert to ms;

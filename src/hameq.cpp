@@ -12,10 +12,14 @@ void update_site(Site &s, double dt)
     Atom &atom = s.atom;
     double mass = atom.mass;
 
+    //Change in momentum
     Vec3d dp;
+    //Change in position
     Vec3d dr;
 
+    //Force here
     Vec3d F;
+    //Force there
     Vec3d F_t;
 
     F.set(s.dp_dt);
@@ -40,21 +44,16 @@ void update_site(Site &s, double dt)
 
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
+    //Update the ion's location
     update_site(ion, dt);
     if(settings.RECOIL)
     {
         int nearby = ion.near;
+        //Update each site.
         for(int i = 0; i<nearby; i++)
         {
             Site &s = *ion.near_sites[i];
-            Vec3d r;
-            Vec3d p;
-            r.set(s.r);
             update_site(s, dt);
-            p.set(s.p);
-            r = r - s.r;
-            ion.max_site_displacement = std::max(ion.max_site_displacement, r.norm());
-            ion.max_site_momentum = std::max(ion.max_site_momentum, p.norm());
         }
     }
 }
@@ -164,6 +163,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 debug_file << "Ion intersected with atom?" <<std::endl;
                 continue;
             }
+
+            ion.r_min = std::min(r, ion.r_min);
 
             //Magnitude of force for this location.
             double dV_dr = dVr_dr(r, s.atom.index);

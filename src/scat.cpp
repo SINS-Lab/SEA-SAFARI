@@ -19,12 +19,12 @@ void montecarloscat(Lattice &lattice, int *num)
         double ry = frand();
         double x = settings.XSTART + x_size * rx;
         double y = settings.YSTART + y_size * ry;
-
         Ion ion;
         ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, y, x);
         *num = i;
         ion.index = *num;
         traj(ion, lattice, false);
+
     }
 }
 

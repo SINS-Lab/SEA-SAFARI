@@ -18,11 +18,18 @@
 
 #define M_PI           3.14159265358979323846  /* pi */
 
+/**
+ * Squares the given array, assuming it is 3x1
+ */
 double sqr(double *V)
 {
     return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
 }
 
+/**
+ * Squares the difference of the given arrays, 
+ * assuming they are 3x1
+ */
 double diff_sqr(double *V, double *Y)
 {
     double dx = V[0] - Y[0];
@@ -40,63 +47,79 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     int cell_z = ion[2];
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
+    //If we were just here, we should use the same near sites.
     if(pos_hash == last_index)
         return near;
     last_index = pos_hash;
 
-    int r = radius;
     int num;
 
+    //Reset number nearby.
     near = 0;
 
     Vec3d loc;
 
-    double near_distance_sq = 5*5;
+    //TODO make this in safio somewhere.
+    double near_distance_sq = 10*10;
+
     double rr_min = near_distance_sq;
 
-    int nmax = pow(2*r+1, 3);
+    //volume of the cube to check.
+    int nmax = pow(2*radius+1, 3);
 
     //Centre the cell on the surface if it is above it.
     cell_z = std::min(cell_z, 0);
 
+    //Loop over the cube, radially
     for(int n = 0; n < nmax; n++)
     {
+        //Gets x,y,z for the centered cube.
         index_to_loc(n, loc);
+        //Translates to ion coordinate
         double x = loc[0] + cell_x;
         double y = loc[1] + cell_y;
         double z = loc[2] + cell_z;
-
+        //Convert to the coordinate used for mapping
         pos_hash = to_hash(x, y, z);
         
-        Site *cel_sites;
+        Site *cell_sites;
         num = 0;
 
+        //No sites here? skip coordinate
         if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
         {
             continue;
         }
         else
         {
-            Cell *cel = lattice.cell_map[pos_hash];
+            //Find cell from map.
+            Cell *cell = lattice.cell_map[pos_hash];
             //Already seen this cell this step.
-            if(cel->check_stamp == ion.steps) continue;
-            cel->check_stamp = ion.steps;
-            num = cel->num;
-            cel_sites = cel->sites;
+            if(cell->check_stamp == ion.steps) continue;
+            //Stamp cell so it gets skipped if seen again.
+            cell->check_stamp = ion.steps;
+            //Load values from cell
+            num = cell->num;
+            cell_sites = cell->sites;
         }
 
         for(int i = 0; i<num; i++)
         {
-            Site &s = cel_sites[i];
+            Site &s = cell_sites[i];
+            //Check if site is close enough
             double rr = diff_sqr(ion.r, s.r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             near_sites[near] = &s;
-            // std::cout << "i: " << i  << " n: " << i << std::endl;
-            // std::cout << "Site Position: " << s.r << std::endl;
-            // std::cout << s.index << " " << &s.index << std::endl;
+            //If some other ion has seen the site, reset it here.
+            if(s.last_ion!=ion.index)
+            {
+                s.last_ion = ion.index;
+                s.reset();
+            }
             near++;
-            if(near > 90) goto end;
+            //If we have enough, goto end.
+            if(near >= target_num) goto end;
         }
     }
 end:
@@ -166,7 +189,7 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck, bool *froze, 
         *froze = true;
         return false;
     }
-
+    //Stuck in surface
     if((E + ion.V) < settings.SENRGY)
     {
         *stuck = true;
@@ -245,6 +268,7 @@ start:
     //check if we are still in a good state to run.
     validate(ion, &buried, &off_edge, &stuck, &froze, &left, T);
 
+    //These are our exit conditions
     if(froze || buried || stuck || left || off_edge)
     {
         if(log) debug_file << "Exited" << std::endl;
@@ -256,7 +280,7 @@ start:
 
     //Find the forces at the current location
     run_hameq(ion, lattice, dt, false);
-    //Find the forces at the next location,
+    //Find the forces at the next location
     run_hameq(ion, lattice, dt, true);
     
     V = ion.V;
@@ -266,9 +290,12 @@ start:
     dpy = ion.dp_dt[1] - ion.dp_dt_t[1];
     dpz = ion.dp_dt[2] - ion.dp_dt_t[2];
 
+    //Error in positions between the two forces.
     dxp = 0.25 * dt * dt * dpx / mass;
     dyp = 0.25 * dt * dt * dpy / mass;
     dzp = 0.25 * dt * dt * dpz / mass;
+
+    //TODO decide on whether to include lattice here.
 
     dr_max = std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 
@@ -349,10 +376,7 @@ end:
         debug_file << "\n\nFinished Traj Run\n\n";
         debug_file << "\nIon:\n";
         ion.write_info();
-        debug_file << "\nMax Site Displacement: " << ion.max_site_displacement << "\n";
-        debug_file << "Max Site Momentum: " << ion.max_site_momentum << "\n";
     }
-
 
     double E = T;
     if(froze)
@@ -405,6 +429,7 @@ end:
         }
         else
         {
+            //Recalculate E, incase image affected it
             E = 0.5 * psq / mass;
             theta = acos(pzz/sqrt(psq)) * 180/M_PI;
             if(px == 0 && py==0)
@@ -415,15 +440,13 @@ end:
             {
                 phi = atan2(py, px) * 180/M_PI;
             }
-            // sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
-            //         ion.r_0[0],ion.r_0[1],ion.r_0[2],
-            //         E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
-            // out_file << buffer;
         }
     }
-    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%f\n",
+    //Output data. TODO maybe move this to stuffing in array to bulk output
+    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\n",
             ion.r_0[0],ion.r_0[1],ion.r_0[2],
-            E,theta,phi,ion.time,ion.steps,ion.max_n,ion.r_min);
+            E,theta,phi,
+            1,1.0/settings.NUMCHA);
     out_file << buffer;
     return;
 }
