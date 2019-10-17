@@ -46,7 +46,7 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
         int nearby = ion.near;
         for(int i = 0; i<nearby; i++)
         {
-            Site &s = ion.near_sites[i];
+            Site &s = *ion.near_sites[i];
             Vec3d r;
             Vec3d p;
             r.set(s.r);
@@ -131,7 +131,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         for(int i = 0; i<ion.near; i++)
         {
             //Site near us.
-            Site &s = ion.near_sites[i];
+            Site &s = *ion.near_sites[i];
             
             //Select the force array to populate.
             F_at = s.dp_dt;

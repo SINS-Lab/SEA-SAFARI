@@ -32,7 +32,7 @@ void Mat3d::identity()
 
 Mat3d Mat3d::invert()
 {
-    Mat3d A = *this;
+    Mat3d &A = *this;
     // computes the inverse of a matrix m
     double det = A(0, 0) * (A(1, 1) * A(2, 2) - A(2, 1) * A(1, 2)) -
                  A(0, 1) * (A(1, 0) * A(2, 2) - A(1, 2) * A(2, 0)) +
@@ -77,7 +77,7 @@ Mat3d Mat3d::operator+(Mat3d d)
 Mat3d Mat3d::operator*(Mat3d B)
 {
     Mat3d R;
-    Mat3d A = *this;
+    Mat3d &A = *this;
     for(int i = 0; i<9; i++)
     {
         int r = i/3;

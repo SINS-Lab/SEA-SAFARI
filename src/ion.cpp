@@ -33,7 +33,7 @@ double diff_sqr(double *V, double *Y)
 
 int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 {
-    Ion ion = *this;
+    Ion &ion = *this;
 
     int cell_x = ion[0];
     int cell_y = ion[1];
@@ -91,7 +91,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
             double rr = diff_sqr(ion.r, s.r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
-            near_sites[near] = s;
+            near_sites[near] = &s;
             // std::cout << "i: " << i  << " n: " << i << std::endl;
             // std::cout << "Site Position: " << s.r << std::endl;
             // std::cout << s.index << " " << &s.index << std::endl;

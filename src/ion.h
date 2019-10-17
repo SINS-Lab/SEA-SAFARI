@@ -29,7 +29,7 @@ public:
     //Last distance checked for nearby atoms.
     int last_radius = 1;
 
-    Site near_sites[100];
+    Site * near_sites[100];
 
     //potential energy the particle is in.
     double V = 0;

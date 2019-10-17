@@ -30,7 +30,7 @@ f                                      IMAGE
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
 1                                      NUMBER OF ATOM TYPES *4
-16.967  79    Au                      MASS,CHARGE
+196.967  79    Au                      MASS,CHARGE
 5. 5. 5.                               SPRING(X,Y,Z)
 t  0  8.36405                          CORR,ATOMK,RNEIGH
 1 0 0                                  Face Direction
