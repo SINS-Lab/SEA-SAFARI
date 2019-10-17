@@ -144,6 +144,8 @@ class SafariInput:
         self.NZ = [0]
         self.ZMAX = [0]
 
+        self.face = [1,0,0]
+
         self.load()
         # Instead here we should check for a default file, and use that
         # if we do not have the requested input file.
@@ -377,6 +379,9 @@ class SafariInput:
                 self.CORR = args[0]
                 self.ATOMK = args[1]
                 self.RNEIGH = args[2]
+            # load in the face
+            if n == 26:
+                self.face = [args[0], args[1], args[2]]
                 
             # Decrement our sub-line first.
             o = o - 1
@@ -487,6 +492,8 @@ class SafariInput:
             +  serializeArr(spring)  + '\n' \
         
         file = file + serialize(self.CORR, self.ATOMK, self.RNEIGH) + '\n'
+        
+        file = file + serializeArr(self.face) + '\n'
             
         output.write(file)
         output.close()
