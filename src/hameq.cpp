@@ -9,7 +9,7 @@
 void update_site(Site &s, double dt)
 {
     //Site near us.
-    Atom atom = s.atom;
+    Atom &atom = s.atom;
     double mass = atom.mass;
 
     Vec3d dp;
@@ -46,7 +46,7 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
         int nearby = ion.near;
         for(int i = 0; i<nearby; i++)
         {
-            Site s = ion.near_sites[i];
+            Site &s = ion.near_sites[i];
             Vec3d r;
             Vec3d p;
             r.set(s.r);
@@ -55,9 +55,6 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
             r = r - s.r;
             ion.max_site_displacement = std::max(ion.max_site_displacement, r.norm());
             ion.max_site_momentum = std::max(ion.max_site_momentum, p.norm());
-            // std::cout << "Position UD: "<< s.r[0]<<" "<< s.r[1]<<" "<< s.r[2] << std::endl;
-            // std::cout << "Momentum UD: "<< s.p[0]<<" "<< s.p[1]<<" "<< s.p[2] << std::endl;
-            // std::cout << "Force UD: "<< s.dp_dt[0]<<" "<< s.dp_dt[1]<<" "<< s.dp_dt[2] << std::endl;
         }
     }
 }
@@ -67,7 +64,7 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 void predict_site_location(Site &s, double dt)
 {
     //Site near us.
-    Atom atom = s.atom;
+    Atom &atom = s.atom;
     double mass = atom.mass;
 
     //v = p/m
@@ -134,7 +131,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         for(int i = 0; i<ion.near; i++)
         {
             //Site near us.
-            Site s = ion.near_sites[i];
+            Site &s = ion.near_sites[i];
             
             //Select the force array to populate.
             F_at = s.dp_dt;

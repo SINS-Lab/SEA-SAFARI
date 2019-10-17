@@ -87,14 +87,14 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 
         for(int i = 0; i<num; i++)
         {
-            Site s = cel_sites[i];
+            Site &s = cel_sites[i];
             double rr = diff_sqr(ion.r, s.r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             near_sites[near] = s;
-            std::cout << "i: " << i  << " n: " << i << std::endl;
-            std::cout << "Site Position: " << s.r << std::endl;
-            std::cout << "values:        " << s.r[0] << " "  << s.r[1] << " " << s.r[2] << std::endl;
+            // std::cout << "i: " << i  << " n: " << i << std::endl;
+            // std::cout << "Site Position: " << s.r << std::endl;
+            // std::cout << s.index << " " << &s.index << std::endl;
             near++;
             if(near > 90) goto end;
         }
