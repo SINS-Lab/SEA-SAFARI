@@ -90,17 +90,17 @@ int main()
     save(NULL);
     
     //Compute time per trajectory.
-    double dt = ( (double)clock() - start ) / CLOCKS_PER_SEC;
+    double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
     dt /= n;
     //Convert to ms;
     dt *= 1000;
 
     std::cout << "\nFinished Running\n"<<std::endl;
     std::cout << "Time per particle: " << std::setprecision(2) << dt <<"ms"<<std::endl;
-    debug_file << "\nTotal number particles: " << n <<"ms"<<std::endl;
+    debug_file << "\nTotal number particles: " << n <<std::endl;
     debug_file << "Time per particle: " << std::setprecision(2) << dt <<"ms"<<std::endl;
     //End final timer.
-    dt = ( (double)clock() - load ) / CLOCKS_PER_SEC;
+    dt = ((double)clock() - load) / CLOCKS_PER_SEC;
     std::cout << "Total Runtime: " << std::setprecision(2) << dt <<"s"<<std::endl;
     debug_file << "\nTotal Runtime: " << std::setprecision(2) << dt <<"s"<<std::endl;
     

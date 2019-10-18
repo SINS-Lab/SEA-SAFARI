@@ -77,42 +77,38 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         //Convert to the coordinate used for mapping
         pos_hash = to_hash(x, y, z);
         
+        Cell* cell = lattice.get_cell(pos_hash);
+        //No cell here? skip.
+        if(cell == NULL) continue;
+        //Reset check stamp if new ion.
+        if(cell->ion_stamp != ion.index) cell->check_stamp = -1;
+        //Already seen this cell this tick? skip.
+        if(cell->check_stamp == ion.steps) continue;
+        //Stamp cell so it gets skipped if seen again.
+        cell->check_stamp = ion.steps;
+        cell->ion_stamp = ion.index;
+        
         Site *cell_sites;
         num = 0;
-
-        //No sites here? skip coordinate
-        if(lattice.cell_map.find(pos_hash) == lattice.cell_map.end())
-        {
-            continue;
-        }
-        else
-        {
-            //Find cell from map.
-            Cell *cell = lattice.cell_map[pos_hash];
-            //Already seen this cell this step.
-            if(cell->check_stamp == ion.steps) continue;
-            //Stamp cell so it gets skipped if seen again.
-            cell->check_stamp = ion.steps;
-            //Load values from cell
-            num = cell->num;
-            cell_sites = cell->sites;
-        }
+        //Load values from cell
+        num = cell->num;
+        cell_sites = cell->sites;
 
         for(int i = 0; i<num; i++)
         {
-            Site &s = cell_sites[i];
+            Site *s = &cell_sites[i];
+            //If some other ion has seen the site, reset it here.
+            if(s->last_ion!=ion.index)
+            {
+                s->reset();
+                s->last_ion = ion.index;
+            }
             //Check if site is close enough
-            double rr = diff_sqr(ion.r, s.r);
+            double rr = diff_sqr(ion.r, s->r);
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             ion.rr_min_find = std::min(rr, ion.rr_min_find);
-            near_sites[near] = &s;
-            //If some other ion has seen the site, reset it here.
-            if(s.last_ion!=ion.index)
-            {
-                s.last_ion = ion.index;
-                s.reset();
-            }
+            near_sites[near] = s;
             near++;
             //If we have enough, goto end.
             if(near >= target_num - 1) goto end;

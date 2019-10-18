@@ -9,19 +9,25 @@ void Safio::load()
     input.open(safio_file.c_str());
     if (input.is_open())
     {
-        std::string input_file;
         while(getline(input,safio_file))
         {
-            std::cout << "Loading Info From: " << safio_file << '\n';
-            input_file = safio_file;
+            std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
             break;
         }
         input.close();
         std::ifstream safio_input;
-        safio_input.open(input_file + ".input");
-        out_file.open(safio_file + ".data");
-        crystal_file.open(safio_file + ".crys");
-        debug_file.open(safio_file + ".dbug");
+        std::string filename = safio_file + ".input";
+        safio_input.open(filename);
+
+        filename = safio_file + ".data";
+        out_file.open(filename);
+
+        filename = safio_file + ".crys";
+        crystal_file.open(filename);
+
+        filename = safio_file + ".dbug";
+        debug_file.open(filename);
+        debug_file << "Loading Info From: " << safio_file << "\n\n";
 
         if (safio_input.is_open())
         {
@@ -33,10 +39,11 @@ void Safio::load()
             //values which affect line number
             int o = 0;
 
-
             while(getline(safio_input,line))
             {
                 int i = 0;
+
+                debug_file << line << '\n';
 
                 //Skip blank lines
                 if(line=="")
@@ -45,14 +52,13 @@ void Safio::load()
                 std::istringstream iss(line);
 
                 //TODO decide on max number or args.
-                std::string args[10];
+                std::string args[100];
 
                 //Split the string into an array.
                 do
                 {
                     std::string subs;
                     iss >> subs;
-                    //cout << "Substring: " << subs << endl;
                     args[i] = subs;
                     i++;
                 }
@@ -327,12 +333,14 @@ void Safio::load()
 
             }
             safio_input.close();
+            debug_file << "\nLoaded SAFIO" << '\n';
 
             //Then we need these files.
             if(NUMCHA == 1)
             {
                 traj_file.open(safio_file+".traj");
                 xyz_file.open(safio_file+".xyz");
+                debug_file << "Initializing for single shot mode." << '\n';
             }
         }
         else

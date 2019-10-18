@@ -17,6 +17,8 @@ public:
     int pos_hash;
     //Used to check if this cell has been checked
     int check_stamp = -1;
+    //Used to check if this cell has been checked
+    int ion_stamp = -1;
 
     Cell()
     {
@@ -33,10 +35,6 @@ struct Lattice
 {
     //All sites in the lattice
     std::vector<Site*> sites;
-    //Basis used for this lattice,
-    //Site indices for this are the originals
-    std::vector<Site> basis;
-
     //All cells in the lattice
     std::unordered_map<int,Cell*> cell_map;
 
@@ -51,6 +49,9 @@ struct Lattice
     Vec3d ez;
 
     void build_lattice();
+    void add_site(Atom a, double px, double py, double pz);
+    Cell* get_cell(int pos_hash);
+    Cell* make_cell(int pos_hash);
 
 };
 

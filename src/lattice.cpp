@@ -14,6 +14,8 @@ void Lattice::build_lattice()
     double zTop = settings.AZ * 0.1;
     //Set the bottom of the slab to twice the buried distance
     double zBottom = -settings.BDIST * 2;
+    //Basis for the lattice.
+    std::vector<Site> basis;
 
     Vec3d dir;
     //We like "Up"
@@ -68,8 +70,6 @@ void Lattice::build_lattice()
     Vec3d cell_pos;
     cell_pos.set(0,0,0);
 
-    int max_in_cell = 0;
-
     int ns = -n;
     int ne = n;
     double px, py, pz;
@@ -111,59 +111,73 @@ void Lattice::build_lattice()
                     //Out of bounds in y
                     if(py > y_max || py < -y_max)
                         continue;
-
-                    //This hashes to the current cube
-                    int pos_hash = to_hash(px, py, pz);
-
-                    int *cel_num;
-                    int num = 0;
-                    Site *cel_sites;
-
-                    if(cell_map.find(pos_hash) == cell_map.end())
-                    {
-                        Cell *cel = new Cell();
-                        cell_map[pos_hash] = cel;
-                        cel->num = num;
-                        cel_num = &(cel->num);
-                        cel->pos_hash = pos_hash;
-                        cel_sites = (cel->sites);
-                    }
-                    else
-                    {
-                        cel_num = &(cell_map[pos_hash]->num);
-                        num = *cel_num;
-                        cel_sites = (cell_map[pos_hash]->sites);
-                    }
                     
-                    Site *s = new Site();
-                    Atom a;
-                    s->r_0[0] = px;
-                    s->r_0[1] = py;
-                    s->r_0[2] = pz;
-
-                    //TODO instead do some thermal distribution.
-                    s->p_0[0] = 0;
-                    s->p_0[1] = 0;
-                    s->p_0[2] = 0;
-
-                    s->reset();
-                    a = settings.ATOMS[old.index-1];
-                    //Sites are indexed to size, so that they
-                    //can be looked up to find their atom later.
-                    s->index = sites.size();
-                    s->atom = a;
-                    sites.push_back(s);
-                    cel_sites[num] = *s;
-
-                    num++;
-                    *cel_num = num;
-                    if(num > max_in_cell) max_in_cell = num;
+                    //This is the atom for this site.
+                    Atom a = settings.ATOMS[old.index-1];
+                    add_site(a, px, py, pz);
                 }
             }
         }
     }
     std::cout << "built lattice" << std::endl;
     debug_file << "built lattice" << std::endl;
+}
+
+void Lattice::add_site(Atom a, double px, double py, double pz)
+{
+    //This hashes to the current cube
+    int pos_hash = to_hash(px, py, pz);
+
+    int *cel_num;
+    int num = 0;
+    Site *cel_sites;
+
+    //This makes the cell if it doesn't exist, otherwise gets old one.
+    Cell *cell = make_cell(pos_hash);
+
+    //Get the values from the cell.
+    cel_num = &(cell->num);
+    num = *cel_num;
+    cel_sites = (cell->sites);
+    
+    Site *s = new Site();
+    s->r_0[0] = px;
+    s->r_0[1] = py;
+    s->r_0[2] = pz;
+
+    //TODO instead do some thermal distribution.
+    s->p_0[0] = 0;
+    s->p_0[1] = 0;
+    s->p_0[2] = 0;
+
+    //Initializes the site
+    s->reset();
+
+    //Sites are indexed to size, so that they
+    //can be looked up to find their atom later.
+    s->index = sites.size();
+    s->atom = a;
+    sites.push_back(s);
+    cel_sites[num] = *s;
+    *cel_num = num + 1;
+}
+
+Cell* Lattice::get_cell(int pos_hash)
+{
+    if(cell_map.find(pos_hash) == cell_map.end()) return NULL;
+    return cell_map[pos_hash];
+}
+
+Cell* Lattice::make_cell(int pos_hash)
+{
+    Cell* cell = get_cell(pos_hash);
+    if(cell != NULL) return cell;
+    cell = new Cell();
+    cell_map[pos_hash] = cell;
+    cell->num = 0;
+    cell->pos_hash = pos_hash;
+    cell->sites = new Site[100];
+    return cell;
 }
 
 double zeros[3] = {0,0,0};

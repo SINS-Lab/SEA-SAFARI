@@ -6,24 +6,24 @@
 0.30000   0.   1e-6                    DEMAX,DEMIN,ABSERR
 45                                     Target Interaction Number
 t                                      RECOIL
-5.0000                                 INTERACT.HEIGHT
+5.0000                                 INTERACT.HEIGHT, ie Z0/ZMax
 4000                                   Max Step Count
 0.   2.50000e-03                       R MIN,STEP unused
 0.   3.00000e-04                       Z MIN,STEP unused
 1 1                                    MAXDIV, MINDIV *1 unused
-10                                     numcha, if 1, does single shot (SS)
+1000000                                numcha, if 1, does single shot (SS)
 0 .01 4.0786                           XStart/Step/End SS at XStart
 0 .01 4.0786                           YStart/Step/End SS at YStart
-666        777                         NWRITX, NWRITY 	
+666        777                         NWRITX, NWRITY
 5.0     5.0                            RAX RAY
 4 1                                    NPAR, IPOT
-9125.84 4.44 66703.59 11.24            Pars ^
+9125.84 4.44 66703.59 11.24            Pars ^, There should 4 of these per typeat
 2 1                                    NIMPAR, IIMPOT
 1.26 2.0                               Pars ^ *2
 0.0   .9436337324   1                  TEMP,SEED,NITER
 f                                      IMAGE
 -1.5 8.18                              SENRGY,BDIST
-4.0786 4.0786 4.0786                   AX,AY
+4.0786 4.0786 4.0786                   AX,AY,AZ
 4                                      NBASIS, Followed by x, y, z, index
 1.0 1.0 1.0 1
 1.0 0.5 0.5 1

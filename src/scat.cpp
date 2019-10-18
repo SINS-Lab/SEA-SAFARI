@@ -21,27 +21,28 @@ void montecarloscat(Lattice &lattice, int *num)
         double y = settings.YSTART + y_size * ry;
         Ion ion;
         ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-        *num = i;
-        ion.index = *num;
+        ion.index = i;
         traj(ion, lattice, false, false);
-
     }
+    *num = settings.NUMCHA;
 }
 
 void gridscat(Lattice &lattice, int *num)
 {
     bool log = settings.NUMCHA == 1;
+    int n = 0;
     for(double x = settings.XSTART; x <= settings.XSTOP; x+=settings.XSTEP)
         for(double y = settings.YSTART; y <= settings.YSTOP; y+=settings.YSTEP)
         {
             Ion ion;
             ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-            ion.index = *num;
-            *num = *num + 1;
+            ion.index = n;
+            n++;
             traj(ion, lattice, log, log);
             if(log) goto out;
         }
 out:
+    *num = n;
     return;
 }
 
