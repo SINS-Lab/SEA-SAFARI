@@ -168,8 +168,9 @@ void index_to_loc(int index, Vec3d &location)
     }
     else if (index > 0)
     {
+        double ind = index;
         //Radius of cube we are on.
-        int radius = floor(ceil(pow(index, 1.0/3.0)/2.0));
+        int radius = floor(ceil(cbrt(ind)/2.0));
 
         //Area of a face of the current cube.
         int current_area = (2*radius + 1) *  (2*radius + 1); 
