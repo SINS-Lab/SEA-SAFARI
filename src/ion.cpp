@@ -398,6 +398,13 @@ start:
     {
         double V = (ion.V + ion.V_t) / 2;
 
+        //Update the lattice site momenta...
+        for(int i = 0; i<ion.near; i++)
+        {
+            Site *s = ion.near_sites[i];
+            lattice.sites[s->index] = ion.near_sites[i];
+        }
+
         //First line for xyz file is number involved.
         int num = lattice.sites.size() + 1;
         xyz_file << num << "\n";
@@ -415,7 +422,7 @@ start:
         //Then stuff in the entire lattice, why not...
         for(int i = 0; i<num-1; i++)
         {
-            Site &s = *lattice.sites[i];
+            Site s = *lattice.sites[i];
             //Note that this is same format as the ion, except also contains the index.
             sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",
                     s.atom.symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom.mass,s.index);

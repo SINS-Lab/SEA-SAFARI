@@ -113,6 +113,9 @@ class Detector:
         self.detections = np.zeros((0,8))
         
     def addDetection(self, line):
+        if line[3] < 0:
+        #These shouldn't be in detector
+            return
         if(self.E_over_E0):
             line = line.copy()
             line[3] = line[3]/self.safio.E0
@@ -388,6 +391,9 @@ class StripeDetector(Detector):
         self.phiMin = phi - width/2
 
     def isInDetector(self, theta, phi, e):
+        #These are failed trajectories, shouldn't be here!
+        if e<0:
+            return False;
         return theta > self.tmin and theta < self.tmax\
              and phi > self.phiMin and phi < self.phiMax
 
@@ -433,6 +439,7 @@ class Spectrum:
         self.rawData = []
         self.stuck = []
         self.buried = []
+        self.other_failed = []
         self.data = []
         self.crystal = []
 
@@ -445,6 +452,7 @@ class Spectrum:
         self.buried = []
         self.data = []
         self.crystal = []
+        self.other_failed = []
 
     def clean(self, data, detectorType=-1, emin=-1e6, emax=1e6,\
                                            lmin=1, lmax=20, \
@@ -486,6 +494,9 @@ class Spectrum:
                 continue
             if e == -200:
                 self.buried.append(traj)
+                continue
+            if e < 0:
+                self.other_failed.append(traj)
                 continue
             if e < emin or e > emax or l > lmax or l < lmin\
             or t > thmax or t < thmin or p > phimax or p < phimin:

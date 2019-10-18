@@ -185,7 +185,7 @@ def process(xyz, color=""):
         mean, std = get_velocity_parameters(particles)
         for state in particles:
             for atom in state:
-                if np.linalg.norm(atom.velocity) - mean > std and atom.id != 0:
+                if np.linalg.norm(atom.velocity) - mean > std and atom.id != -1:
                     atom.atom = "X"
 
     # Smooth the framerate
