@@ -35,7 +35,7 @@ class XYZ_Single:
     def load(self, file, number):
         self.number = number
         # Reading in like this includes a \n at the end.
-        self.comment = file.readline().split()[0]
+        self.comment = file.readline()
         for i in range(number):
             line = file.readline().split()
             # this is the array of values for the atom on this line

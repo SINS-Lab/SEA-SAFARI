@@ -17,6 +17,7 @@ class Particle:
         self.momentum = [0, 0, 0]
         self.velocity = [0, 0, 0]
         self.mass = 0
+        #ion won't have id in array, so this sets us as ion.
         self.id = -1
 
     def fromXYZ(self, atom, value):
@@ -27,61 +28,9 @@ class Particle:
         self.velocity = [value[3]/value[6],
                          value[4]/value[6],
                          value[5]/value[6]]
-
-
-def isSame(p_a, p_b, dt, color=""):
-    if p_a == p_b:
-        return True
-    if p_a.atom != p_b.atom and color == "":
-        return False
-    # always the same for the projectile Atom
-    if p_a.id == 0 and p_b.id == 0:
-        return True
-    
-    p_a_dt = [p_a.pos[0] + p_a.velocity[0]*dt,
-              p_a.pos[1] + p_a.velocity[1]*dt,
-              p_a.pos[2] + p_a.velocity[2]*dt]
-    
-    p_b_dt = [p_b.pos[0] + p_b.velocity[0]*dt,
-              p_b.pos[1] + p_b.velocity[1]*dt,
-              p_b.pos[2] + p_b.velocity[2]*dt]
-    
-    diff = (p_a_dt[0] - p_b_dt[0])**2 + \
-           (p_a_dt[1] - p_b_dt[1])**2 + \
-           (p_a_dt[2] - p_b_dt[2])**2
-    return diff <= .25
-
-
-def merge(pset1, pset2, dt, first, color=""):
-    len1 = len(pset1)
-    len2 = len(pset2)
-    merged = False
-    num = 0
-    for i in range(len1):
-        p_a = pset1[i]
-        has = False
-        for j in range(len2):
-            p_b = pset2[j]
-            if isSame(p_a, p_b, dt, color=color):
-                has = True
-                if not first:
-                    break
-                if p_b.id != -1:
-                    p_a.id = p_b.id
-                elif p_a.id != -1:
-                    p_b.id = p_a.id
-                else:
-                    p_a.id = p_b.id = Particle.nextid
-                    Particle.nextid = Particle.nextid + 1
-
-        if not has:
-            if color == "nearest":
-                p_a.atom = "X"
-            pset2.append(p_a)
-            merged = True
-            num = num + 1
-    return merged, num
-
+        #Everyone except ion will load this in, this is >=0
+        if len(value)>7:
+            self.id = value[7];
 
 def xyzFromParticles(time, pset):
     xyz_single = XYZ_Single()
@@ -200,13 +149,13 @@ def get_velocity_parameters(particles):
     helper_sum = 0
     for state in particles:
         for particle in state:
-            if particle.id != 0:
+            if particle.id != -1:
                 helper_sum += np.linalg.norm(particle.velocity)
     average = helper_sum/(len(particles)*len(particles[0]) - 1)
     helper_sum = 0
     for state in particles:
         for particle in state:
-            if particle.id != 0:
+            if particle.id != -1:
                 helper_sum += (average - np.linalg.norm(particle.velocity))**2
     variation_average = helper_sum/(len(particles)*len(particles[0]) - 1)
     print(math.sqrt(variation_average))
@@ -221,47 +170,16 @@ def process(xyz, color=""):
     for xyz_single in xyz.xyzs:
         # Particle array for this timestep
         pset = []
-        times.append(float(xyz_single.comment))
+        comment = xyz_single.comment.split()
+        times.append(float(comment[0]))
         for i in range(xyz_single.number):
             particle = Particle()
-            # Make sure the projectile atom always has id 0
-            if i == 0:
-                particle.id = 0
+            # Load in the particle from xyz, the ion will stay as id == -1
+            # Everyone else will find their lattice site ID and use that.
             particle.fromXYZ(xyz_single.atoms[i], xyz_single.values[i])
             pset.append(particle)
             n = n + 1
         particles.append(pset)
-    merged = True
-    print('Total: '+str(n))
-    print('Merging Points')
-    while merged:
-        merged = False
-        n = 0
-        for i in range(len(particles)-1):
-            pset1 = particles[i]
-            pset2 = particles[i + 1]
-            dt = times[i + 1] - times[i]
-            didMerge, num = merge(pset1, pset2, dt, True, color=color)
-            n = n + num
-            merged = merged or didMerge
-        if n == 0:
-            print('Merged '+str(n))
-            print('Number Per Frame: '+str(len(particles[0])))
-            break
-        for i in reversed(range(1, len(particles))):
-            pset1 = particles[i]
-            pset2 = particles[i - 1]
-            dt = times[i - 1] - times[i]
-            didMerge, num = merge(pset1, pset2, dt, False, color=color)
-            n = n + num
-            merged = merged or didMerge
-        print('Merged '+str(n))
-        print('Number Per Frame: '+str(len(particles[0])))
-    print('Finished Merging')
-
-    for pset in particles:
-        # I put a lambda function in here
-        pset.sort(key=lambda p: p.id)
 
     if color == "velocity":
         mean, std = get_velocity_parameters(particles)

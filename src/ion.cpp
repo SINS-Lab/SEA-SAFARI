@@ -248,8 +248,6 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     bool off_edge = false;
     bool left = false;
 
-    //Potential Energy
-    double V, dV;
     //Kinetic Energy
     double T;
     
@@ -286,7 +284,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     if(log)
     {
         debug_file << "\n\nStarting Ion Trajectory Output\n\n";
-        debug_file << "Recoil: " << settings.RECOIL << "\n";
+        debug_file << "Recoil: " << (settings.RECOIL?"T":"F") << "\n";
         debug_file << "\nIon:\n";
         ion.write_info();
         traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\tdV\n";
@@ -317,8 +315,6 @@ start:
     //Find the forces at the next location
     run_hameq(ion, lattice, dt, true);
     
-    V = ion.V;
-
     //Find difference in the forces.
     dpx = ion.dp_dt[0] - ion.dp_dt_t[0];
     dpy = ion.dp_dt[1] - ion.dp_dt_t[1];
@@ -386,13 +382,12 @@ start:
     //Update kinetic energy.
     psq = sqr(ion.p);
     T = psq * 0.5 / mass;
-    V = ion.V;
 
     //Log things if needed
     if(log)
     {
-        V = (ion.V + ion.V_t) / 2;
-        dV = ion.V_t - ion.V;
+        double V = (ion.V + ion.V_t) / 2;
+        double dV = ion.V_t - ion.V;
         //This log file is just the ion itself, not the full xyz including the lattice
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%d\t%f\t%f\t%f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
@@ -401,20 +396,26 @@ start:
     }
     if(xyz)
     {
+        double V = (ion.V + ion.V_t) / 2;
+
         //First line for xyz file is number involved.
-        xyz_file << (1+ion.near) << "\n";
+        int num = lattice.sites.size() + 1;
+        xyz_file << num << "\n";
+
         //Next line is a "comment", we will stuff the time here.
         sprintf(buffer, "%f\t%d\t%f\t%f\t%d\t%f\t%f\n",
                 ion.time,ion.steps,T,V,ion.near,dt,dr_max);
         xyz_file << buffer;
+
         //Next stuff the symbol, position, momentum and mass for the ion itself
         sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
                 ion.atom.symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom.mass);
         xyz_file << buffer;
-        //Then stuff in the nearby atoms
-        for(int i = 0; i<ion.near; i++)
+
+        //Then stuff in the entire lattice, why not...
+        for(int i = 0; i<num-1; i++)
         {
-            Site &s = *ion.near_sites[i];
+            Site &s = *lattice.sites[i];
             //Note that this is same format as the ion, except also contains the index.
             sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",
                     s.atom.symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom.mass,s.index);
