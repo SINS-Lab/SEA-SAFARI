@@ -2,6 +2,8 @@
 #define SPACE_MATH_H_INCLUDED
 #include "vec_math.h"
 
+#define M_PI           3.14159265358979323846  /* pi */
+
 extern double space_mask[3375][3];
 
 //Populates space_mask.

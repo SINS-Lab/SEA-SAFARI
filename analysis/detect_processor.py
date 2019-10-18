@@ -238,9 +238,6 @@ class Detector:
             maxX = np.max(x)
             maxY = np.max(y)
         
-        ax.set_xlim(right=maxX)
-        ax.set_ylim(top=maxY)
-        
         if basis is not None:
             minz = 1e6
             for site in basis:

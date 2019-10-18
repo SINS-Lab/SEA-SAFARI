@@ -10,7 +10,7 @@ _FILES = main.cpp \
       safio.cpp vec_math.cpp space_math.cpp\
       lattice.cpp ion.cpp \
       potentials.cpp hameq.cpp \
-      scat.cpp
+      scat.cpp traj.cpp
 FILES = $(patsubst %,$(SRCDIR)/%,$(_FILES))
 
 OUTNAME = Sea-Safari
