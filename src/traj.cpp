@@ -7,7 +7,7 @@
 #include <cmath>
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
-                        bool *froze, bool *left, double T)
+                        bool *froze, bool *left, double E)
 {
     //left crystal
     if(ion[2] > settings.Z1)
@@ -40,7 +40,7 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
         return false;
     }
     //Stuck in surface
-    if((T + ion.V) < settings.SENRGY)
+    if(E < settings.SENRGY)
     {
         *stuck = true;
         return false;
@@ -97,6 +97,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     bool froze = false;
     bool stuck = false;
     bool off_edge = false;
+    bool discont = false;
     bool left = false;
 
     //Kinetic Energy
@@ -116,6 +117,9 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //Maximum error on displacment for the ion.
     double dr_max;
 
+    //Energy now and up to 2 steps previously
+    double E1, E2, E3;
+
     //Distance in angstroms to consider far enough moved.
     //After it moves this far, it will re-calculate nearest.
     double r_reset = 1;
@@ -129,8 +133,11 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //Some initial conditions.
     psq = sqr(ion.p);
     T = psq * 0.5 / mass;
+    E1 = E2 = E3 = T;
+
     ion.steps = 0;
     ion.V = 0;
+    ion.V_t = 0;
 
     if(log)
     {
@@ -152,12 +159,23 @@ start:
     dt = std::min(std::max(dt, settings.DELLOW), settings.DELT0);
 
     //check if we are still in a good state to run.
-    validate(ion, &buried, &off_edge, &stuck, &froze, &left, T);
+    validate(ion, &buried, &off_edge, &stuck, &froze, &left, E1);
 
-    //These are our exit conditions
+    //These are our standard exit conditions
     if(froze || buried || stuck || left || off_edge)
     {
         if(log) debug_file << "Exited" << std::endl;
+        goto end;
+    }
+
+    //Check our energy trackers for discontinuities
+    //This essentially gives the value of the second derivative,
+    //Showing any major jumps in energy of the particle.
+    //This value should average around 0.01, so if larger than 10,
+    //Then we have a major jump.
+    if(fabs(E3 - 2*E2 + E1) > 10)
+    {
+        discont = true;
         goto end;
     }
 
@@ -209,9 +227,9 @@ start:
         change = 2;
     }
 
-    //Apply changes, this updates energy and lattice loctations.
+    //Apply changes, this updates lattice loctations.
     apply_hameq(ion, lattice, dt);
-
+    
     //check if we have gone too far, and need to re-calculate nearby atoms
     dr = r - ion.r;
     diff = sqr(dr.v);
@@ -234,9 +252,15 @@ start:
     psq = sqr(ion.p);
     T = psq * 0.5 / mass;
 
+    //Update energy trackers, propogate the energy backwards.
+    E3 = E2;
+    E2 = E1;
+    E1 = T + (ion.V + ion.V_t) / 2;
+
     //Log things if needed
     if(log)
     {
+        //Average potential energy
         double V = (ion.V + ion.V_t) / 2;
         double dV = ion.V_t - ion.V;
         //This log file is just the ion itself, not the full xyz including the lattice
@@ -298,13 +322,7 @@ end:
 
     double E = T;
     double pp = 0, pzz = 0, theta, phi;
-    if(froze)
-    {
-        theta = 0;
-        phi = 90;
-        E = -300;
-    }
-    else if(stuck)
+    if(stuck)
     {
         theta = 0;
         phi = 90;
@@ -316,11 +334,23 @@ end:
         phi = 90;
         E = -200;
     }
+    else if(froze)
+    {
+        theta = 0;
+        phi = 90;
+        E = -300;
+    }
     else if(off_edge)
     {
         theta = 0;
         phi = 90;
         E = -400;
+    }
+    else if(discont)
+    {
+        theta = 0;
+        phi = 90;
+        E = -500;
     }
     else
     {

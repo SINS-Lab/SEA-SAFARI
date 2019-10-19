@@ -7,8 +7,14 @@
  * Sets the flags indicated by the various pointers, by checking
  * conditions such as z-position, energy, and x/y.
  * 
- * @param ion - the ion to validate.
- * @param E - kinetic energy of the ion.
+ * @param ion - the ion to validate
+ * @param E - total energy of the ion
+ * 
+ * @param buried - deeper than BDIST into the surface
+ * @param off_edge - ran off the edge of the crystal
+ * @param stuck - has less energy than SENRGY
+ * @param froze - took too many steps to compute
+ * @param left - left the surface, ie got above Z0
  * 
  */ 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
