@@ -166,7 +166,7 @@ class Detector:
         if self.E_over_E0:
             res = res/self.safio.E0
         
-        step = (self.emax - self.emin) / numpoints
+        step = 1/numpoints
         winv = 1/res
         energy = np.array([(self.emin + x*step) for x in range(numpoints)])
         
@@ -204,6 +204,8 @@ class Detector:
             fig, ax = plt.subplots()
             ax.plot(energy, intensity)
             ax.set_ylim(0,1)
+            if self.E_over_E0:
+                ax.set_xlim(0,1)
             
             if self.E_over_E0:
                 kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
