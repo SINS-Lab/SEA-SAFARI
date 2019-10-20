@@ -12,11 +12,6 @@ void update_site(Site &s, double dt)
     Atom &atom = s.atom;
     double mass = atom.mass;
 
-    //Change in momentum
-    Vec3d dp;
-    //Change in position
-    Vec3d dr;
-
     //Force here
     Vec3d F;
     //Force there
@@ -26,10 +21,15 @@ void update_site(Site &s, double dt)
     F_t.set(s.dp_dt_t);
 
     //Average force * dt
-    dp = (F + F_t) * 0.5 * dt;
+    F += F_t;
+    F *= 0.5 * dt;
+    Vec3d dp = F;
 
+    F.set(s.dp_dt);
     //Error in predicted and corrected positions
-    dr = (F_t - F) * 0.25 * dt * dt / mass;
+    F_t -= F;
+    F_t *= 0.25 * dt * dt / mass;
+    Vec3d dr = F_t;
 
     //New Location, adjusted by dr
     s.r[0] = s.r_t[0] - dr[0];

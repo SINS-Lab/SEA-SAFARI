@@ -11,10 +11,14 @@ public:
     double operator*(Vec3d b);
     Vec3d operator*(double b);
     Vec3d operator/(double b);
+    Vec3d &operator*=(const double &b);
+    Vec3d &operator/=(const double &b);
     Vec3d normalize();
     Vec3d cross(Vec3d b);
     Vec3d operator+(Vec3d b);
     Vec3d operator-(Vec3d b);
+    Vec3d &operator+=(const Vec3d &b);
+    Vec3d &operator-=(const Vec3d &b);
     Vec3d operator-(double b[]);
     void set(double x, double y, double z);
     void set(double arr[]);
