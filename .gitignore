@@ -20,3 +20,7 @@ bin/Debug/*.xyz
 bin/Debug/*.crys
 *.exe
 
+#profiling output stuff not needed.
+*.out
+*.stats
+
