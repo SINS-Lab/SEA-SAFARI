@@ -105,7 +105,6 @@ class Detector:
         self.emin = 1e20
         self.emax = -1e20
         self.safio = None
-        self.E_over_E0 = True
         self.plots = True
         self.pics = False
 
@@ -116,10 +115,6 @@ class Detector:
         if line[3] < 0:
         #These shouldn't be in detector
             return
-        if(self.E_over_E0):
-            line = line.copy()
-            line[3] = line[3]/self.safio.E0
-        
         self.detections = np.vstack((self.detections, line))
         e = line[3]
         if e < self.emin:
@@ -162,30 +157,26 @@ class Detector:
         return angles, intensity
         
     def spectrumE(self, res, numpoints=1000):
-        
-        if self.E_over_E0:
-            res = res/self.safio.E0
-        
+    
+        res = res/self.safio.E0
         step = 1/numpoints
         winv = 1/res
-        energy = np.array([(self.emin + x*step) for x in range(numpoints)])
+        energy = np.array([(x*step) for x in range(numpoints)])
         
-        eArr = self.detections[...,3]
+        eArr = self.detections[...,3]/self.safio.E0
         aArr = self.detections[...,7]
-
+        
+        #Convert the points into gaussians
         intensity = integrate(numpoints, winv, eArr, aArr, energy)
+        
+        #Calculate the kinematic factor
         k = kinematicFactor(self.tmax, self.safio.THETA0,\
                             self.safio.MASS,self.safio.ATOMS[0][0])
+                            
         file = self.outputprefix\
                   + 'Energy-'\
                   + str(self.emin) + '-'\
                   + str(self.emax)+'_'\
-                  + str(res)+'.txt'
-      
-        if self.E_over_E0:
-            file = self.outputprefix\
-                  + 'Energy_E_over_E0-'\
-                  + str(self.tmax) + '-'\
                   + str(res)+'.txt'
 
         out = open(file, 'w')
@@ -199,24 +190,26 @@ class Detector:
                 out.write(str(energy[i])+'\t'+str(intensity[i])+'\n')
         out.close()
         
-        
         if self.plots or self.pics:
             fig, ax = plt.subplots()
-            ax.plot(energy, intensity)
-            ax.set_ylim(0,1)
-            if self.E_over_E0:
-                ax.set_xlim(0,1)
             
-            if self.E_over_E0:
-                kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
-                plt.legend()
+            ax.plot(energy, intensity)
+            #ax.set_xlim(0,self.safio.E0)
+            ax.set_ylim(0,1)
+            ax.set_xlim(0,1)
+            
+            ax2 = ax.twiny()
+            ax2.set_xlim(0,self.safio.E0)
+            
+            kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
             
             ax.set_title("I_E, Detections: "+str(len(aArr)))
-            if self.E_over_E0:
-                ax.set_xlabel('Energy (E/E0)')
-            else:
-                ax.set_xlabel('Energy (eV)')
+            
+            ax.set_xlabel('Energy (E/E0)')
+            ax2.set_xlabel('Energy (eV)')
+
             ax.set_ylabel('Intensity')
+            plt.legend(handles=[kplot])
             if self.plots:
                 fig.show()
             #The following saves the plot as a png file
@@ -355,10 +348,8 @@ class Detector:
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
             energy = round(self.detections[index][3], 2)
-            if self.E_over_E0:    
-                text.set_text(str(close)+', '+str(energy))
-            else:
-                text.set_text(str(close)+', '+str(energy)+'eV')
+            value = '{}, {}eV ({})'.format(close, energy, round(energy/self.safio.E0,3))
+            text.set_text(value)
             self.p.set_xdata([close[0]])
             self.p.set_ydata([close[1]])
             fig.canvas.draw()
@@ -391,7 +382,7 @@ class StripeDetector(Detector):
 
     def isInDetector(self, theta, phi, e):
         #These are failed trajectories, shouldn't be here!
-        if e<0:
+        if e < 0:
             return False;
         return theta > self.tmin and theta < self.tmax\
              and phi > self.phiMin and phi < self.phiMax
@@ -413,6 +404,9 @@ class SpotDetector(Detector):
         self.quadDots.append(self.dir.dot(unit(theta, phi + size/2)))
 
     def isInDetector(self, theta, phi, e):
+        #These are failed trajectories, shouldn't be here!
+        if e < 0:
+            return False;
         dir = unit(theta, phi)
         dotdir = dir.dot(self.dir)
         for dot in self.quadDots:
@@ -434,7 +428,6 @@ class Spectrum:
         self.name = None
         self.plots = True
         self.pics = False
-        self.E_over_E0 = True
         self.rawData = []
         self.stuck = []
         self.buried = []
@@ -474,12 +467,10 @@ class Spectrum:
         self.detector.plots = self.plots
         self.detector.pics = self.pics
         self.detector.outputprefix = self.name+'_spectrum_'
-        self.detector.E_over_E0 = self.E_over_E0
-        if not self.E_over_E0:
-            if emin!=-1e6:
-                self.detector.emin = emin
-            if emax!=-1e6:
-                self.detector.emax = emax
+        
+        self.detector.emin = emin
+        self.detector.emax = emax
+        
         self.detector.clear()
         for i in range(len(data)):
             traj = data[i]
