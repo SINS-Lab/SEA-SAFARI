@@ -176,7 +176,7 @@ struct Safio
     std::vector<double>NZ;
     std::vector<double>ZMAX;
 
-    void load();
+    void load(std::string safio_file);
 };
 
 //Global settings variable, we only need this loaded once anyway.

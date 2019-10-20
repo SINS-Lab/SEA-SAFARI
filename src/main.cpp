@@ -24,12 +24,38 @@ std::ofstream crystal_file;
 std::default_random_engine rng;
 double space_mask[3375][3];
 
-int main()
+int main(int argc,char* argv[])
 {
     //Starts total runtime timer.
     clock_t load = clock();
+
+    std::string safio_file;
+    if(argc < 2)
+    {
+        std::ifstream input;
+        input.open(safio_file.c_str());
+        if (input.is_open())
+        {
+            while(getline(input,safio_file))
+            {
+                std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
+                break;
+            }
+            input.close();
+        }
+        else
+        {
+            std::cout << "Error opening Safari.input" << '\n';
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        safio_file = argv[1];
+    }
+    
     //Load the input file
-    settings.load();
+    settings.load(safio_file);
 
     //Initialize potentials
     init_potentials();
