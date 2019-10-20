@@ -1,6 +1,11 @@
 #include "xyz.h"
 #include <cstdio>
 
+XYZ smooth(const XYZ& original)
+{
+    return original;
+}
+
 int main(int argc,char* argv[])
 {
     if(argc==1) 
@@ -13,6 +18,12 @@ int main(int argc,char* argv[])
     std::ifstream input;
     input.open(file_name);
     xyz.load(input);
+    input.close();
+
+    std::ofstream output;
+    output.open(file_name);
+    xyz = smooth(xyz);
+    xyz.save(output);
 
     return 0;
 }
