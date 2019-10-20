@@ -1,4 +1,5 @@
 #include "safio.h"
+#include "string_uitls.h"
 #include <vector>
 
 void Safio::load(std::string safio_file)
@@ -30,28 +31,14 @@ void Safio::load(std::string safio_file)
 
         while(getline(safio_input,line))
         {
-            int i = 0;
-
             debug_file << line << '\n';
 
             //Skip blank lines
             if(line=="")
                 continue;
 
-            std::istringstream iss(line);
-
-            //TODO decide on max number or args.
-            std::string args[100];
-
-            //Split the string into an array.
-            do
-            {
-                std::string subs;
-                iss >> subs;
-                args[i] = subs;
-                i++;
-            }
-            while (iss);
+            //Splits line for parsing.
+            std::vector<std::string> args = split(line);
 
             if(n==1)
             {
