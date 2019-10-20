@@ -23,6 +23,8 @@ FILES_XYZ = $(patsubst %,$(SRCDIR)/%,$(_FILES_XYZ))
 OUTNAME = Sea-Safari
 OUTPUT_D = $(patsubst %,$(OUTDIR_D)/%,$(OUTNAME))
 OUTPUT_R = $(patsubst %,$(OUTDIR_R)/%,$(OUTNAME))
+OUTNAME_Z = XYZ
+OUTPUT_X = $(patsubst %,$(OUTDIR_D)/%,$(OUTNAME_Z))
 
 #xyz: XYZ_PROCESSOR
 all: Sea-Safari-Debug Sea-Safari-Release XYZ_PROCESSOR
@@ -34,4 +36,4 @@ Sea-Safari-Release: $(FILES_SAFARI)
 	$(CXX) $(CXXFLAGS_R) -o $(OUTPUT_R) $(FILES_SAFARI)
 
 XYZ_PROCESSOR: $(FILES_XYZ)
-	$(CXX) $(CXXFLAGS_R) -o $(OUTDIR_R) $(FILES_XYZ)
+	$(CXX) $(CXXFLAGS_R) -o $(OUTPUT_X) $(FILES_XYZ)

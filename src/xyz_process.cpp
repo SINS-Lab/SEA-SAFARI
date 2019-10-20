@@ -24,6 +24,7 @@ int main(int argc,char* argv[])
     output.open(file_name);
     xyz = smooth(xyz);
     xyz.save(output);
+    output.close();
 
     return 0;
 }
