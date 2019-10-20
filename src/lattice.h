@@ -50,8 +50,8 @@ struct Lattice
 
     void build_lattice();
     void add_site(Atom a, double px, double py, double pz);
-    Cell* get_cell(int pos_hash);
-    Cell* make_cell(int pos_hash);
+    Cell* get_cell(double x, double y, double z);
+    Cell* make_cell(double x, double y, double z);
 
 };
 

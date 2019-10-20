@@ -6,9 +6,9 @@
 
 int to_hash(double x, double y, double z)
 {
-    int i = (int)(x/settings.AX + 512);
-    int j = (int)(y/settings.AZ + 512);
-    int k = (int)(z/settings.AY + 512);
+    int i = (int)(x/5.0 + 512);
+    int j = (int)(y/5.0 + 512);
+    int k = (int)(z/5.0 + 512);
     return i + (j << 10) + (k << 20);
 }
 
@@ -54,21 +54,20 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
         return;
     }
     // Fill z
+    if (index >= layerSize && index < diffCb - layerSize)
     {
-        if (index >= layerSize && index < diffCb - layerSize)
-        {
-            int temp = (index - layerSize) / (diffSq) + 1;
-            temp -= radius;
-            temp = temp > radius ? radius : temp < -radius ? -radius : temp;
-            location[2] = temp;
-        }
-        else
-        {
-            location[2] = index > layerSize ? -radius : radius;
-        }
+        int temp = (index - layerSize) / (diffSq) + 1;
+        temp -= radius;
+        temp = temp > radius ? radius : temp < -radius ? -radius : temp;
+        location[2] = temp;
     }
+    else
+    {
+        location[2] = index > layerSize ? -radius : radius;
+    }
+    
     // Fill x
-    if (!(location[2  ] == radius || location[2  ] == -radius))
+    if (!(location[2] == radius || location[2] == -radius))
     {
         int temp = (index) % diffSq;
         if (temp < diffSq / 2)
@@ -105,7 +104,7 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
         location[0] = temp;
     }
     // Fill y
-    if (!(location[2  ] == radius || location[2  ] == -radius))
+    if (!(location[2] == radius || location[2] == -radius))
     {
         int temp = (index) % diffSq;
         temp = (temp + 2 * radius - 1) % diffSq + 1;

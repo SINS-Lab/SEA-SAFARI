@@ -72,10 +72,8 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         double x = loc[0] + cell_x;
         double y = loc[1] + cell_y;
         double z = loc[2] + cell_z;
-        //Convert to the coordinate used for mapping
-        pos_hash = to_hash(x, y, z);
         
-        Cell* cell = lattice.get_cell(pos_hash);
+        Cell* cell = lattice.get_cell(x, y, z);
         //No cell here? skip.
         if(cell == NULL) continue;
         //Reset check stamp if new ion.

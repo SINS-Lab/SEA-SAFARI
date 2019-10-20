@@ -77,28 +77,31 @@ void predict_site_location(Site &s, double dt)
 void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 {
     //Some useful variables.
-    double dx, dy, dz, 
-           fx, fy, fz, 
+    double dx = 0, dy = 0, dz = 0, 
+           fx = 0, fy = 0, fz = 0, 
            ftx = 0, fty = 0, ftz = 0;
-
-    //Reset V
-    if(predicted) ion.V_t = 0;
-    else ion.V = 0;
 
     //Force to populate
     double *F;
-
     //Normally is this.
     F = ion.dp_dt;
 
     //Force on the target.
     double *F_at;
 
+    //Relevant potential for this run
+    double *V;
+    V = &ion.V;
+
     //Ion coordinates
     double x, y, z;
 
     //Lattice atom coordintates.
     double ax, ay, az;
+
+    bool recoil = settings.RECOIL;
+    bool springs = settings.CORR;
+    double atomk = settings.ATOMK; 
 
     //Initialize ion coordinates
     x = ion[0];
@@ -110,13 +113,17 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     {
         //Use the one for next time step
         F = ion.dp_dt_t;
+        V = &ion.V_t;
         //Use predictions
         x = ion.r_t[0];
         y = ion.r_t[1];
         z = ion.r_t[2];
     }
 
-    //Initialize the force array.
+    //Reset V
+    *V = 0;
+
+    //Reset the force array.
     F[0] = 0;
     F[1] = 0;
     F[2] = 0;
@@ -161,7 +168,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             //No force if ion is on an atom.
             if(r==0)
             {
-                debug_file << "Ion intersected with atom?" <<std::endl;
+                // debug_file << "Ion intersected with atom?" <<std::endl;
                 continue;
             }
 
@@ -171,8 +178,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             double dV_dr = dVr_dr(r, s.atom.index);
 
             //Potential for this location.
-            if(predicted) ion.V_t += Vr_r(r, s.atom.index);
-            else ion.V += Vr_r(r, s.atom.index);
+            *V += Vr_r(r, s.atom.index);
 
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
@@ -197,10 +203,10 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             ftz += fz;
 
             //Apply spring forces.
-            if(settings.CORR)
+            if(springs)
             {
                 //Use einstein springs.
-                if(settings.ATOMK <= 1e-30)
+                if(atomk <= 1e-30)
                 {   
                     //F = -kx
                     F_at[0] -= s.atom.spring[0] * (s.r - s.r_0);
@@ -215,7 +221,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             }
 
 
-            if(settings.RECOIL && !predicted)
+            if(recoil && !predicted)
             {
                 //set the predictions
                 predict_site_location(s, dt);

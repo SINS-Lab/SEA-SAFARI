@@ -125,15 +125,12 @@ void Lattice::build_lattice()
 
 void Lattice::add_site(Atom a, double px, double py, double pz)
 {
-    //This hashes to the current cube
-    int pos_hash = to_hash(px, py, pz);
-
     int *cel_num;
     int num = 0;
     Site *cel_sites;
 
     //This makes the cell if it doesn't exist, otherwise gets old one.
-    Cell *cell = make_cell(pos_hash);
+    Cell *cell = make_cell(px, py, pz);
 
     //Get the values from the cell.
     cel_num = &(cell->num);
@@ -162,16 +159,20 @@ void Lattice::add_site(Atom a, double px, double py, double pz)
     *cel_num = num + 1;
 }
 
-Cell* Lattice::get_cell(int pos_hash)
+Cell* Lattice::get_cell(double x, double y, double z)
 {
+    int pos_hash = to_hash(x,y,z);
     if(cell_map.find(pos_hash) == cell_map.end()) return NULL;
     return cell_map[pos_hash];
 }
 
-Cell* Lattice::make_cell(int pos_hash)
+Cell* Lattice::make_cell(double x, double y, double z)
 {
+    int pos_hash = to_hash(x,y,z);
     Cell* cell = get_cell(pos_hash);
+    //Return the old cell we had.
     if(cell != NULL) return cell;
+    //Otherwise, make a new one.
     cell = new Cell();
     cell_map[pos_hash] = cell;
     cell->num = 0;
@@ -188,9 +189,7 @@ void Site::reset()
 
     std::copy(std::begin(zeros), std::end(zeros), dp_dt);
     std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
-
-    //TODO set the momentum for the site
-    //base on thermal stuff
+    
     std::copy(std::begin(p_0), std::end(p_0), p);
 }
 
