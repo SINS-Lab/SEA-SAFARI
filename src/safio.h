@@ -89,10 +89,12 @@ struct Safio
     double Z1;
     int MAX_STEPS;
 
-    double RRMIN; //Unused
-    double RRSTEP; //Unused
-    double ZMIN; //Unused
-    double ZSTEP; //Unused
+    double R_MAX; //Maximum R value for interactions
+    double rr_max;// ^ squared.
+    double DR_MIN_TAB; //Step for cached values
+
+    double ZMIN; //Start point for values caches
+    double ZSTEP; //Step for cached values
 
     int MAXDIV; //Unused
     int MINDIV; //Unused
@@ -138,12 +140,12 @@ struct Safio
     //Basis Coordinates
     int NBASIS;
     std::vector<Site> BASIS;
-    int NTYPES;
 
     //Surface face
     double face[3];
 
     //Basis Atoms
+    int NTYPES;
     std::vector<Atom> ATOMS;
     //Whether the lattice sites are springy
     bool CORR;

@@ -4,6 +4,8 @@
 
 const double eqsr = 14.398;
 
+void init_potentials();
+
 /**
  * Computes the potential for the
  * given radial separation

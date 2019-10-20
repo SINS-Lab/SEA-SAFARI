@@ -11,6 +11,7 @@
 #include <time.h>
 #include <iomanip>
 #include "scat.h"
+#include "potentials.h"
 
 //Initialize the global variables.
 Safio settings;
@@ -29,6 +30,9 @@ int main()
     clock_t load = clock();
     //Load the input file
     settings.load();
+
+    //Initialize potentials
+    init_potentials();
 
     char buffer[200];
 
@@ -85,9 +89,14 @@ int main()
         {
             chainscat(lattice, &n);
         }
+        //Forces output of remaining trajectories.
+        save(NULL);
     }
-    //Forces output of remaining trajectories.
-    save(NULL);
+    else
+    {
+        //Testing stuff goes here.
+    }
+    
     
     //Compute time per trajectory.
     double dt = ((double)clock() - start) / CLOCKS_PER_SEC;

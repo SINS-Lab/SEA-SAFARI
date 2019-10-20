@@ -124,8 +124,9 @@ void Safio::load()
                 }
                 if(n==11)
                 {
-                    RRMIN = atof(args[0].c_str());
-                    RRSTEP = atof(args[1].c_str());
+                    R_MAX = atof(args[0].c_str());
+                    rr_max = R_MAX * R_MAX;
+                    DR_MIN_TAB = atof(args[1].c_str());
                 }
                 if(n==12)
                 {

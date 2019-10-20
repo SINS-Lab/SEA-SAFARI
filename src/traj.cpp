@@ -171,9 +171,9 @@ start:
     //Check our energy trackers for discontinuities
     //This essentially gives the value of the second derivative,
     //Showing any major jumps in energy of the particle.
-    //This value should average around 0.01, so if larger than 10,
-    //Then we have a major jump.
-    if(fabs(E3 - 2*E2 + E1) > 10)
+    //This value should average around 0.01, so if larger than 50,
+    //Then we have a major jump.-
+    if(fabs(E3 - 2*E2 + E1) > 50)
     {
         discont = true;
         goto end;

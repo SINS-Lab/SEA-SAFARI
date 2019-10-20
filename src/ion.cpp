@@ -52,9 +52,8 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //Location of mask
     Vec3d loc;
 
-    //TODO make this in safio somewhere.
-    double near_distance_sq = 10*10;
-
+    //Only particles closer than this are considered.
+    double near_distance_sq = settings.rr_max;
     double rr_min = near_distance_sq;
 
     //volume of the cube to check.

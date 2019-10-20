@@ -8,13 +8,13 @@
 t                                      RECOIL
 5.0000                                 INTERACT.HEIGHT, ie Z0/ZMax
 4000                                   Max Step Count
-0.   2.50000e-03                       R MIN,STEP unused
-0.   3.00000e-04                       Z MIN,STEP unused
+10.0 2.50000e-03                       R Max - Max interaction distance, DR_MIN_TAB
+0.   3.00000e-04                       Z MIN,STEP
 1 1                                    MAXDIV, MINDIV *1 unused
-1000000                                numcha, if 1, does single shot (SS)
+10000                                  numcha, if 1, does single shot (SS)
 0 .01 4.0786                           XStart/Step/End SS at XStart
 0 .01 4.0786                           YStart/Step/End SS at YStart
-666        777                         NWRITX, NWRITY
+666        666                         NWRITX, NWRITY
 5.0     5.0                            RAX RAY
 4 1                                    NPAR, IPOT
 9125.84 4.44 66703.59 11.24            Pars ^, There should 4 of these per typeat
