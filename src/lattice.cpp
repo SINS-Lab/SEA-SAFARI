@@ -168,11 +168,11 @@ Cell* Lattice::get_cell(double x, double y, double z)
 
 Cell* Lattice::make_cell(double x, double y, double z)
 {
-    int pos_hash = to_hash(x,y,z);
-    Cell* cell = get_cell(pos_hash);
+    Cell* cell = get_cell(x,y,z);
     //Return the old cell we had.
     if(cell != NULL) return cell;
     //Otherwise, make a new one.
+    int pos_hash = to_hash(x,y,z);
     cell = new Cell();
     cell_map[pos_hash] = cell;
     cell->num = 0;
@@ -189,7 +189,7 @@ void Site::reset()
 
     std::copy(std::begin(zeros), std::end(zeros), dp_dt);
     std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
-    
+
     std::copy(std::begin(p_0), std::end(p_0), p);
 }
 
