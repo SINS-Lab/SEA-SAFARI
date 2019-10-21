@@ -240,9 +240,8 @@ class SafariInput:
                 if o <= 0:
                     self.MAXDIV = args[0]
                     self.MINDIV = args[1]
-                    if self.MINDIV == self.MAXDIV and self.MAXDIV == 1:
-                        # This will be decremented after leaving this if
-                        o = 4
+                    # This will be decremented after leaving this if
+                    o = 4
                 else:
                     if o == 3:
                         self.NUMCHA = args[0]
@@ -380,7 +379,7 @@ class SafariInput:
                 self.ATOMK = args[1]
                 self.RNEIGH = args[2]
             # load in the face
-            if n == 27:
+            if n == 26:
                 self.face = [args[0], args[1], args[2]]
                 
             # Decrement our sub-line first.
@@ -392,36 +391,26 @@ class SafariInput:
         return
 
     def isMonteCarlo(self):
-        return self.MINDIV == self.MAXDIV and self.MAXDIV == 1\
-           and self.NWRITX == 666 and self.NWRITY == 666
+        return self.NWRITX == 666 and self.NWRITY == 666
 
     def setMonteCarlo(self, montecarlo):
         if montecarlo:
-            self.MAXDIV = 1
-            self.MINDIV = 1
             self.NWRITX = 666
             self.NWRITY = 666
         else:
-            self.MAXDIV = 10
-            self.MINDIV = 2
-            self.NWRITX = 10
-            self.NWRITY = 10
+            self.NWRITX = 666
+            self.NWRITY = 888
 
     def isGridScat(self):
-        return self.MINDIV == self.MAXDIV and self.MAXDIV == 1\
-           and self.NWRITX == 666 and self.NWRITY == 777
+        return self.NWRITX == 666 and self.NWRITY == 777
 
     def setGridScat(self, grid):
         if grid:
-            self.MAXDIV = 1
-            self.MINDIV = 1
             self.NWRITX = 666
             self.NWRITY = 777
         else:
-            self.MAXDIV = 10
-            self.MINDIV = 2
-            self.NWRITX = 10
-            self.NWRITY = 10
+            self.NWRITX = 666
+            self.NWRITY = 888
 
     def save(self, file=None):
         if file is None:
@@ -449,8 +438,7 @@ class SafariInput:
             +  serialize(self.ZMIN, self.ZSTEP)  + '\n' \
             +  serialize(self.MAXDIV, self.MINDIV)  + '\n'
         
-        if self.MINDIV == self.MAXDIV and self.MAXDIV == 1:
-            file = file \
+        file = file \
             +  serialize(self.NUMCHA)  + '\n' \
             +  serialize(self.XSTART, self.XSTEP, self.XSTOP)  + '\n' \
             +  serialize(self.YSTART, self.YSTEP, self.YSTOP)  + '\n'
