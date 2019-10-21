@@ -81,11 +81,18 @@ def gauss(x, winv):
 def integrate(numpoints, winv, points, areas, axis):
     # Initializing the array to 0 breaks for some reason.
     intensity = np.array([1e-60 for x in range(numpoints)])
+    
+    zero = np.sum(areas)==0
+    
     # We vectorize the maths here, so it only needs 1 loop.
     for i in range(numpoints):
         # eArr - energy[i] is the coordinate for the gaussian
         # Intensity of gaussian at this point
-        intensity[i] = np.sum(gauss(points - axis[i], winv) * areas)
+        if zero:
+            intensity[i] = np.sum(gauss(points - axis[i], winv))
+        else:
+            intensity[i] = np.sum(gauss(points - axis[i], winv) * areas)
+        
         # Cull out values that dont play nicely in excel
         if intensity[i] < 1e-60:
             intensity[i] = 0
