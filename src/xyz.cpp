@@ -20,7 +20,7 @@ void XYZ_Single::load(std::ifstream& input, int number)
         std::vector<std::string> args = split(line);
         atoms[i] = args[0];
         num_per_row = args.size()-1;
-        values[i] = to_double_array(args, 1, args.size());
+        values[i] = to_double_array(args, 1, num_per_row);
     }
 }
 

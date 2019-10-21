@@ -67,7 +67,7 @@ struct Safio
     double THETA0;
     double PHI0;
     double MASS;
-    std::string SYMION;
+    char* SYMION;
 
     //Parameters for the detector
     double EMIN;
@@ -76,7 +76,7 @@ struct Safio
     double ASIZE;
 
     int NDTECT;
-    std::vector<double>DTECTPAR;
+    double* DTECTPAR;
 
     //Integration parameters
     double DELLOW;
@@ -111,12 +111,12 @@ struct Safio
     //Site Potential Values
     int NPAR;
     int IPOT;
-    std::vector<double>POTPAR;
+    double* POTPAR;
 
     //Image Potential Values
     int NIMPAR;
     int IIMPOT;
-    std::vector<double>PIMPAR;
+    double* PIMPAR;
 
     double TEMP;
     double SEED;
@@ -142,7 +142,7 @@ struct Safio
     std::vector<Site> BASIS;
 
     //Surface face
-    double face[3];
+    double* face;
 
     //Basis Atoms
     int NTYPES;
@@ -171,10 +171,10 @@ struct Safio
     double TOL;
     int NBG;
     double GTOL;
-    std::vector<double>GMAX;
-    std::vector<double>NG;
-    std::vector<double>NZ;
-    std::vector<double>ZMAX;
+    double* GMAX;
+    double* NG;
+    double* NZ;
+    double* ZMAX;
 
     void load(std::string safio_file);
 };

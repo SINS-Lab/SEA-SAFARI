@@ -20,8 +20,8 @@ std::vector<std::string> split(std::string input)
 
 double* to_double_array(std::vector<std::string> input, int start, int end)
 {
-    double *ret = new double[end - start];
-    for(int i = start; i<end; i++)
+    double *ret = new double[end - start + 1];
+    for(int i = start; i<=end; i++)
     {
         ret[i] = atof(input[i].c_str());
     }

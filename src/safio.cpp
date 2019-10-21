@@ -46,7 +46,7 @@ void Safio::load(std::string safio_file)
                 THETA0 = atof(args[1].c_str());
                 PHI0 = atof(args[2].c_str());
                 MASS = atof(args[3].c_str());
-                SYMION = args[4];
+                SYMION = &args[4][0];
                 // Ensure phi is in correct range
                 while (PHI0 > 180)
                     PHI0 -= 360;
@@ -66,10 +66,7 @@ void Safio::load(std::string safio_file)
             }
             if(n==4)
             {
-                DTECTPAR.push_back(atof(args[0].c_str()));
-                DTECTPAR.push_back(atof(args[1].c_str()));
-                DTECTPAR.push_back(atof(args[2].c_str()));
-                DTECTPAR.push_back(atof(args[3].c_str()));
+                DTECTPAR = to_double_array(args, 0, 3);
             }
             if(n==5)
             {
@@ -158,10 +155,7 @@ void Safio::load(std::string safio_file)
             }
             if(n==17)
             {
-                for (int i = 0; i < NPAR; i++)
-                {
-                    POTPAR.push_back(atof(args[i].c_str()));
-                }
+                POTPAR = to_double_array(args, 0, NPAR - 1);
             }
             if(n==18)
             {
@@ -172,10 +166,7 @@ void Safio::load(std::string safio_file)
             {
                 if(o<=0)
                 {
-                    for (int i = 0; i < NIMPAR; i++)
-                    {
-                        PIMPAR.push_back(atof(args[i].c_str()));
-                    }
+                    PIMPAR = to_double_array(args, 0, NIMPAR - 1);
                     //If this is the case, we have more arguments
                     if(IIMPOT == 2)
                     {
@@ -192,17 +183,11 @@ void Safio::load(std::string safio_file)
                     }
                     else if(o==5)
                     {
-                        for (int i = 0; i < NBZ; i++)
-                        {
-                            ZMAX.push_back(atof(args[i].c_str()));
-                        }
+                        ZMAX = to_double_array(args, 0, NBZ - 1);
                     }
                     else if(o==4)
                     {
-                        for (int i = 0; i < NBZ; i++)
-                        {
-                            NZ.push_back(atof(args[i].c_str()));
-                        }
+                        NZ = to_double_array(args, 0, NBZ - 1);
                     }
                     else if(o==3)
                     {
@@ -211,17 +196,11 @@ void Safio::load(std::string safio_file)
                     }
                     else if(o==2)
                     {
-                        for (int i = 0; i < NBG; i++)
-                        {
-                            GMAX.push_back(atof(args[i].c_str()));
-                        }
+                        GMAX = to_double_array(args, 0, NBG - 1);
                     }
                     else if(o==1)
                     {
-                        for (int i = 0; i < NBG; i++)
-                        {
-                            NG.push_back(atof(args[i].c_str()));
-                        }
+                        NG = to_double_array(args, 0, NBG - 1);
                     }
                 }
             }
@@ -298,9 +277,7 @@ void Safio::load(std::string safio_file)
             }
             if(n==27)
             {
-                face[0] = atof(args[0].c_str());
-                face[1] = atof(args[1].c_str());
-                face[2] = atof(args[2].c_str());
+                face = to_double_array(args, 0, 2);
             }
             // Decrement our sub-line first.
             o--;
