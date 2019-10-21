@@ -11,7 +11,7 @@ t                            Targets Recoil
 10.0 0.0025                  Max interaction distance, R table step
 0.0 0.0003                   ^ for Z, not implemented atm
 4 50                         Max distance for search, Threshold for dE
-1000                         Montecarlo/chainscat runs, if 1 does Single shot
+1                         Montecarlo/chainscat runs, if 1 does Single shot
 -4.0786 0.01 4.0786          X range (min, step, max)
 -4.0786 0.01 4.0786          Y range (min, step, max)
 666 666                      SCAT_FLAG, SCAT_TYPE

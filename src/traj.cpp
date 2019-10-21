@@ -294,7 +294,7 @@ start:
         double V = (ion.V + ion.V_t) / 2;
         double dV = ion.V_t - ion.V;
         //This log file is just the ion itself, not the full xyz including the lattice
-        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%d\t%f\t%f\t%f\n",
+        sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\t%.3f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
                 ion.time,ion.steps,T,V,(T+V),ion.near,dt,dr_max,dV);
         traj_file << buffer;
@@ -315,13 +315,14 @@ start:
         xyz_file << num << "\n";
 
         //Next line is a "comment", we will stuff the time here.
-        sprintf(buffer, "%f\t%d\t%f\t%f\t%d\t%f\t%f\n",
+        sprintf(buffer, "%f\t%d\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
                 ion.time,ion.steps,T,V,ion.near,dt,dr_max);
         xyz_file << buffer;
 
         //Next stuff the symbol, position, momentum and mass for the ion itself
-        sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
-                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom->mass);
+        //The ion is given a fake index of -1
+        sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\n",
+                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom->mass,-1);
         xyz_file << buffer;
 
         //Then stuff in the entire lattice, why not...
@@ -329,7 +330,7 @@ start:
         {
             Site s = *lattice.sites[i];
             //Note that this is same format as the ion, except also contains the index.
-            sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",
+            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\n",
                     s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom->mass,s.index);
             xyz_file << buffer;
         }

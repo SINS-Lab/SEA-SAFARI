@@ -25,7 +25,7 @@ _FILES_SAFARI_D = main.cpp \
 FILES_SAFARI_D = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_D))
 
 _FILES_XYZ = xyz_process.cpp xyz.cpp \
-             string_utils.cpp
+             string_utils.cpp vec_math.cpp
 FILES_XYZ = $(patsubst %,$(SRCDIR)/%,$(_FILES_XYZ))
 
 OUTNAME = Sea-Safari

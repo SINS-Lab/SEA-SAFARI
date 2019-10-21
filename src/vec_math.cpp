@@ -1,5 +1,4 @@
 #include "vec_math.h"
-#include "safio.h"
 #include <vector>
 #include <math.h>
 
@@ -112,7 +111,7 @@ Vec3d Vec3d::normalize()
     if(length>0)
     {
         n.set(v);
-        n = n * (1.0d/length);
+        n = n * (1.0/length);
     }
     else
     {

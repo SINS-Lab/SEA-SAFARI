@@ -23,7 +23,8 @@ double* to_double_array(std::vector<std::string> input, int start, int end)
     double *ret = new double[end - start + 1];
     for(int i = start; i<=end; i++)
     {
-        ret[i] = atof(input[i].c_str());
+        //Index on the returned array should start at 0, rather than start.
+        ret[i-start] = atof(input[i].c_str());
     }
     return ret;
 }
