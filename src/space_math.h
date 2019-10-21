@@ -34,14 +34,21 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
  */
 void index_to_loc(int index, Vec3d &location);
 
-//This builds a rotation matrix that will rotate
-//Vector b onto Vector a
+/**
+ * Makes a matrix which will rotate the given direction
+ * onto the given axis.
+ * 
+ * @param direction - the reference direction
+ * @param axis - the vector to rotate direction onto.
+ */ 
 Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
 
 /**
  * This converts the given location into an index.
  * All locations within ion-axis-aligned cubes, of size
- * settings.AX*AY*AZ will map to the same hash.
+ * 5x5x5 A^3 will map to the same hash, which is
+ * guarenteed to be > 0, so long as the location
+ * is within 512A of the origin.
  * 
  * This allows for quick lookup of Cells of sites in 
  * an int-indexed map.

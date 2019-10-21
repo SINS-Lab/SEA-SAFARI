@@ -158,7 +158,7 @@ int main(int argc,char* argv[])
             std::cout << "Running Montecarlo " << std::endl;
             montecarloscat(lattice, &n);
         }
-        else
+        else if(settings.SCAT_TYPE == 888)
         {
             chainscat(lattice, &n);
         }
