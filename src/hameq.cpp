@@ -210,9 +210,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 if(atomk <= 1e-30)
                 {   
                     //F = -kx
-                    F_at[0] -= s.atom->spring[0] * (s.r - s.r_0);
-                    F_at[1] -= s.atom->spring[1] * (s.r - s.r_0);
-                    F_at[2] -= s.atom->spring[2] * (s.r - s.r_0);
+                    F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
+                    F_at[1] -= s.atom->spring[1] * (s.r[1] - s.r_0[1]);
+                    F_at[2] -= s.atom->spring[2] * (s.r[2] - s.r_0[2]);
                 }
                 else
                 {
