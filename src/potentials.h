@@ -15,6 +15,7 @@ void init_potentials();
  * @return the value of the potential
  */
 double Vr_r(double r, int n);
+double Vr_r_init(double r, int n);
 
 /**
  * Computes the derivative of the potential
@@ -26,6 +27,7 @@ double Vr_r(double r, int n);
  * @return the derivative of the potential
  */
 double dVr_dr(double r, int n);
+double dVr_dr_init(double r, int n);
 
 /**
  * Computes the potential for the

@@ -12,34 +12,20 @@ void update_site(Site &s, double dt)
     Atom &atom = s.atom;
     double mass = atom.mass;
 
-    //Force here
-    Vec3d F;
-    //Force there
-    Vec3d F_t;
+    //We use averaged forces everywhere, so just cut
+    //this in half here for 6 less * operations
+    dt *= 0.5;
 
-    F.set(s.dp_dt);
-    F_t.set(s.dp_dt_t);
-
-    //Average force * dt
-    F += F_t;
-    F *= 0.5 * dt;
-    Vec3d dp = F;
-
-    F.set(s.dp_dt);
-    //Error in predicted and corrected positions
-    F_t -= F;
-    F_t *= 0.25 * dt * dt / mass;
-    Vec3d dr = F_t;
-
-    //New Location, adjusted by dr
-    s.r[0] = s.r_t[0] - dr[0];
-    s.r[1] = s.r_t[1] - dr[1];
-    s.r[2] = s.r_t[2] - dr[2];
+    //New Location, adjusted by error in corrected positions
+    //corrected positon is 0.25*dt^2*(F_t - F)/mass
+    s.r[0] = s.r_t[0] - dt * dt * (s.dp_dt_t[0] - s.dp_dt[0]) / mass;
+    s.r[1] = s.r_t[1] - dt * dt * (s.dp_dt_t[1] - s.dp_dt[1]) / mass;
+    s.r[2] = s.r_t[2] - dt * dt * (s.dp_dt_t[2] - s.dp_dt[2]) / mass;
 
     //New Momentum, not corrected, just using averages
-    s.p[0] += dp[0];
-    s.p[1] += dp[1];
-    s.p[2] += dp[2];
+    s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
+    s.p[1] += dt * (s.dp_dt_t[1] + s.dp_dt[1]);
+    s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
 }
 
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)

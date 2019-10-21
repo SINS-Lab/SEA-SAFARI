@@ -24,12 +24,59 @@ std::ofstream crystal_file;
 std::default_random_engine rng;
 double space_mask[3375][3];
 
+void test_cache()
+{
+    double v_tot = 0;
+    double v_r_tot = 0;
+    double r;
+    double r_min = settings.DR_MIN_TAB*8.0/1e8;
+    double dt_cache;
+    double dt_compu;
+    int n = 0;
+    //Testing stuff goes here.
+
+    clock_t timer = clock();
+    //Testing Vr_r calls.
+    for(int i = 1; i<=1e8; i++)
+    {
+        r = 1 + i * r_min;
+        v_tot += Vr_r(r, 1);
+        v_r_tot += dVr_dr(r, 1);
+        n++;
+    }
+    dt_cache = ((double)clock() - timer) / CLOCKS_PER_SEC;    
+    dt_cache /= n;
+    //Convert to ms;
+    dt_cache *= 1000;
+    std::cout << v_tot << " " << v_r_tot << " ms per: " << dt_cache <<std::endl;
+
+
+    v_tot = 0;
+    v_r_tot = 0;
+    n = 0;
+    timer = clock();
+    //Testing Vr_r_init calls.
+    for(int i = 1; i<=1e8; i++)
+    {
+        r = 1 + i * r_min;
+        v_tot += Vr_r_init(r, 1);
+        v_r_tot += dVr_dr_init(r, 1);
+        n++;
+    }
+    dt_compu = ((double)clock() - timer) / CLOCKS_PER_SEC;    
+    dt_compu /= n;
+    //Convert to ms;
+    dt_compu *= 1000;
+    std::cout << v_tot << " " << v_r_tot << " ms per: " << dt_compu <<std::endl;
+    std::cout << "compu/cache: " << (dt_compu/dt_cache) <<std::endl;
+}
+
 int main(int argc,char* argv[])
 {
     //Starts total runtime timer.
     clock_t load = clock();
 
-    std::string safio_file;
+    std::string safio_file = "safari.input";
     if(argc < 2)
     {
         std::ifstream input;
@@ -120,7 +167,7 @@ int main(int argc,char* argv[])
     }
     else
     {
-        //Testing stuff goes here.
+        test_cache();
     }
     
     

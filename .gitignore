@@ -12,12 +12,12 @@ analysis/tests/*
 analysis/safari.input
 *_pycache_*
 
-#These are generated when you run debug
-bin/Debug/*.data
-bin/Debug/*.dbug
-bin/Debug/*.traj
-bin/Debug/*.xyz
-bin/Debug/*.crys
+#These are generated when you run things
+*.data
+*.dbug
+*.traj
+*.xyz
+*.crys
 *.exe
 
 #profiling output stuff not needed.

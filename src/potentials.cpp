@@ -11,7 +11,7 @@ double z_max;
 double z_min;
 int n_rmax;
 
-double dV_dr_init(double r, int n)
+double dVr_dr_init(double r, int n)
 {
     if(settings.IPOT==1)
     {
@@ -80,13 +80,13 @@ void init_potentials()
         r = dr_min * i;
         for(int n = 0; n<settings.NTYPES; n++)
         {
-            dVr_dr_cache[n][i] = dV_dr_init(r, n+1);
+            dVr_dr_cache[n][i] = dVr_dr_init(r, n+1);
             Vr_r_cache[n][i] = Vr_r_init(r, n+1);
         }
     }
 }
 
-double interp_r(double r, int n, double **arr)
+double interp_r(double r, double *arr)
 {
     //Index for before r
     int i_bef = (int)(r/dr_min);
@@ -97,9 +97,9 @@ double interp_r(double r, int n, double **arr)
     //Fraction of way between before and after
     double frac = (r - dr_min*i_bef)/dr_min;
     //Value before
-    double bef = arr[n][i_bef];
+    double bef = arr[i_bef];
     //Value after
-    double aft = arr[n][i_aft];
+    double aft = arr[i_aft];
     //Linearly interpolate between the two.
     return (1.0 - frac)*bef + frac * aft;
 }
@@ -107,13 +107,13 @@ double interp_r(double r, int n, double **arr)
 double Vr_r(double r, int n)
 {
     if(dr_min == 0) return Vr_r_init(r, n);
-    return interp_r(r, n-1, Vr_r_cache);
+    return interp_r(r, Vr_r_cache[n-1]);
 }
 
 double dVr_dr(double r, int n)
 {
-    if(dr_min == 0) return dV_dr_init(r, n);
-    return interp_r(r, n-1, dVr_dr_cache);
+    if(dr_min == 0) return dVr_dr_init(r, n);
+    return interp_r(r, dVr_dr_cache[n-1]);
 }
 
 double Vr_r(double r[], int n[], int num)
