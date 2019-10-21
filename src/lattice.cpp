@@ -193,16 +193,11 @@ Lattice::Lattice(const Lattice& other)
 
 Lattice::~Lattice()
 {
-    //TODO implement this properly.
-    // for (auto x : cell_map)
-    // {
-    //     delete &x.second;
-    // }
+    cell_map.~unordered_map<int,Cell>();
 }
 
 Cell::Cell(const Cell& other)
 {
-    std::cout << "Copying a cell" << std::endl;
     num = other.num;
     //The copy knows how many it needs to store!
     sites = new Site[num];
@@ -212,6 +207,9 @@ Cell::Cell(const Cell& other)
         //Copy it over
         Site site = original;
         site.atom = original.atom;
+        //Deallocate these two
+        delete []site.r_0;
+        delete []site.p_0;
         site.r_0 = original.r_0;
         site.p_0 = original.p_0;
         site.index = original.index;

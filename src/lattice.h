@@ -53,6 +53,8 @@ struct Lattice
     Vec3d ey;
     Vec3d ez;
 
+    int id = 1;
+
     //Default constructor
     Lattice(){}
     //Copy constructor

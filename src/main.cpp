@@ -130,6 +130,7 @@ int main(int argc, char* argv[])
     }
     else
     {
+        n = 1;
         if (settings.SCAT_FLAG == 555)
         {
             test_cache();
