@@ -11,11 +11,11 @@ t                            Targets Recoil
 10.0 0.0025                  Max interaction distance, R table step
 0.0 0.0003                   ^ for Z, not implemented atm
 4 50                         Max distance for search, Threshold for dE
-1000000                      Montecarlo/chainscat runs, if 1 does Single shot
--25 0.01 25                  X range (min, step, max)
--25 0.01 25                  Y range (min, step, max)
+1000                         Montecarlo/chainscat runs, if 1 does Single shot
+-4.0786 0.01 4.0786          X range (min, step, max)
+-4.0786 0.01 4.0786          Y range (min, step, max)
 666 666                      SCAT_FLAG, SCAT_TYPE
-12.0 12.0                    RAX/RAY - This many unit cells are tiled radially
+5.0 5.0                      RAX/RAY - This many unit cells are tiled radially
 4 1                          NPAR, IPOT - Radial potential parameters/mode
 4153.6 3.625 27017.57 7.286  NPAR Parameters for IPOT
 2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
