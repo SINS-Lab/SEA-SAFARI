@@ -47,8 +47,8 @@ public:
 
     Site()
     {
-        r_0 = new double[3];
-        p_0 = new double[3];
+        r_0 = new double[6];
+        p_0 = r_0 + 3;
         reset();
     }
 
