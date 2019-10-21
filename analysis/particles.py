@@ -2,8 +2,6 @@ from scipy.stats import maxwell
 import scipy.linalg as linal
 import numpy as np
 import math
-import crystalgen
-import basisgen
 import sys
 
 class Particles:
@@ -170,26 +168,3 @@ class Particles:
             self.momenta = self.genMomenta(masses)
             self.randomizePositions()
         return
-
-if __name__ == "__main__" :
-    particles = Particles()
-    size = 4.08
-    dir = [0,0,1]
-    axis = [7,8,8]
-    atom = basisgen.Atom(196.966570,79)
-   # crystalgen.gen(size, dir, axis, basisgen.fccBasis(atom), 10, 0.1, -3.5*size)
-    particles.load('crystal.input')
-    
-    particles.step(.01)
-    for i in range(100):
-        particles.step(.01)
-        if i%20==0:
-            print(particles.T())
-            particles.save('crystal.input')
-        print(".", end='')
-        if(i%10==9):
-            print('')
-    print(particles.positions)
-    print(particles.momenta)
-    
-    particles.save('crystal.input')

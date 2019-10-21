@@ -2,8 +2,6 @@ from scipy.stats import maxwell
 import pygame
 import pygame.color
 from pygame.locals import *
-import crystalgen
-import basisgen
 import particles
 import helpers
 import numpy as np
@@ -40,7 +38,8 @@ class Points:
     
     def update(self, particles):
         r = particles.positions
-        r = np.vstack((r, self.custom_points))
+        if(len(self.custom_points)) > 0:
+            r = np.vstack((r, self.custom_points))
 
         i = np.ones((len(r),1))
         
@@ -137,46 +136,8 @@ class PointViewer:
         self.tick_step = 0.01
         self.outputfile = None
         self.load()
-        self.dir = [0,0,1]
-        self.axis = [0,0,1]
         pygame.font.init() 
         self.myfont = pygame.font.SysFont('Arial', 30)
-
-    def addRef(self, direction):
-
-        #Normalize the direction.
-        ss = math.sqrt(direction[0]**2 + direction[1]**2 + direction[2]**2);
-        direction[0]/=ss;
-        direction[1]/=ss;
-        direction[2]/=ss;
-
-        print(direction)
-
-        im = np.array(self.axis)
-        #im = np.array(direction)
-        ix = np.array(self.dir)
-        #ix = np.array(direction)
-        R = helpers.rotate(ix, im)
-        #R_inv = R#np.linalg.inv(R)
-        R_inv = np.linalg.inv(R)
-
-        ex = np.asarray(np.matmul(R_inv, np.array([1,0,0])))[0]
-        ey = np.asarray(np.matmul(R_inv, np.array([0,1,0])))[0]
-        ez = np.asarray(np.matmul(R_inv, np.array([0,0,1])))[0]
-
-        #direction = self.axis
-        #Convert the direction to the local coordinate ststem
-        tmp = [0,0,0]
-        tmp[0] = ex[0] * direction[0] + ex[1] * direction[1] + ex[2] * direction[2]
-        tmp[1] = ey[0] * direction[0] + ey[1] * direction[1] + ey[2] * direction[2]
-        tmp[2] = ez[0] * direction[0] + ez[1] * direction[1] + ez[2] * direction[2]
-
-        for i in range(10):
-            p = [0,0,0]
-            p[0] = p[0] + tmp[0]*i/1.0
-            p[1] = p[1] + tmp[1]*i/1.0
-            p[2] = p[2] + tmp[2]*i/1.0
-            self.points.addPoint(p)
 
     def tick(self):
         if self.doTick:
@@ -187,37 +148,15 @@ class PointViewer:
 
     def save(self):
         if self.particles.steps:
-            self.particles.save('crystal.input')
+            self.particles.save('crystal.crys')
         self.outputfile.close()
 
     def load(self):
         self.outputfile = open('T.output', 'w')
-        size = 4.0786
-        self.dir = [0,0,1]
-        self.axis = [7,8,8]
-        atom = basisgen.Atom(196.967,79)
-        #crystal = crystalgen.gen(size, self.dir, self.axis, basisgen.fccBasis(atom), 10, 0.1, -1.75*size)
-        #n = 5
-        #crystalgen.clearOutOfBounds(crystal, -size * n, size * n, -size * n, size * n)
-
-        self.addRef([-1,-1,1])
-        self.addRef([2,-1,1])
-        self.addRef([0,1,1])
-
-
-
-        #self.addRef([-7,-8,8])
-
-        '''
-        self.addRef([1,0,0])
-        self.addRef([0,0,1])
-        self.addRef([0,1,0])#'''
-        
         self.particles.coupling = False
         self.particles.steps = False
-        self.particles.load('crystal.input')
+        self.particles.load('crystal.crys')
         self.points.update(self.particles)
-
         self.translateAll([self.width/2,self.height/2,0])
         self.scaleAll(15)
 
