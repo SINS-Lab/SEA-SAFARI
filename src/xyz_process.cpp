@@ -2,6 +2,7 @@
 #include "vec_math.h"
 #include "string_utils.h"
 #include <cstdio>
+#include <string>
 
 class Particle
 {
@@ -25,11 +26,19 @@ public:
     }
 };
 
+std::string to_string(double num)
+{
+    char* arr = new char[6];
+    sprintf(arr, "%.4f", num);
+    std::string output = arr;
+    return output;
+}
+
 XYZ_Single from_Particles(double time, std::vector<Particle> pset)
 {
     XYZ_Single xyz_single;
     xyz_single.number = pset.size();
-    xyz_single.comment = std::to_string(time);
+    xyz_single.comment = to_string(time);
     xyz_single.num_per_row = 8;
     xyz_single.atoms = new std::string[xyz_single.number];
     xyz_single.values = new double*[xyz_single.number];
