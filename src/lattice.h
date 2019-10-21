@@ -66,6 +66,8 @@ struct Lattice
     //Retrieves the cell for the given coordinates,
     //NULL if no cell is found
     Cell* get_cell(double x, double y, double z);
+    //Version that uses the hash directly
+    Cell* get_cell(int pos_hash);
     //Makes the cell for the given coordinate, if the
     //cell already exists, it retrieves old one instead.
     Cell* make_cell(double x, double y, double z);

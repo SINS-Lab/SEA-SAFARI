@@ -158,6 +158,11 @@ void Lattice::add_site(Atom& a, double px, double py, double pz)
 Cell* Lattice::get_cell(double x, double y, double z)
 {
     int pos_hash = to_hash(x,y,z);
+    return get_cell(pos_hash);
+}
+
+Cell* Lattice::get_cell(int pos_hash)
+{
     if(cell_map.find(pos_hash) == cell_map.end()) return NULL;
     return &cell_map[pos_hash];
 }
@@ -188,14 +193,16 @@ Lattice::Lattice(const Lattice& other)
 
 Lattice::~Lattice()
 {
-    for (auto x : cell_map)
-    {
-        delete &x.second;
-    }
+    //TODO implement this properly.
+    // for (auto x : cell_map)
+    // {
+    //     delete &x.second;
+    // }
 }
 
 Cell::Cell(const Cell& other)
 {
+    std::cout << "Copying a cell" << std::endl;
     num = other.num;
     //The copy knows how many it needs to store!
     sites = new Site[num];
@@ -207,6 +214,7 @@ Cell::Cell(const Cell& other)
         site.atom = original.atom;
         site.r_0 = original.r_0;
         site.p_0 = original.p_0;
+        site.index = original.index;
         sites[i] = site;
     }
 }

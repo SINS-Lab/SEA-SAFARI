@@ -450,7 +450,7 @@ end:
     }
 
     //Output data, first stuff it in the buffer
-    sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%d\t%f\t%d\t%f\n",
+    sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
             ion.r_0[0],ion.r_0[1],ion.r_0[2],
             E,theta,phi,
             1,1.0/settings.NUMCHA,

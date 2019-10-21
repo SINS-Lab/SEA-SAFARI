@@ -4,6 +4,8 @@
 #include "safio.h"
 #include <iostream>
 
+//Note, this implementation is somehow rather slow, until
+//Whatever -O3 does to it. Maybe it should be looked into.
 int to_hash(double x, double y, double z)
 {
     int i = (int)(x/5.0 + 512);
@@ -21,7 +23,7 @@ Mat3d make_rot_matrix(Vec3d a, Vec3d b)
 
     Vec3d v = a.cross(b);
     double c = a*b;
-    c = 1.0d/(1.0d+c);
+    c = 1.0/(1.0+c);
 
     Mat3d V;
 

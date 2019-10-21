@@ -313,12 +313,13 @@ void Safio::load(std::string safio_file)
 double zeros[3] = { 0,0,0 };
 void Site::reset()
 {
-    //Only need to reset these 3.
+    //Reset positions and momenta
     std::copy(r_0, r_0 + 3, r);
     std::copy(r_0, r_0 + 3, r_t);
     std::copy(p_0, p_0 + 3, p);
-    //Forces do not need resetting, as they
-    //Are automatically reset whenever hameq runs
+    //Reset forces
+    std::copy(std::begin(zeros), std::end(zeros), dp_dt);
+    std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
 }
 
 void Site::write_info()

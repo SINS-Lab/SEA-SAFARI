@@ -66,6 +66,8 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //Centre the cell on the surface if it is above it.
     cell_z = std::min(cell_z, 0);
 
+    int last_check = -1;
+
     //Loop over the mask, this is a radial loop.
     for(int n = 0; n < nmax; n++)
     {
@@ -75,8 +77,13 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         double x = loc[0] + cell_x;
         double y = loc[1] + cell_y;
         double z = loc[2] + cell_z;
-        
-        Cell* cell = lattice.get_cell(x, y, z);
+        pos_hash = to_hash(x,y,z);
+        //Due to mask and cell sizes differing, this
+        //can happen easily, so lets skip if it did.
+        if(last_check == pos_hash) continue;
+        last_check = pos_hash;
+
+        Cell* cell = lattice.get_cell(x,y,z);
         //No cell here? skip.
         if(cell == NULL) continue;
         //Reset check stamp if new ion.

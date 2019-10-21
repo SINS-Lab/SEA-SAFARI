@@ -43,7 +43,7 @@ public:
     //Used to track the last ion which has interacted with us.
     int last_ion = -1;
     //This is a unique identifier for this particle
-    int index;
+    int index = -1;
 
     Site()
     {
