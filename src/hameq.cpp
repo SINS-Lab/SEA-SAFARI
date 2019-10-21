@@ -20,8 +20,8 @@
 void update_site(Site &s, double dt)
 {
     //Site near us.
-    Atom &atom = s.atom;
-    double mass = atom.mass;
+    Atom* atom = s.atom;
+    double mass = atom->mass;
 
     //We use averaged forces everywhere, so just cut
     //this in half here for 6 less * operations
@@ -49,8 +49,8 @@ void update_site(Site &s, double dt)
 void predict_site_location(Site &s, double dt)
 {
     //Site near us.
-    Atom &atom = s.atom;
-    double mass = atom.mass;
+    Atom* atom = s.atom;
+    double mass = atom->mass;
 
     //v = p/m
     //a = F/m, F = dp/dt
@@ -176,10 +176,10 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             ion.r_min = std::min(r, ion.r_min);
 
             //Magnitude of force for this location.
-            double dV_dr = dVr_dr(r, s.atom.index);
+            double dV_dr = dVr_dr(r, s.atom->index);
 
             //Potential for this location.
-            *V += Vr_r(r, s.atom.index);
+            *V += Vr_r(r, s.atom->index);
 
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
@@ -210,9 +210,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 if(atomk <= 1e-30)
                 {   
                     //F = -kx
-                    F_at[0] -= s.atom.spring[0] * (s.r - s.r_0);
-                    F_at[1] -= s.atom.spring[1] * (s.r - s.r_0);
-                    F_at[2] -= s.atom.spring[2] * (s.r - s.r_0);
+                    F_at[0] -= s.atom->spring[0] * (s.r - s.r_0);
+                    F_at[1] -= s.atom->spring[1] * (s.r - s.r_0);
+                    F_at[2] -= s.atom->spring[2] * (s.r - s.r_0);
                 }
                 else
                 {

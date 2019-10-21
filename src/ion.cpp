@@ -124,8 +124,7 @@ end:
 
 void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
 {
-    atom.mass = settings.MASS;
-    atom.symbol = settings.SYMION;
+    atom = &settings.ion;
     //TODO lookup table for atomic symbols...
     //TODO charge config somewhere.
     q = 1;
@@ -134,7 +133,7 @@ void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
     theta0 = theta0 * M_PI / 180;
     phi0 = phi0 * M_PI / 180;
 
-    double p0 = sqrt(2 * atom.mass * eV);
+    double p0 = sqrt(2 * atom->mass * eV);
     double p_trans = p0 * sin(theta0);
 
     //This is the initial momentum, before surface effects.
@@ -154,7 +153,7 @@ void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
     //If we have image effect, account for that here.
     if(settings.IMAGE)
     {
-        p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom.mass * Vi_z(settings.Z1, q)));
+        p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom->mass * Vi_z(settings.Z1, q)));
     }
 
     //Set the initial momentum of the ion

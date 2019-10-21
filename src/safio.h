@@ -22,11 +22,11 @@ class Site
 {
 public:
     //Original location
-    double r_0[3];
+    double *r_0;
     //Original Momentum
-    double p_0[3];
+    double *p_0;
     //The atom here
-    Atom atom;
+    Atom* atom;
 
     //position
     double r[3];
@@ -47,6 +47,8 @@ public:
 
     Site()
     {
+        r_0 = new double[3];
+        p_0 = new double[3];
         reset();
     }
 
@@ -68,6 +70,8 @@ struct Safio
     double PHI0;       //Crystal Phi
     double MASS;       //Ion Mass
     char* SYMION;      //Ion Atomic Symbol
+
+    Atom ion;          //The Atom object for the ions
 
     //Parameters for the detector
     double EMIN;       //Min Energy

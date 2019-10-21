@@ -29,86 +29,93 @@ void Safio::load(std::string safio_file)
         //values which affect line number
         int o = 0;
 
-        while(getline(safio_input,line))
+        while (getline(safio_input, line))
         {
             debug_file << line << '\n';
 
             //Skip blank lines
-            if(line=="")
+            if (line == "")
                 continue;
 
             //Splits line for parsing.
             std::vector<std::string> args = split(line);
 
-            if(n==1)
+            if (n == 1)
             {
                 E0 = atof(args[0].c_str());
                 THETA0 = atof(args[1].c_str());
                 PHI0 = atof(args[2].c_str());
                 MASS = atof(args[3].c_str());
                 SYMION = &args[4][0];
+
+                //initialize the atom for this ion.
+                ion.mass = MASS;
+                ion.symbol = SYMION;
+                ion.index = 0;
+                //a.charge = TODO lookup
+
                 // Ensure phi is in correct range
                 while (PHI0 > 180)
                     PHI0 -= 360;
                 while (PHI0 < -180)
                     PHI0 += 360;
             }
-            if(n==2)
+            if (n == 2)
             {
                 EMIN = atof(args[0].c_str());
                 EMAX = atof(args[1].c_str());
                 ESIZE = atof(args[2].c_str());
                 ASIZE = atof(args[3].c_str());
             }
-            if(n==3)
+            if (n == 3)
             {
                 NDTECT = atoi(args[0].c_str());
             }
-            if(n==4)
+            if (n == 4)
             {
                 DTECTPAR = to_double_array(args, 0, 3);
             }
-            if(n==5)
+            if (n == 5)
             {
                 DELLOW = atof(args[0].c_str());
                 DELT0 = atof(args[1].c_str());
             }
-            if(n==6)
+            if (n == 6)
             {
                 DEMAX = atof(args[0].c_str());
                 DEMIN = atof(args[1].c_str());
                 ABSERR = atof(args[2].c_str());
             }
-            if(n==7)
+            if (n == 7)
             {
                 NPART = atoi(args[0].c_str());
             }
-            if(n==8)
+            if (n == 8)
             {
-                RECOIL = args[0]=="t";
+                RECOIL = args[0] == "t";
             }
-            if(n==9)
+            if (n == 9)
             {
                 Z1 = atof(args[0].c_str());
             }
-            if(n==10)
+            if (n == 10)
             {
                 MAX_STEPS = atoi(args[0].c_str());
             }
-            if(n==11)
+            if (n == 11)
             {
                 R_MAX = atof(args[0].c_str());
                 rr_max = R_MAX * R_MAX;
                 DR_MIN_TAB = atof(args[1].c_str());
             }
-            if(n==12)
+            if (n == 12)
             {
                 ZMIN = atof(args[0].c_str());
                 ZSTEP = atof(args[1].c_str());
             }
-            if(n==13)
+            if (n == 13)
             {
-                if(o<=0)
+                if (o <= 0)
                 {
                     DIST_SEARCH = atoi(args[0].c_str());
                     FAILED_DE = atoi(args[1].c_str());
@@ -119,17 +126,17 @@ void Safio::load(std::string safio_file)
                 }
                 else
                 {
-                    if(o==3)
+                    if (o == 3)
                     {
                         NUMCHA = atoi(args[0].c_str());
                     }
-                    else if(o==2)
+                    else if (o == 2)
                     {
                         XSTART = atof(args[0].c_str());
                         XSTEP = atof(args[1].c_str());
                         XSTOP = atof(args[2].c_str());
                     }
-                    else if(o==1)
+                    else if (o == 1)
                     {
                         YSTART = atof(args[0].c_str());
                         YSTEP = atof(args[1].c_str());
@@ -137,37 +144,37 @@ void Safio::load(std::string safio_file)
                     }
                 }
             }
-            if(n==14)
+            if (n == 14)
             {
                 SCAT_FLAG = atoi(args[0].c_str());
                 SCAT_TYPE = atoi(args[1].c_str());
             }
-            if(n==15)
+            if (n == 15)
             {
                 RAX = atof(args[0].c_str());
                 RAY = atof(args[1].c_str());
             }
-            if(n==16)
+            if (n == 16)
             {
                 NPAR = atoi(args[0].c_str());
                 IPOT = atoi(args[1].c_str());
             }
-            if(n==17)
+            if (n == 17)
             {
                 POTPAR = to_double_array(args, 0, NPAR - 1);
             }
-            if(n==18)
+            if (n == 18)
             {
                 NIMPAR = atoi(args[0].c_str());
                 IIMPOT = atoi(args[1].c_str());
             }
-            if(n==19)
+            if (n == 19)
             {
-                if(o<=0)
+                if (o <= 0)
                 {
                     PIMPAR = to_double_array(args, 0, NIMPAR - 1);
                     //If this is the case, we have more arguments
-                    if(IIMPOT == 2)
+                    if (IIMPOT == 2)
                     {
                         //This will be decremented after leaving this if
                         o = 4;
@@ -175,58 +182,58 @@ void Safio::load(std::string safio_file)
                 }
                 else
                 {
-                    if(o==6)
+                    if (o == 6)
                     {
                         NBZ = atoi(args[0].c_str());
                         TOL = atof(args[1].c_str());
                     }
-                    else if(o==5)
+                    else if (o == 5)
                     {
                         ZMAX = to_double_array(args, 0, NBZ - 1);
                     }
-                    else if(o==4)
+                    else if (o == 4)
                     {
                         NZ = to_double_array(args, 0, NBZ - 1);
                     }
-                    else if(o==3)
+                    else if (o == 3)
                     {
                         NBG = atoi(args[0].c_str());
                         GTOL = atof(args[1].c_str());
                     }
-                    else if(o==2)
+                    else if (o == 2)
                     {
                         GMAX = to_double_array(args, 0, NBG - 1);
                     }
-                    else if(o==1)
+                    else if (o == 1)
                     {
                         NG = to_double_array(args, 0, NBG - 1);
                     }
                 }
             }
-            if(n==20)
+            if (n == 20)
             {
                 TEMP = atof(args[0].c_str());
                 SEED = atof(args[1].c_str());
                 NITER = atoi(args[2].c_str());
             }
-            if(n==21)
+            if (n == 21)
             {
-                IMAGE = args[0]=="t";
+                IMAGE = args[0] == "t";
             }
-            if(n==22)
+            if (n == 22)
             {
                 SENRGY = atof(args[0].c_str());
                 BDIST = atof(args[1].c_str());
             }
-            if(n==23)
+            if (n == 23)
             {
                 AX = atof(args[0].c_str());
                 AY = atof(args[1].c_str());
                 AZ = atof(args[2].c_str());
             }
-            if(n==24)
+            if (n == 24)
             {
-                if(o<=0)
+                if (o <= 0)
                 {
                     NBASIS = atoi(args[0].c_str());
                     o = NBASIS + 1;
@@ -237,26 +244,26 @@ void Safio::load(std::string safio_file)
                     s[0] = atof(args[0].c_str());
                     s[1] = atof(args[1].c_str());
                     s[2] = atof(args[2].c_str());
-                    s.index =  atoi(args[3].c_str());
+                    s.index = atoi(args[3].c_str());
                     BASIS.push_back(s);
                 }
             }
-            if(n==25)
+            if (n == 25)
             {
-                if(o<=0)
+                if (o <= 0)
                 {
                     NTYPES = atoi(args[0].c_str());
-                    o = NTYPES * 2  + 1;
+                    o = NTYPES * 2 + 1;
                 }
                 else
                 {
-                    if(o%2==0)
+                    if (o % 2 == 0)
                     {
                         Atom a;
                         a.mass = atof(args[0].c_str());
                         a.charge = atof(args[1].c_str());
                         a.symbol = args[2];
-                        a.index = o/2;
+                        a.index = o / 2;
                         ATOMS.push_back(a);
                     }
                     else
@@ -268,13 +275,13 @@ void Safio::load(std::string safio_file)
                     }
                 }
             }
-            if(n==26)
+            if (n == 26)
             {
-                CORR = args[0]=="t";
+                CORR = args[0] == "t";
                 ATOMK = atof(args[1].c_str());
                 RNEIGH = atof(args[2].c_str());
             }
-            if(n==27)
+            if (n == 27)
             {
                 face = to_double_array(args, 0, 2);
             }
@@ -289,10 +296,10 @@ void Safio::load(std::string safio_file)
         debug_file << "\nLoaded SAFIO" << '\n';
 
         //Then we need these files.
-        if(NUMCHA == 1)
+        if (NUMCHA == 1)
         {
-            traj_file.open(safio_file+".traj");
-            xyz_file.open(safio_file+".xyz");
+            traj_file.open(safio_file + ".traj");
+            xyz_file.open(safio_file + ".xyz");
             debug_file << "Initializing for single shot mode." << '\n';
         }
     }
@@ -301,4 +308,25 @@ void Safio::load(std::string safio_file)
         std::cout << "Error opening Safio File" << '\n';
     }
     return;
+}
+
+double zeros[3] = { 0,0,0 };
+void Site::reset()
+{
+    //Only need to reset these 3.
+    std::copy(r_0, r_0 + 3, r);
+    std::copy(r_0, r_0 + 3, r_t);
+    std::copy(p_0, p_0 + 3, p);
+    //Forces do not need resetting, as they
+    //Are automatically reset whenever hameq runs
+}
+
+void Site::write_info()
+{
+    debug_file << "Atom: " << atom->symbol << std::endl;
+    debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
+    debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+    debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
+    debug_file << "F: " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
+    debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
 }

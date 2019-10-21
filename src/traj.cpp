@@ -102,7 +102,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //Highest allowed time step
     const double dt_high = settings.DELT0;
     //Ion mass
-    const double mass = ion.atom.mass;
+    const double mass = ion.atom->mass;
 
     //Time step, initialized at 0.1
     double dt = 0.1;
@@ -321,7 +321,7 @@ start:
 
         //Next stuff the symbol, position, momentum and mass for the ion itself
         sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
-                ion.atom.symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom.mass);
+                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom->mass);
         xyz_file << buffer;
 
         //Then stuff in the entire lattice, why not...
@@ -330,7 +330,7 @@ start:
             Site s = *lattice.sites[i];
             //Note that this is same format as the ion, except also contains the index.
             sprintf(buffer, "%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",
-                    s.atom.symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom.mass,s.index);
+                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],s.p[0],s.p[1],s.p[2],s.atom->mass,s.index);
             xyz_file << buffer;
         }
     }

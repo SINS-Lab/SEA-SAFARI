@@ -12,9 +12,9 @@ public:
     //Sites in this current cell
     Site *sites;
     //Number of sites in this cell
-    int num;
+    int num = 0;
     //Index for this in hash map
-    int pos_hash;
+    int pos_hash = -1;
     //Used to check if this cell has been checked
     int check_stamp = -1;
     //Used to check if this cell has been checked
@@ -25,6 +25,8 @@ public:
         sites = new Site[100];
     }
 
+    Cell(const Cell& other);
+
     ~Cell()
     {
         delete []sites;
@@ -33,10 +35,13 @@ public:
 
 struct Lattice
 {
-    //All sites in the lattice
+    //All sites in the lattice, 
+    //This is not actually used much.
     std::vector<Site*> sites;
-    //All cells in the lattice
-    std::unordered_map<int,Cell*> cell_map;
+
+    //All cells in the lattice, This is
+    //what is used for any lookups
+    std::unordered_map<int,Cell> cell_map;
 
     //Rotation matrix for lattice
     Mat3d R;
@@ -48,10 +53,16 @@ struct Lattice
     Vec3d ey;
     Vec3d ez;
 
+    //Default constructor
+    Lattice(){}
+    //Copy constructor
+    Lattice(const Lattice& other);
+    //Destructor
+    ~Lattice();
     //Constructs the lattice based on the settings
     void build_lattice();
     //Adds an atom of type a, at location x, y, z;
-    void add_site(Atom a, double x, double y, double z);
+    void add_site(Atom& a, double x, double y, double z);
     //Retrieves the cell for the given coordinates,
     //NULL if no cell is found
     Cell* get_cell(double x, double y, double z);

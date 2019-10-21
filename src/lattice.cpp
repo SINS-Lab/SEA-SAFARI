@@ -113,7 +113,7 @@ void Lattice::build_lattice()
                         continue;
                     
                     //This is the atom for this site.
-                    Atom a = settings.ATOMS[old.index-1];
+                    Atom &a = settings.ATOMS[old.index-1];
                     add_site(a, px, py, pz);
                 }
             }
@@ -123,19 +123,15 @@ void Lattice::build_lattice()
     debug_file << "built lattice" << std::endl;
 }
 
-void Lattice::add_site(Atom a, double px, double py, double pz)
+void Lattice::add_site(Atom& a, double px, double py, double pz)
 {
-    int *cel_num;
-    int num = 0;
-    Site *cel_sites;
-
     //This makes the cell if it doesn't exist, otherwise gets old one.
     Cell *cell = make_cell(px, py, pz);
 
     //Get the values from the cell.
-    cel_num = &(cell->num);
-    num = *cel_num;
-    cel_sites = (cell->sites);
+    int *cel_num = &(cell->num);
+    int num = *cel_num;
+    Site *cel_sites = (cell->sites);
     
     Site *s = new Site();
     s->r_0[0] = px;
@@ -153,7 +149,7 @@ void Lattice::add_site(Atom a, double px, double py, double pz)
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
     s->index = sites.size();
-    s->atom = a;
+    s->atom = &a;
     sites.push_back(s);
     cel_sites[num] = *s;
     *cel_num = num + 1;
@@ -163,7 +159,7 @@ Cell* Lattice::get_cell(double x, double y, double z)
 {
     int pos_hash = to_hash(x,y,z);
     if(cell_map.find(pos_hash) == cell_map.end()) return NULL;
-    return cell_map[pos_hash];
+    return &cell_map[pos_hash];
 }
 
 Cell* Lattice::make_cell(double x, double y, double z)
@@ -174,31 +170,43 @@ Cell* Lattice::make_cell(double x, double y, double z)
     //Otherwise, make a new one.
     int pos_hash = to_hash(x,y,z);
     cell = new Cell();
-    cell_map[pos_hash] = cell;
+    cell_map[pos_hash] = *cell;
     cell->num = 0;
     cell->pos_hash = pos_hash;
     cell->sites = new Site[100];
     return cell;
 }
 
-double zeros[3] = {0,0,0};
-void Site::reset()
+Lattice::Lattice(const Lattice& other)
 {
-    std::copy(std::begin(r_0), std::end(r_0), r);
-    std::copy(std::begin(r_0), std::end(r_0), r_t);
+    //This is not a deep copy, we don't care though.
+    //sites = other.sites; so we don't even bother copying it.
 
-    std::copy(std::begin(zeros), std::end(zeros), dp_dt);
-    std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
-
-    std::copy(std::begin(p_0), std::end(p_0), p);
+    //This should be a deep copy, so long as cells copy correctly.
+    cell_map = other.cell_map;
 }
 
-void Site::write_info()
+Lattice::~Lattice()
 {
-    debug_file <<"Atom: "<< atom.symbol << std::endl;
-    debug_file <<"r  : "<< r[0] <<" "<< r[1] <<" "<< r[2] << std::endl;
-    debug_file <<"p  : "<< p[0] <<" "<< p[1] <<" "<< p[2] << std::endl;
-    debug_file <<"r_t: "<< r_t[0] <<" "<< r_t[1] <<" "<< r_t[2] << std::endl;
-    debug_file <<"F: "<< dp_dt[0] <<" "<< dp_dt[1] <<" "<< dp_dt[2] << std::endl;
-    debug_file <<"F_t: "<< dp_dt_t[0] <<" "<< dp_dt_t[1] <<" "<< dp_dt_t[2] << std::endl;
+    for (auto x : cell_map)
+    {
+        delete &x.second;
+    }
+}
+
+Cell::Cell(const Cell& other)
+{
+    num = other.num;
+    //The copy knows how many it needs to store!
+    sites = new Site[num];
+    for (int i = 0; i < num; i++)
+    {
+        Site &original = other.sites[i];
+        //Copy it over
+        Site site = original;
+        site.atom = original.atom;
+        site.r_0 = original.r_0;
+        site.p_0 = original.p_0;
+        sites[i] = site;
+    }
 }
