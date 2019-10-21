@@ -379,7 +379,7 @@ class SafariInput:
                 self.ATOMK = args[1]
                 self.RNEIGH = args[2]
             # load in the face
-            if n == 26:
+            if n == 27:
                 self.face = [args[0], args[1], args[2]]
                 
             # Decrement our sub-line first.
