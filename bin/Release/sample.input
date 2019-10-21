@@ -1,36 +1,36 @@
-250.0  45.0  45.0  22.989  Na          E0,THETA0,PHI0,MASS,SYMBOL
-0.5  250  1.0   0.5                    EMIN,EMAX,ERES,ARES
-1                                      DETECTOR TYPE
-45.0 45.0 3.0 0.0                      DETECTOR PARAMS
-1.00000e-08   10.0                     MIN, MAX - TIME STEP
-0.30000   0.   1e-6                    DEMAX,DEMIN,ABSERR
-45                                     Target Interaction Number
-t                                      RECOIL
-5.0000                                 INTERACT.HEIGHT, ie Z0/ZMax
-4000                                   Max Step Count
-10.0 2.50000e-03                       R Max - Max interaction distance, DR_MIN_TAB
-0.   3.00000e-04                       Z MIN,STEP
-4 50                                   Max Radius to check, Max error in energy.
-10000                                  numcha, if 1, does single shot (SS)
-0 .01 4.0786                           XStart/Step/End SS at XStart
-0 .01 4.0786                           YStart/Step/End SS at YStart
-666        666                         NWRITX, NWRITY
-5.0     5.0                            RAX RAY
-4 1                                    NPAR, IPOT
-9125.84 4.44 66703.59 11.24            Pars ^, There should 4 of these per typeat
-2 1                                    NIMPAR, IIMPOT
-1.26 2.0                               Pars ^ *2
-0.0   .9436337324   1                  TEMP,SEED,NITER
-f                                      IMAGE
--1.5 8.18                              SENRGY,BDIST
-4.0786 4.0786 4.0786                   AX,AY,AZ
-4                                      NBASIS, Followed by x, y, z, index
-1.0 1.0 1.0 1
+250.0 45.0 45.0 22.989 Na    E0,THETA0,PHI0,MASS,SYMBOL - Beam Parameters
+0.5 250 1.0 0.5              EMIN,EMAX,ERES,ARES        - Detector Limits
+1                            DETECTOR TYPE
+45.0 45.0 3.0 0.0            DETECTOR PARAMS
+1e-08 10.0                   Time Step, Min/Max
+0.3 0.0 1e-06                DEMAX,DEMIN,ABSERR
+45                           Target Interaction number
+t                            Targets Recoil
+5.0                          Z0, initial/maximum Z
+4000                         Max steps before failure
+10.0 0.0025                  Max interaction distance, R table step
+0.0 0.0003                   ^ for Z, not implemented atm
+4 50                         Max distance for search, Threshold for dE
+1000000                      Montecarlo/chainscat runs, if 1 does Single shot
+-25 0.01 25                  X range (min, step, max)
+-25 0.01 25                  Y range (min, step, max)
+666 666                      SCAT_FLAG, SCAT_TYPE
+12.0 12.0                    RAX/RAY - This many unit cells are tiled radially
+4 1                          NPAR, IPOT - Radial potential parameters/mode
+4153.6 3.625 27017.57 7.286  NPAR Parameters for IPOT
+2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
+1.26 2.0                     NIMPAR parameters for IIMPOT
+0.0 0.9436337324 1           Temperature, Seed, NITER - unused NITER
+f                            Use Image Charge
+-1.5 8.18                    Stuck Energy, Buried Distance
+4.0786 4.0786 4.0786         AX, AY, AZ for basis
+4                            # Of atoms in given basis, next # lines are basis
+1.0 1.0 1.0 1                X Y Z Type
 1.0 0.5 0.5 1
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
-1                                      NUMBER OF ATOM TYPES
-196.967  79    Au                      MASS,CHARGE,SYMBOL for each index
-5. 5. 5.                               SPRING(X,Y,Z), for each index
-t  0  8.36405                          CORR,ATOMK,RNEIGH
-1 0 0                                  Face Direction
+1                            # of types of atoms, followed by pairs of lines
+196.967 79 Au                Atom Parameters
+5.0 5.0 5.0                  Atom Springs
+t 0 8.36405                  Whether atoms are springy, ATOMK,RNEIGH - last 2 unused
+0 0 1                             Surface face of lattice
