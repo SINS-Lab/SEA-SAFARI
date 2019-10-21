@@ -63,44 +63,45 @@ public:
 struct Safio
 {
     //Parameters for the beam
-    double E0;
-    double THETA0;
-    double PHI0;
-    double MASS;
-    char* SYMION;
+    double E0;         //Beam Energy
+    double THETA0;     //Beam Theta
+    double PHI0;       //Crystal Phi
+    double MASS;       //Ion Mass
+    char* SYMION;      //Ion Atomic Symbol
 
     //Parameters for the detector
-    double EMIN;
-    double EMAX;
-    double ESIZE;
-    double ASIZE;
+    double EMIN;       //Min Energy
+    double EMAX;       //Max Energy
+    double ESIZE;      //Energy Resolution
+    double ASIZE;      //Angular Resolution
 
-    int NDTECT;
-    double* DTECTPAR;
+    int NDTECT;        //Detector index
+    double* DTECTPAR;  //Parameters for detector
 
     //Integration parameters
-    double DELLOW;
-    double DELT0;
-    double DEMAX;
-    double DEMIN;
-    double ABSERR;
-    int NPART;
-    bool RECOIL;
-    double Z1;
-    int MAX_STEPS;
+    double DELLOW;     //Low time step
+    double DELT0;      //High time step
+    double DEMAX;      //Exponent on error check
+    double DEMIN;      //unused at present
+    double ABSERR;     //Reference value for error check
 
-    double R_MAX; //Maximum R value for interactions
-    double rr_max;// ^ squared.
+    int NPART;         //Target interaction number
+    bool RECOIL;       //Whether ions recoil on impact
+    double Z1;         //Initial height of ions
+    int MAX_STEPS;     //Maximum integration steps before failing
+
+    double R_MAX;      //Maximum R value for interactions
+    double rr_max;     // ^ squared.
     double DR_MIN_TAB; //Step for cached values
 
-    double ZMIN; //Start point for values caches
-    double ZSTEP; //Step for cached values
+    double ZMIN;       //Start point for values caches
+    double ZSTEP;      //Step for cached values
 
     int MAXDIV; //Unused
     int MINDIV; //Unused
 
-    int NWRITX;
-    int NWRITY;
+    int NWRITX;        //If this is 666, will run scats, otherwise tests
+    int NWRITY;        // 666 = montecarlo, 777 = gridscat 888 = chainscat
 
     //This is how many AX and AY
     //to build the lattice for,

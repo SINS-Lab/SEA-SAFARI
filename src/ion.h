@@ -13,14 +13,19 @@ class Ion : public Site
 public:
     //Charge of the ion
     int q;
-
+    //Index of the ion, each one fired should be different.
     int index = 0;
 
+    //Number of traj steps done, note that this is not
+    //the same as the number of time steps, as this is
+    //incremented even if it reduces timestep and tries over.
     int steps = 0;
+    //Total flight time of the ion
     double time = 0;
 
+    //Maximum number of nearby atoms for this ion
     int max_n = 0;
-
+    //Current number of nearby atoms.
     int near = 0;
     //Nearest distance ever
     double r_min = 1e3;
@@ -31,6 +36,8 @@ public:
     //Last distance checked for nearby atoms.
     int last_radius = 1;
 
+    //All of the sites nearby, only guarenteed to be filled
+    //with site up to near
     Site *near_sites[100];
 
     //potential energy the particle is in.
@@ -55,17 +62,5 @@ public:
     //Call check_distances() before using near_dists.
     int fill_nearest(Lattice &lattice, int radius, int target_number);
 };
-
-/**
- * This calculates the trajectory for the ion, 
- * scattering off the given lattice
- *
- * @param ion - the ion to interact with the lattice
- * @param lattice - the lattice to scatter off
- * @param log - if true, will log the individual trajectory
- */
-void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
-
-void save(char* buffer);
 
 #endif // ION_H_INCLUDED

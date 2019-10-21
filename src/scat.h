@@ -26,6 +26,11 @@ void montecarloscat(Lattice &lattice, int *num);
  */ 
 void gridscat(Lattice &lattice, int *num);
 
+/**
+ * Fires ions in a line, starting at XSTART, YSTART, ending at
+ * XSTOP, YSTOP. It fires NUMCHA particles in this line, in even
+ * spacing between particles.
+ */ 
 void chainscat(Lattice &lattice, int *num);
 
 #endif // SCAT_H_INCLUDED

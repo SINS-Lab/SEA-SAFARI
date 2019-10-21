@@ -5,7 +5,18 @@
 #include <iostream>
 #include <cmath>
 
-
+/**
+ * This updates the current location/momentum of
+ * the particle, to the corrected values based on the
+ * forces at the current and predicted locations.
+ * 
+ * Positions are corrected by the error in the
+ * values from the two forces, but momenta are
+ * updated with just the average of the two forces.
+ * 
+ * @param s - the particle to update
+ * @param dt - time step for this update.
+ */ 
 void update_site(Site &s, double dt)
 {
     //Site near us.
@@ -28,6 +39,27 @@ void update_site(Site &s, double dt)
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
 }
 
+/**
+ * This predicts the location of the site, assuming the
+ * current value of the momentum and force.
+ * 
+ * @param s - the particle to predict.
+ * @param dt - the time step for the prediction
+ */ 
+void predict_site_location(Site &s, double dt)
+{
+    //Site near us.
+    Atom &atom = s.atom;
+    double mass = atom.mass;
+
+    //v = p/m
+    //a = F/m, F = dp/dt
+    //r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m 
+    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*s.dp_dt[0]*dt) / mass;
+    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*s.dp_dt[1]*dt) / mass;
+    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
+}
+
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
     //Update the ion's location
@@ -44,22 +76,6 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
     }
 }
 
-//Sets the next-time-step values to where the particle would be, given
-//the current forces and momenta.
-void predict_site_location(Site &s, double dt)
-{
-    //Site near us.
-    Atom &atom = s.atom;
-    double mass = atom.mass;
-
-    //v = p/m
-    //a = F/m, F = dp/dt
-    //r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m 
-    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*s.dp_dt[0]*dt) / mass;
-    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*s.dp_dt[1]*dt) / mass;
-    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
-}
-
 void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 {
     //Some useful variables.
@@ -67,23 +83,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
            fx = 0, fy = 0, fz = 0, 
            ftx = 0, fty = 0, ftz = 0;
 
-    //Force to populate
-    double *F;
-    //Normally is this.
-    F = ion.dp_dt;
-
-    //Force on the target.
-    double *F_at;
-
-    //Relevant potential for this run
-    double *V;
-    V = &ion.V;
-
     //Ion coordinates
-    double x, y, z;
+    double x = 0, y = 0, z = 0;
 
     //Lattice atom coordintates.
-    double ax, ay, az;
+    double ax = 0, ay = 0, az = 0;
 
     bool recoil = settings.RECOIL;
     bool springs = settings.CORR;
@@ -93,6 +97,14 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     x = ion[0];
     y = ion[1];
     z = ion[2];
+
+    //Relevant force for this run
+    double *F;
+    F = ion.dp_dt;
+
+    //Relevant potential for this run
+    double *V;
+    V = &ion.V;
     
     //if not 0, we are computing for the predicted location.
     if(predicted)
@@ -120,6 +132,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         //Check this counter, used for statistics later.
         if(ion.near > ion.max_n)
             ion.max_n = ion.near;
+
+        //Force on the target.
+        double *F_at;
 
         for(int i = 0; i<ion.near; i++)
         {

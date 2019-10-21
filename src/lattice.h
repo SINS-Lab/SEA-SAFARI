@@ -48,9 +48,15 @@ struct Lattice
     Vec3d ey;
     Vec3d ez;
 
+    //Constructs the lattice based on the settings
     void build_lattice();
-    void add_site(Atom a, double px, double py, double pz);
+    //Adds an atom of type a, at location x, y, z;
+    void add_site(Atom a, double x, double y, double z);
+    //Retrieves the cell for the given coordinates,
+    //NULL if no cell is found
     Cell* get_cell(double x, double y, double z);
+    //Makes the cell for the given coordinate, if the
+    //cell already exists, it retrieves old one instead.
     Cell* make_cell(double x, double y, double z);
 
 };

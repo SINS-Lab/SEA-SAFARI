@@ -32,4 +32,10 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
  */ 
 void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
 
+/**
+ * Either saves the buffer, or stores it for saving later.
+ * Sending a NULL buffer will force it to save any not saved.
+ */ 
+void save(char* buffer);
+
 #endif // TRAJ_H_INCLUDED

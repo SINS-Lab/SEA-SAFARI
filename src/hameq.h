@@ -9,6 +9,9 @@
  * @param ion - the ion to interact with the lattice
  * @param lattice - the lattice to scatter off
  * @param dt - timestep for interaction
+ * @param predicted - if true, this does the calculations for
+ *                    after time dt has passed, otherwise is
+ *                    done for the current location
  */
 void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted);
 
