@@ -1,5 +1,5 @@
 #include "safio.h"
-#include "string_uitls.h"
+#include "string_utils.h"
 #include <vector>
 
 void Safio::load(std::string safio_file)
@@ -110,13 +110,12 @@ void Safio::load(std::string safio_file)
             {
                 if(o<=0)
                 {
-                    MAXDIV = atoi(args[0].c_str());
-                    MINDIV = atoi(args[1].c_str());
-                    //If this is the case, we have more arguments
-                    if(MAXDIV == MINDIV && MAXDIV == 1)
-                    {
-                        o = 4;
-                    }
+                    DIST_SEARCH = atoi(args[0].c_str());
+                    FAILED_DE = atoi(args[1].c_str());
+
+                    //Since we re-purposed the above, we always
+                    //have the 4 successive arguments.
+                    o = 4;
                 }
                 else
                 {
@@ -140,8 +139,8 @@ void Safio::load(std::string safio_file)
             }
             if(n==14)
             {
-                NWRITX = atoi(args[0].c_str());
-                NWRITY = atoi(args[1].c_str());
+                SCAT_FLAG = atoi(args[0].c_str());
+                SCAT_TYPE = atoi(args[1].c_str());
             }
             if(n==15)
             {

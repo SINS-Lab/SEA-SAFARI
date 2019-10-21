@@ -31,6 +31,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 {
     Ion &ion = *this;
 
+    //Initial locations are where ion is.
     int cell_x = ion[0];
     int cell_y = ion[1];
     int cell_z = ion[2];
@@ -39,6 +40,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //If we were just here, we should use the same near sites.
     if(pos_hash == last_index)
         return near;
+    //Update last index checked.
     last_index = pos_hash;
 
     //Number in current cell being checked.
@@ -47,6 +49,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //Reset number nearby.
     near = 0;
 
+    //Initialize this big.
     ion.rr_min_find = 1e6;
 
     //Location of mask
@@ -54,9 +57,10 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 
     //Only particles closer than this are considered.
     double near_distance_sq = settings.rr_max;
+    //Initialize this to max allowed distance.
     double rr_min = near_distance_sq;
 
-    //volume of the cube to check.
+    //volume of the mask to check.
     int nmax = pow(2*radius+1, 3);
 
     //Centre the cell on the surface if it is above it.
@@ -89,6 +93,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         num = cell->num;
         cell_sites = cell->sites;
 
+        //Check each site in this cell.
         for(int i = 0; i<num; i++)
         {
             Site *s = &cell_sites[i];
@@ -103,10 +108,11 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
             if(rr > near_distance_sq) continue;
             rr_min = std::min(rr_min, rr);
             ion.rr_min_find = std::min(rr, ion.rr_min_find);
+            //Add the site to our tracked sites.
             near_sites[near] = s;
             near++;
             //If we have enough, goto end.
-            if(near >= target_num - 1) goto end;
+            if(near >= target_num) goto end;
         }
     }
 end:

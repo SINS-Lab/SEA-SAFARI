@@ -7,7 +7,7 @@
 #include "safio.h"
 #include "vec_math.h"
 #include "space_math.h"
-#include "ion.h"
+#include "traj.h"
 #include <time.h>
 #include <iomanip>
 #include "scat.h"
@@ -136,9 +136,9 @@ int main(int argc,char* argv[])
     
     out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
 
-    if(settings.NWRITX == 666)
+    if(settings.SCAT_FLAG == 666)
     {
-        if(settings.NUMCHA==1 || settings.NWRITY == 777)
+        if(settings.NUMCHA==1 || settings.SCAT_TYPE == 777)
         {
             if(settings.NUMCHA==1)
             {
@@ -152,7 +152,7 @@ int main(int argc,char* argv[])
             }
             gridscat(lattice, &n);
         }
-        else if(settings.NWRITY == 666)
+        else if(settings.SCAT_TYPE == 666)
         {
             debug_file << "Running Montecarlo " << std::endl;
             std::cout << "Running Montecarlo " << std::endl;

@@ -10,7 +10,7 @@ t                                      RECOIL
 4000                                   Max Step Count
 10.0 2.50000e-03                       R Max - Max interaction distance, DR_MIN_TAB
 0.   3.00000e-04                       Z MIN,STEP
-1 1                                    MAXDIV, MINDIV *1 unused
+4 50                                   Max Radius to check, Max error in energy.
 10000                                  numcha, if 1, does single shot (SS)
 0 .01 4.0786                           XStart/Step/End SS at XStart
 0 .01 4.0786                           YStart/Step/End SS at YStart

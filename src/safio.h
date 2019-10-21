@@ -97,11 +97,11 @@ struct Safio
     double ZMIN;       //Start point for values caches
     double ZSTEP;      //Step for cached values
 
-    int MAXDIV; //Unused
-    int MINDIV; //Unused
+    int DIST_SEARCH;   //Unused
+    int FAILED_DE;     //Unused
 
-    int NWRITX;        //If this is 666, will run scats, otherwise tests
-    int NWRITY;        // 666 = montecarlo, 777 = gridscat 888 = chainscat
+    int SCAT_FLAG;     //If this is 666, will run scats, otherwise tests
+    int SCAT_TYPE;     // 666 = montecarlo, 777 = gridscat 888 = chainscat
 
     //This is how many AX and AY
     //to build the lattice for,

@@ -32,6 +32,7 @@ public:
     //Nearest distance when finding nearby, squared
     double rr_min_find = 1e3;
     //This is the last place the near things were updated.
+    //Setting this back to -1 will force a re-check of near.
     int last_index = -1;
     //Last distance checked for nearby atoms.
     int last_radius = 1;
@@ -57,9 +58,15 @@ public:
      */
     void set_KE(double eV, double theta0, double phi0,double x, double y);
 
-    //Returns the number of nearby atom found in the given lattice.
-    //This also updates the near_sites and near_atoms arrays.
-    //Call check_distances() before using near_dists.
+    /**
+     * This updates the value of near for this ion. it will search for
+     * atoms within radius of the ion, it will only find up to the 
+     * first target_number of ions found.
+     * 
+     * @param lattice - the lattice containing atoms to look for
+     * @param radius - max search distance for atoms
+     * @param target_number - max value of near to allow
+     */ 
     int fill_nearest(Lattice &lattice, int radius, int target_number);
 };
 

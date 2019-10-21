@@ -1,6 +1,6 @@
 #include "scat.h"
 #include "safio.h"
-#include "ion.h"
+#include "traj.h"
 
 double frand()
 {

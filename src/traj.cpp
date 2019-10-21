@@ -49,24 +49,26 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
 }
 
 //File output cache related things
-int save_index = 0;
-const int cache_size = 100;
-std::string save_cache[cache_size];
+int save_index = 0;                //Current index for cache
+const int cache_size = 100;        //Size of cache
+std::string save_cache[cache_size];//The cache itself
 
-//This saves the current site, in batches of cache_size
-//If buffer is NULL, this saves all remaining trajectories.
 void save(char* buffer)
 {
+    //If NULL, flush the cache
     if(buffer==NULL)
     {
+        //Save all to outfile
         for(int n = 0; n<save_index; n++)
         {
             out_file << save_cache[n];
         }
+        //Reset index
         save_index = 0;
     }
     else
     {
+        //If not enough in cache, add to cache
         if(save_index < cache_size)
         {
             save_cache[save_index] = buffer;
@@ -74,10 +76,12 @@ void save(char* buffer)
         }
         else
         {
+            //Save all to outfile
             for(int n = 0; n<save_index; n++)
             {
                 out_file << save_cache[n];
             }
+            //Reset cache index
             save_index = 0;
         }
     }
@@ -85,12 +89,25 @@ void save(char* buffer)
 
 void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 {
+    //Get some constants for the loop
+    
+    //Radius of atom search
+    const int d_search = settings.DIST_SEARCH;
+    //Max atoms to find in the search
+    const int n_parts = settings.NPART;
+    //Energy difference to consider a failure
+    const int de_fail = settings.FAILED_DE;
+    //Lowest allowed time step
+    const double dt_low = settings.DELLOW;
+    //Highest allowed time step
+    const double dt_high = settings.DELT0;
+    //Ion mass
+    const double mass = ion.atom.mass;
+
     //Time step, initialized at 0.1
     double dt = 0.1;
     //Magnitude squared of the ion momentum
     double psq;
-    //Ion mass
-    double mass = ion.atom.mass;
 
     //exit conditions
     bool buried = false;
@@ -135,6 +152,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     T = psq * 0.5 / mass;
     E1 = E2 = E3 = T;
 
+    //Initialize these to 0
     ion.steps = 0;
     ion.V = 0;
     ion.V_t = 0;
@@ -151,12 +169,12 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 
 start:
     //Find nearby lattice atoms
-    ion.fill_nearest(lattice, 4, settings.NPART);
+    ion.fill_nearest(lattice, d_search, n_parts);
     //Increment counter for how many steps we have taken
     ion.steps++;
     
     //Verify time step is in range.
-    dt = std::min(std::max(dt, settings.DELLOW), settings.DELT0);
+    dt = std::min(std::max(dt, dt_low), dt_high);
 
     //check if we are still in a good state to run.
     validate(ion, &buried, &off_edge, &stuck, &froze, &left, E1);
@@ -172,8 +190,8 @@ start:
     //This essentially gives the value of the second derivative,
     //Showing any major jumps in energy of the particle.
     //This value should average around 0.01, so if larger than 50,
-    //Then we have a major jump.-
-    if(fabs(E3 - 2*E2 + E1) > 50)
+    //Then we have a major jump.
+    if(fabs(E3 - 2*E2 + E1) > de_fail)
     {
         discont = true;
         goto end;
@@ -203,27 +221,37 @@ start:
     {
         //check if energy has changed too much.
         change = pow(settings.ABSERR/dr_max, settings.DEMAX);
+        //don't allow speedups of more than 2x, as those can
+        //cause major discontinuities later
         if(change >= 2)
             change = 2;
+        //If timestep tries to speed up between 1 and 2 times,
+        //just leave it where it is.
         if(change > 1 && change < 2)
             change = 1;
 
         //Large change in energy, try to reduce timestep.
-        if(change < .2 && dt > settings.DELLOW)
+        if(change < .2 && dt > dt_low)
         {
             dt *= change;
-            if(dt < settings.DELLOW)
-                dt = settings.DELLOW;
+            //Make sure it is still at least dt_low.
+            if(dt < dt_low)
+                dt = dt_low;
             if(log)
             {
                 debug_file << "change_down: " << change << std::endl;
             }
+            //Reset the last index the ion saw, 
+            //this forces a re-check of nearby atoms
             ion.last_index = -1;
+            //Return back to start of traj run.
             goto start;
         }
     }
     else
     {
+        //By default, try to increase the time step.
+        //This ensures things speed up again after leaving.
         change = 2;
     }
 
@@ -246,13 +274,15 @@ start:
 
     //Update some parameters for saving.
     ion.r_0[2] = fmin(ion.r[2], ion.r_0[2]);
+
+    //Increment the time step for the ion
     ion.time += dt;
 
     //Update kinetic energy.
     psq = sqr(ion.p);
     T = psq * 0.5 / mass;
 
-    //Update energy trackers, propogate the energy backwards.
+    //Update energy trackers, propogate them backwards.
     E3 = E2;
     E2 = E1;
     E1 = T + (ion.V + ion.V_t) / 2;
@@ -305,7 +335,7 @@ start:
         }
     }
 
-    //Apply differences to timestep;
+    //Apply differences to timestep for the next loop
     dt *= change;
 
     //Back up we go.
@@ -321,7 +351,22 @@ end:
     }
 
     double E = T;
-    double pp = 0, pzz = 0, theta, phi;
+    //z-momentum squared, exit theta, exit phi
+    double pzz = 0, theta, phi;
+    /**
+     * Checks failure flags, and sets energy accordingly
+     * 
+     * In all failure cases, theta = 0, phi = 90
+     * 
+     * Energy failure flags as follows:
+     * 
+     * -10  : ion got stuck due to image charge.
+     * -100 : got stuck, ie E too low
+     * -200 : got buried, ie z below -BDIST
+     * -300 : froze, ie took too many steps
+     * -400 : off edge, ie left crystal via x or y
+     * -500 : discont, had a discontinuity in E, so was dropped.
+     */ 
     if(stuck)
     {
         theta = 0;
@@ -361,12 +406,18 @@ end:
         //Find the momentum at infinity
         if(settings.IMAGE)
         {
-            pp = (pz*pz) - (2*mass*Vi_z(settings.Z1, ion.q));
-            pzz = pp < 0 ? -sqrt(-pp) : sqrt(pp);
+            //Image charge would pull it towards surface, this accounts
+            //for that effect.
+            pzz = (pz*pz) - (2*mass*Vi_z(settings.Z1, ion.q));
+            pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
+            //Recalulate this, as pz has changed
+            //We are fine with pzz being -ve, as that case
+            //will be dropped due to ion not escaping.
+            psq = pzz + px*px + py*py;
         }
         else
         {
-            pp = pz * pz;
+            //No image, so this is the same as it was.
             pzz = pz;
         }
         //Ion is not escaping.
@@ -380,25 +431,31 @@ end:
         {
             //Recalculate E, incase image affected it
             E = 0.5 * psq / mass;
+
+            //calculate theta, depends on pz
             theta = acos(pzz/sqrt(psq)) * 180 / M_PI;
+
             if(px == 0 && py==0)
             {
+                //phi isn't well defined here,
+                //so just set it as 90
                 phi = 90;
             }
             else
             {
+                //Calculate phi, depends on px, py
                 phi = atan2(py, px) * 180 / M_PI;
             }
         }
     }
 
-    //Output data.
+    //Output data, first stuff it in the buffer
     sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%d\t%f\t%d\t%f\n",
             ion.r_0[0],ion.r_0[1],ion.r_0[2],
             E,theta,phi,
             1,1.0/settings.NUMCHA,
             ion.max_n, ion.r_min, ion.steps, ion.time);
-
+    //Then save it
     save(buffer);
 
     return;
