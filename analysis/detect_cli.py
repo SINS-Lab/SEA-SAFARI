@@ -29,7 +29,7 @@ def azimuthal_spectrum(dir, theta, size=3, emin=0, emin_rel=0):
             file = os.path.join(dir, filename)
             safio = safari_input.SafariInput(file.replace('.data', '.input'))
             print('loading: '+filename)
-            data = detect.load(file)
+            data = detect.load(file.replace('.data',''))
             print('data loaded')
 
             # Setup the spectrum object for this file
@@ -59,7 +59,7 @@ def e_theta_loop(dir, theta1, theta2, theta_step):
             file = os.path.join(dir, filename)
             safio = safari_input.SafariInput(file.replace('.data', '.input'))
             print('loading data')
-            data = detect.load(file)
+            data = detect.load(file.replace('.data',''))
             print('data loaded')
             fig, ax = plt.subplots()
             num = 0
