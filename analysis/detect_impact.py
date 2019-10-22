@@ -17,6 +17,9 @@ command = 'Sea-Safari.exe'
 if platform.system() == 'Linux':
     command = './Sea-Safari'
 
+#TODO check that we haven't already got a file for this impact parameter.
+# If we already do, we should use that, instead of re-running this.
+
 subprocess.run(command, shell=True)
 
 xyz_in = args.input.replace('.input', '.xyz')
