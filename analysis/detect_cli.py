@@ -99,8 +99,3 @@ emin = float(input('Minimum Energy: ')) if not args.emin else float(args.emin)
 emin_rel = 0 if not args.emin_rel else float(args.emin_rel)
 azimuthal_spectrum(dir, theta, size, emin, emin_rel);
 
-
-#theta1 = float(input('Initial Theta: '))
-#theta2 = float(input('Final Theta: '))
-#theta_step = float(input('Theta Step: '))
-#e_theta_loop(dir, theta1, theta2, theta_step)

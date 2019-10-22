@@ -295,18 +295,14 @@ class Detector:
                 self.safio.XSTART = close[0]
                 self.safio.YSTART = close[1]
                 self.safio.genInputFile(fileIn=self.safio.fileIn)
-
-                command = 'Sea-Safari.exe'
-                if platform.system() == 'Linux':
-                    command = './Sea-Safari'
-
-                sub = subprocess.run(command, shell=True)
-                close[0] = round(close[0],2)
-                close[1] = round(close[1],2)
-                name = self.safio.fileIn.replace('.input', '')
-                xyz_p.process_file(name + '.xyz',
-                                   name+str(close[0])+','+str(close[1])+'.xyz', load_vmd=True)
-                print(sub)
+                
+                imp_x = round(close[0],2)
+                imp_y = round(close[1],2)
+                input_file = self.safio.fileIn
+                output_file = self.safio.fileIn.replace('.input', '') + \
+                              '{},{}.xyz'.format(imp_x, imp_y)
+                cmd = ['python3 detect_impact.py -i {} -o {}'.format(input_file, output_file)]
+                sub = subprocess.Popen(cmd, shell=True)
 
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
@@ -316,19 +312,14 @@ class Detector:
                 self.safio.NUMCHA = 1
                 self.safio.XSTART = close[0]
                 self.safio.YSTART = close[1]
-                self.safio.genInputFile(fileIn=self.safio.fileIn)
-
-                command = 'Sea-Safari.exe'
-                if platform.system() == 'Linux':
-                    command = './Sea-Safari'
-
-                sub = subprocess.run(command, shell=True)
-                close[0] = round(close[0], 2)
-                close[1] = round(close[1], 2)
-                name = self.safio.fileIn.replace('.input', '')
-                xyz_p.process_file(name +'.xyz',
-                                   name+str(close[0])+','+str(close[1])+'.xyz', color="nearest", load_vmd=True)
-                print(sub)
+                self.safio.genInputFile(fileIn=self.safio.fileIn)                
+                imp_x = round(close[0],2)
+                imp_y = round(close[1],2)
+                input_file = self.safio.fileIn
+                output_file = self.safio.fileIn.replace('.input', '') + \
+                              '{},{}.xyz'.format(imp_x, imp_y)
+                cmd = ['python3 detect_impact.py -i {} -o {} -c nearest'.format(input_file, output_file)]
+                sub = subprocess.Popen(cmd, shell=True)
 
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
@@ -338,19 +329,14 @@ class Detector:
                 self.safio.NUMCHA = 1
                 self.safio.XSTART = close[0]
                 self.safio.YSTART = close[1]
-                self.safio.genInputFile(fileIn=self.safio.fileIn)
-
-                command = 'Sea-Safari.exe'
-                if platform.system() == 'Linux':
-                    command = './Sea-Safari'
-
-                sub = subprocess.run(command, shell=True)
-                close[0] = round(close[0], 2)
-                close[1] = round(close[1], 2)
-                name = self.safio.fileIn.replace('.input', '')
-                xyz_p.process_file(name + '.xyz',
-                                   name+str(close[0])+','+str(close[1])+'.xyz', color="velocity", load_vmd=True)
-                print(sub)
+                self.safio.genInputFile(fileIn=self.safio.fileIn)            
+                imp_x = round(close[0],2)
+                imp_y = round(close[1],2)
+                input_file = self.safio.fileIn
+                output_file = self.safio.fileIn.replace('.input', '') + \
+                              '{},{}.xyz'.format(imp_x, imp_y)
+                cmd = ['python3 detect_impact.py -i {} -o {} -c velocity'.format(input_file, output_file)]
+                sub = subprocess.Popen(cmd, shell=True)
 
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
