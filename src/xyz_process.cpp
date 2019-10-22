@@ -145,7 +145,6 @@ XYZ smooth(const XYZ& original)
         std::vector<Particle> pset = interpolate_states(time, times, particles);
         XYZ_Single single = from_Particles(time, pset);
         new_xyz.xyzs[i] = single;
-        // new_xyz.xyzs.push_back(single);
     }
     return new_xyz;
 }
