@@ -28,7 +28,7 @@ public:
 
 std::string to_string(double num)
 {
-    char* arr = new char[6];
+    char* arr = new char[8];
     sprintf(arr, "%.4f", num);
     std::string output = arr;
     return output;
@@ -42,6 +42,7 @@ XYZ_Single from_Particles(double time, std::vector<Particle> pset)
     xyz_single.num_per_row = 8;
     xyz_single.atoms = new std::string[xyz_single.number];
     xyz_single.values = new double*[xyz_single.number];
+    #pragma omp parallel for num_threads(12)
     for(int i = 0; i<xyz_single.number; i++)
     {
         Particle &p = pset[i];
@@ -92,8 +93,10 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
     double t_prev = times[prev_index];
     double t_next = times[next_index];
 
-    int num = particles.size();
+    int num = particles[0].size();
+    new_particles.resize(num);
     //Otherwise, lets interpolate
+    #pragma omp parallel for num_threads(12)
     for(int i = 0; i<num; i++)
     {
         Particle prev = particles[prev_index][i];
@@ -104,7 +107,7 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
         interp.position = linear_interpolate(time, t_prev, prev.position, t_next, prev.position);
         interp.momentum = linear_interpolate(time, t_prev, prev.momentum, t_next, prev.momentum);
         interp.velocity = linear_interpolate(time, t_prev, prev.velocity, t_next, prev.velocity);
-        new_particles.push_back(interp);
+        new_particles[i] = interp;
     }
     return new_particles;
 }
@@ -130,15 +133,19 @@ XYZ smooth(const XYZ& original)
     }
     //End of our time step is whatever the last time was.
     double end_time = times[times.size()-1];
+    
     //Now we construct a new xyz in even time steps
     XYZ new_xyz;
+    new_xyz.xyzs.resize(1000);
     //Note that we are doing this with a fixed 1000 frames.
+    #pragma omp parallel for num_threads(12)
     for(int i = 0; i<1000; i++)
     {
         double time = i * end_time/1000;
         std::vector<Particle> pset = interpolate_states(time, times, particles);
         XYZ_Single single = from_Particles(time, pset);
-        new_xyz.xyzs.push_back(single);
+        new_xyz.xyzs[i] = single;
+        // new_xyz.xyzs.push_back(single);
     }
     return new_xyz;
 }
@@ -150,6 +157,7 @@ int main(int argc,char* argv[])
         std::cout << "Please include argument of file to parse, and output file name" << std::endl;
         return 1;
     }
+
     std::string in_file = argv[1];
     std::string out_file = argv[2];
     XYZ xyz;
@@ -158,7 +166,7 @@ int main(int argc,char* argv[])
     input.open(in_file);
     std::cout << "Loading xyz" << std::endl;
     xyz.load(input);
-    std::cout << "Closing input " <<xyz.xyzs.size() << std::endl;
+    std::cout << "Closing input, frames loaded: " <<xyz.xyzs.size() << std::endl;
     input.close();
 
     std::ofstream output;
@@ -166,7 +174,7 @@ int main(int argc,char* argv[])
     output.open(out_file);
     std::cout << "Smoothing xyz" << std::endl;
     xyz = smooth(xyz);
-    std::cout << "Saving xyz " <<xyz.xyzs.size() << std::endl;
+    std::cout << "Saving xyz, frames saved: " <<xyz.xyzs.size() << std::endl;
     xyz.save(output);
     std::cout << "Closing output" << std::endl;
     output.close();
