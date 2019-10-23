@@ -209,15 +209,19 @@ void Lattice::load_lattice(std::ifstream& input)
         values = to_double_array(split(line), 0, 4);
         //Third column in the crys file is mass
         int charge = (int) values[3];
-        Atom atom;
+        Atom *atom;
         bool found = false;
         //Lookup the atom
         for(Atom a: settings.ATOMS)
         {
             //Assume it is this one, TODO account for isotopes
-            if(a.charge == charge)
+            double diff = a.charge - charge;
+            //Use this as the floating point errors might make
+            //an == check fail.
+            if(fabs(diff) < 1)
             {
-                atom = a;
+                atom = &a;
+                found = true;
                 break;
             }
         }
@@ -225,12 +229,13 @@ void Lattice::load_lattice(std::ifstream& input)
         if(!found)
         {
             //Assume it is default atom, and log an error.
-            debug_file<<"No Atom found for charge "<<charge<<std::endl;
+            debug_file<<"No Atom found for charge "<<charge;
             //TODO maybe make a new atom for it instead?
-            atom = settings.ATOMS[0];
+            atom = &settings.ATOMS[0];
+            debug_file << " setting to: "<<atom->symbol << ", " << atom->charge<<std::endl;
         }
         //Make a new site
-        Site* s = make_site(&atom, values[0], values[1], values[2]);
+        Site* s = make_site(atom, values[0], values[1], values[2]);
         //Add it to our list
         loaded_sites.push_back(*s);
         //Cleanup the values array.
@@ -284,7 +289,8 @@ void Lattice::load_lattice(std::ifstream& input)
         //We want a copy to add, rather than the original
         Site site = processed_sites[i];
         //Add the site
-        add_site(site);
+        add_site(&settings.ATOMS[site.atom->index-1], 
+                 site.r_0[0], site.r_0[1], site.r_0[2]);
     }
     debug_file<< "Loaded " << sites.size() << " sites from file" << std::endl;
 }

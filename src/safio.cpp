@@ -297,8 +297,7 @@ void Safio::load(std::string safio_file)
         //Populate basis atoms indecies
         for(int i = 0; i<NBASIS; i++)
         {
-            Site &site = BASIS[i];
-            site.atom = &ATOMS[site.index-1];
+            BASIS[i].atom = &ATOMS[BASIS[i].index-1];
         }
 
 
