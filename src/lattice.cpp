@@ -4,6 +4,7 @@
 #include <algorithm>    //std::sort
 #include <vector>
 #include "space_math.h"
+#include "string_utils.h"
 
 void Lattice::build_lattice()
 {
@@ -153,6 +154,43 @@ void Lattice::add_site(Atom& a, double px, double py, double pz)
     sites.push_back(s);
     cel_sites[num] = *s;
     *cel_num = num + 1;
+}
+
+void Lattice::load_lattice(std::ifstream& input)
+{
+    std::string line;
+    double* values;
+    while(getline(input, line))
+    {
+        //Split line, and convert to array of doubles.
+        //format is: x y z charge mass
+        values = to_double_array(split(line), 0, 4);
+        //Third column in the crys file is mass
+        int charge = (int) values[3];
+        Atom *atom;
+        //Lookup the atom
+        for(Atom a: settings.ATOMS)
+        {
+            //Assume it is this one, TODO account for isotopes
+            if(a.charge == charge)
+            {
+                atom = &a;
+                break;
+            }
+        }
+        //If somehow charge didn't match
+        if(atom==NULL)
+        {
+            //Assume it is default atom, and log an error.
+            debug_file<<"No Atom found for charge "<<charge<<std::endl;
+            //TODO maybe make a new atom for it instead?
+            atom = &settings.ATOMS[0];
+        }
+        //Add the site
+        add_site(*atom, values[0], values[1], values[2]);
+        //Cleanup the values array.
+        delete []values;
+    }
 }
 
 Cell* Lattice::get_cell(double x, double y, double z)

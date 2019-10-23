@@ -63,6 +63,8 @@ struct Lattice
     ~Lattice();
     //Constructs the lattice based on the settings
     void build_lattice();
+    //Loads a lattice from the given input stream
+    void load_lattice(std::ifstream& input);
     //Adds an atom of type a, at location x, y, z;
     void add_site(Atom& a, double x, double y, double z);
     //Retrieves the cell for the given coordinates,
