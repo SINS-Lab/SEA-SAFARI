@@ -239,10 +239,14 @@ class Detector:
         if dx == 0 and dy == 2:
             maxX = np.max(x)
             maxY = np.max(y)
+            
+        z_threshold = -self.safio.BDIST;
         
         if basis is not None:
             minz = 1e6
             for site in basis:
+                if site[2] < z_threshold:
+                    continue;
                 colours.append(site[2])
                 circle = Circle((site[0], site[1]), 1)
                 patches.append(circle)
