@@ -2,7 +2,7 @@ CXX = g++
 
 #-Ofast cuts runtime to approximately 1/3.
 CXXFLAGS_D = -Wall -std=c++11 -O3 -pg -march=native
-CXXFLAGS_X = -Wall -std=c++11 -O3 -fopenmp
+CXXFLAGS_X = -Wall -std=c++11 -O3 -fopenmp -march=native
 CXXFLAGS_R = -Wall -std=c++11 -O3
 
 SRCDIR = src
@@ -37,7 +37,7 @@ OUTNAME_Z = XYZ
 OUTPUT_X = $(patsubst %,$(OUTDIR_A)/%,$(OUTNAME_Z))
 
 #xyz: XYZ_PROCESSOR
-all: Sea-Safari-Debug Sea-Safari-Release XYZ_PROCESSOR
+all: XYZ_PROCESSOR Sea-Safari-Debug Sea-Safari-Release
 
 Sea-Safari-Debug: $(FILES_SAFARI)
 	$(CXX) $(CXXFLAGS_D) -o $(OUTPUT_D) $(FILES_SAFARI_D)

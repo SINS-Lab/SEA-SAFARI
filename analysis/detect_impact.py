@@ -11,16 +11,13 @@ parser.add_argument("-o", "--output", help="Output file names")
 parser.add_argument("-c", "--colour", help="Colour parameter for xyz")
 args = parser.parse_args()
 
-safio = safari_input.SafariInput(args.input)
-
-command = 'Sea-Safari.exe'
-if platform.system() == 'Linux':
-    command = './Sea-Safari'
-
-#TODO check that we haven't already got a file for this impact parameter.
-# If we already do, we should use that, instead of re-running this.
-
-subprocess.run(command, shell=True)
+print("test a")
+if not os.path.exists(args.output):
+    command = 'Sea-Safari.exe'
+    if platform.system() == 'Linux':
+        command = './Sea-Safari'
+    #subprocess.run(command, shell=True)
+print("test b")
 
 xyz_in = args.input.replace('.input', '.xyz')
 

@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <string>
 
+#define THREADCOUNT 6
+
 class Particle
 {
 public:
@@ -13,6 +15,7 @@ public:
     Vec3d velocity;
     double mass;
     int id;
+    int nearby;
 
     void fromXYZ(XYZ_Single input, int index)
     {
@@ -23,6 +26,7 @@ public:
         mass = vals[6];
         velocity = momentum/mass;
         id = vals[7];
+        nearby = vals[8];
     }
 };
 
@@ -39,14 +43,14 @@ XYZ_Single from_Particles(double time, std::vector<Particle> pset)
     XYZ_Single xyz_single;
     xyz_single.number = pset.size();
     xyz_single.comment = to_string(time);
-    xyz_single.num_per_row = 8;
+    xyz_single.num_per_row = 9;
     xyz_single.atoms = new std::string[xyz_single.number];
     xyz_single.values = new double*[xyz_single.number];
-    #pragma omp parallel for num_threads(12)
+    #pragma omp parallel for num_threads(THREADCOUNT)
     for(int i = 0; i<xyz_single.number; i++)
     {
         Particle &p = pset[i];
-        xyz_single.values[i] = new double[8];
+        xyz_single.values[i] = new double[9];
         xyz_single.atoms[i] = p.atom;
         xyz_single.values[i][0] = p.position[0];
         xyz_single.values[i][1] = p.position[1];
@@ -56,6 +60,7 @@ XYZ_Single from_Particles(double time, std::vector<Particle> pset)
         xyz_single.values[i][5] = p.momentum[2];
         xyz_single.values[i][6] = p.mass;
         xyz_single.values[i][7] = p.id;
+        xyz_single.values[i][8] = p.nearby;
     }
     return xyz_single;
 }
@@ -96,7 +101,7 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
     int num = particles[0].size();
     new_particles.resize(num);
     //Otherwise, lets interpolate
-    #pragma omp parallel for num_threads(12)
+    #pragma omp parallel for num_threads(THREADCOUNT)
     for(int i = 0; i<num; i++)
     {
         Particle prev = particles[prev_index][i];
@@ -138,7 +143,7 @@ XYZ smooth(const XYZ& original)
     XYZ new_xyz;
     new_xyz.xyzs.resize(1000);
     //Note that we are doing this with a fixed 1000 frames.
-    #pragma omp parallel for num_threads(12)
+    #pragma omp parallel for num_threads(THREADCOUNT)
     for(int i = 0; i<1000; i++)
     {
         double time = i * end_time/1000;

@@ -12,7 +12,7 @@ class XYZ:
             xyz.load(file, num)
             self.xyzs.append(xyz)
             var = file.readline()
-            if (len(var.split()) == 0): 
+            if (len(var.split()) == 0) or var == '': 
                 break
         file.close()
         
