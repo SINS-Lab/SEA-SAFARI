@@ -12,25 +12,25 @@ t                            Targets Recoil
 0.0 0.0003                   ^ for Z, not implemented atm
 4 100                        Max distance for search, Threshold for dE
 1000                         Montecarlo/chainscat runs, if 1 does Single shot
-0 0.005 3.6147                X range (min, step, max)
-0 0.005 3.6147                Y range (min, step, max)
+-10 0.005 10                 X range (min, step, max)
+-10 0.005 10                 Y range (min, step, max)
 666 666                      SCAT_FLAG, SCAT_TYPE
-5.0 5.0                      RAX/RAY - This many unit cells are tiled radially
+15.0 15.0                    RAX/RAY - This many unit cells are tiled radially
 4 1                          NPAR, IPOT - Radial potential parameters/mode
-2051.73 3.753 11163.2 6.877  NPAR Parameters for IPOT
+4153.6 3.625 27017.57 7.286  NPAR Parameters for IPOT
 2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
 1.26 2.0                     NIMPAR parameters for IIMPOT
 0.0 0.9436337324 1           Temperature, Seed, NITER - unused NITER
 f                            Use Image Charge
 -1.5 8.18                    Stuck Energy, Buried Distance
-3.6147 3.6147 3.6147         AX, AY, AZ for basis
+4.0786 4.0786 4.0786         AX, AY, AZ for basis
 4                            # Of atoms in given basis, next # lines are basis
 1.0 1.0 1.0 1                X Y Z Type
 1.0 0.5 0.5 1
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
 1                            # of types of atoms, followed by pairs of lines
-63.546 29 Cu                 Atom Parameters
+196.967 79 Au                Atom Parameters
 5.0 5.0 5.0                  Atom Springs
 t 0 8.36405                  Whether atoms are springy, ATOMK,RNEIGH - last 2 unused
-0 0 1 t                      Surface face of lattice
+1 1 1 f                      Surface face of lattice
