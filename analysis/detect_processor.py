@@ -246,6 +246,9 @@ class Detector:
                 colours.append(site[2])
                 circle = Circle((site[0], site[1]), 1)
                 patches.append(circle)
+        
+        ax.set_xlim(self.safio.XSTART, self.safio.XSTOP)
+        ax.set_ylim(self.safio.YSTART, self.safio.YSTOP)
 
         p = PatchCollection(patches, alpha=0.4)
         p.set_array(np.array(colours))
