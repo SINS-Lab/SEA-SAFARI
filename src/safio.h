@@ -11,10 +11,10 @@
 
 struct Atom
 {
-    double mass;
-    double charge;
-    int index;
-    std::string symbol;
+    double mass = 1;
+    double charge = 0;
+    int index = -1;
+    std::string symbol = "n";
     double spring[3];
 };
 
@@ -22,9 +22,9 @@ class Site
 {
 public:
     //Original location
-    double *r_0;
+    double *r_0 = NULL;
     //Original Momentum
-    double *p_0;
+    double *p_0 = NULL;
     //The atom here
     Atom* atom;
 
@@ -54,9 +54,13 @@ public:
         reset();
     }
 
-    double &operator[](int index)
+    Site(const Site& other)
     {
-        return r[index];
+        r_0 = other.r_0;
+        p_0 = other.p_0;
+        atom = other.atom;
+        index = other.index;
+        reset();
     }
 
     void reset();
@@ -150,6 +154,8 @@ struct Safio
 
     //Surface face
     double* face;
+    //If true, will load the crystal from appropriate file name.
+    bool load_crystal;
 
     //Basis Atoms
     int NTYPES;

@@ -12,7 +12,7 @@ class Ion : public Site
 {
 public:
     //Charge of the ion
-    int q;
+    int q = 1;
     //Index of the ion, each one fired should be different.
     int index = 0;
 

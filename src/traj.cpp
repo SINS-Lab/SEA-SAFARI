@@ -10,7 +10,7 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
                         bool *froze, bool *left, double E)
 {
     //left crystal
-    if(ion[2] > settings.Z1)
+    if(ion.r[2] > settings.Z1)
     {
         *left = true;
         return false;
@@ -21,14 +21,14 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
     double y_max = settings.AY * settings.RAY;
     
     //Fell of the edge
-    if(ion[0] > x_max || ion[0] < -x_max ||
-       ion[1] > y_max || ion[1] < -y_max)
+    if(ion.r[0] > x_max || ion.r[0] < -x_max ||
+       ion.r[1] > y_max || ion.r[1] < -y_max)
     {
         *off_edge = true;
         return false;
     }
     //Buried
-    if(ion[2] < -settings.BDIST)
+    if(ion.r[2] < -settings.BDIST)
     {
         *buried = true;
         return false;

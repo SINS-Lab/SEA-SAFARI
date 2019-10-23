@@ -6,6 +6,54 @@
 #include "space_math.h"
 #include "string_utils.h"
 
+void Lattice::rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
+                Vec3d* ex, Vec3d* ey, Vec3d* ez,
+                std::vector<Site>* sites_out, std::vector<Site>& sites_in, int* maxZI)
+{
+    //Rotation matrix for lattice
+    Mat3d R;
+    //Inverse of the rotation matrix
+    Mat3d R_inv;
+
+    //Rotation matrix and inverse.
+    R = make_rot_matrix(dir, face);
+    R_inv = R.invert();
+
+    //Basis vectors in the rotated coordinate system
+    *ex = R_inv * ex_basis * settings.AX;
+    *ey = R_inv * ey_basis * settings.AY;
+    *ez = R_inv * ez_basis * settings.AZ;
+
+    double maxZ = -1e20;
+    int num = sites_in.size();
+    sites_out->resize(num);
+
+    for(int i = 0; i<num; i++)
+    {
+        Site s;
+        Site &old = sites_in[i];
+        Vec3d tmp;
+        //Make basis of correct size.
+        tmp.set(old.r_0);
+        tmp[0] *= settings.AX;
+        tmp[1] *= settings.AY;
+        tmp[2] *= settings.AZ;
+        Vec3d v = R * tmp;
+        s.r_0[0] = v[0];
+        s.r_0[1] = v[1];
+        s.r_0[2] = v[2];
+        s.atom = old.atom;
+        s.index = sites_in[i].index;
+        (*sites_out)[i] = s;
+        double dot = v*dir;
+        if(dot > maxZ)
+        {
+            maxZ = dot;
+            *maxZI = i;
+        }
+    }
+}
+
 void Lattice::build_lattice()
 {
     //Use maximum, with some extra room, for the radius.
@@ -21,10 +69,11 @@ void Lattice::build_lattice()
     Vec3d dir;
     //We like "Up"
     dir.set(0,0,1);
-    Vec3d axis;
-    axis.set(settings.face);
+    Vec3d face;
+    face.set(settings.face);
 
-    //Basis vectors in the basis coordinates
+    //Basis vectors in the basis coordinates 
+    //TODO configurable this
     Vec3d ex_basis;
     ex_basis.set(1,0,0);
     Vec3d ey_basis;
@@ -32,44 +81,20 @@ void Lattice::build_lattice()
     Vec3d ez_basis;
     ez_basis.set(0,0,1);
 
-    //Rotation matrix and inverse.
-    R = make_rot_matrix(dir, axis);
-    R_inv = R.invert();
+    //Basis vectors for lattice.
+    Vec3d ex;
+    Vec3d ey;
+    Vec3d ez;
 
-    //Basis vectors in the rotated coordinate system
-    ex = R_inv * ex_basis * settings.AX;
-    ey = R_inv * ey_basis * settings.AY;
-    ez = R_inv * ez_basis * settings.AZ;
-
-    double maxZ = -1e20;
+    //Index of topmost site in the basis
     int maxZI = 0;
 
-    for(int i = 0; i<settings.NBASIS; i++)
-    {
-        Site s;
-        Vec3d tmp;
-
-        //Make basis of correct size.
-        tmp.set(settings.BASIS[i].r);
-        tmp[0] *= settings.AX;
-        tmp[1] *= settings.AY;
-        tmp[2] *= settings.AZ;
-        Vec3d v = R * tmp;
-        s[0] = v[0];
-        s[1] = v[1];
-        s[2] = v[2];
-        s.index = settings.BASIS[i].index;
-        basis.push_back(s);
-
-        if(s[2] > maxZ)
-        {
-            maxZ = s[2];
-            maxZI = i;
-        }
-    }
+    //Populate the basis vectors
+    rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
+                &ex, &ey, &ez,
+                &basis, settings.BASIS, &maxZI);
 
     Vec3d cell_pos;
-    cell_pos.set(0,0,0);
 
     int ns = -n;
     int ne = n;
@@ -86,7 +111,7 @@ void Lattice::build_lattice()
             {
                 cell_pos[2] = ez[0] * x + ez[1] * y + ez[2] * z;
                 //Check if entire basis cell will fit
-                if (cell_pos[2] + basis[maxZI][2] > zTop)
+                if (cell_pos[2] + basis[maxZI].r_0[2] > zTop)
                     continue;
 
                 cell_pos[0] = ex[0] * x + ex[1] * y + ex[2] * z;
@@ -95,26 +120,26 @@ void Lattice::build_lattice()
                 for(int i = 0; i<settings.NBASIS; i++)
                 {
                     Site old = basis[i];
-                    pz = cell_pos[2] + old[2];
+                    pz = cell_pos[2] + old.r_0[2];
 
                     //Cut off bottom of the crystal at some point.
                     if(pz < zBottom)
                         continue;
 
-                    px = cell_pos[0] + old[0];
+                    px = cell_pos[0] + old.r_0[0];
 
                     //Out of bounds in x
                     if(px > x_max || px < -x_max)
                         continue;
 
-                    py = cell_pos[1] + old[1];
+                    py = cell_pos[1] + old.r_0[1];
 
                     //Out of bounds in y
                     if(py > y_max || py < -y_max)
                         continue;
                     
                     //This is the atom for this site.
-                    Atom &a = settings.ATOMS[old.index-1];
+                    Atom* a = &settings.ATOMS[old.index-1];
                     add_site(a, px, py, pz);
                 }
             }
@@ -124,17 +149,32 @@ void Lattice::build_lattice()
     debug_file << "built lattice" << std::endl;
 }
 
-void Lattice::add_site(Atom& a, double px, double py, double pz)
+
+void Lattice::add_site(Site& s)
 {
     //This makes the cell if it doesn't exist, otherwise gets old one.
-    Cell *cell = make_cell(px, py, pz);
+    Cell *cell = make_cell(s.r_0[0], s.r_0[1], s.r_0[2]);
 
     //Get the values from the cell.
     int *cel_num = &(cell->num);
     int num = *cel_num;
     Site *cel_sites = (cell->sites);
     
+    //Sites are indexed to size, so that they
+    //can be looked up to find their atom later.
+    s.index = sites.size();
+    sites.push_back(&s);
+    cel_sites[num] = s;
+    *cel_num = num + 1;
+    //Initializes the site
+    s.reset();
+}
+
+Site* make_site(Atom* a, double px, double py, double pz)
+{
+    //Make the given site
     Site *s = new Site();
+    //Initialize rest location
     s->r_0[0] = px;
     s->r_0[1] = py;
     s->r_0[2] = pz;
@@ -144,22 +184,24 @@ void Lattice::add_site(Atom& a, double px, double py, double pz)
     s->p_0[1] = 0;
     s->p_0[2] = 0;
 
-    //Initializes the site
-    s->reset();
+    //Assign the atom for it
+    s->atom = a;
+    return s;
+}
 
-    //Sites are indexed to size, so that they
-    //can be looked up to find their atom later.
-    s->index = sites.size();
-    s->atom = &a;
-    sites.push_back(s);
-    cel_sites[num] = *s;
-    *cel_num = num + 1;
+void Lattice::add_site(Atom* a, double px, double py, double pz)
+{
+    Site* s = make_site(a, px, py, pz);
+    //Add the site to the lattice
+    add_site(*s);
 }
 
 void Lattice::load_lattice(std::ifstream& input)
 {
     std::string line;
     double* values;
+    std::vector<Site> loaded_sites;
+    std::cout << "Loading lattice" << std::endl;
     while(getline(input, line))
     {
         //Split line, and convert to array of doubles.
@@ -167,30 +209,84 @@ void Lattice::load_lattice(std::ifstream& input)
         values = to_double_array(split(line), 0, 4);
         //Third column in the crys file is mass
         int charge = (int) values[3];
-        Atom *atom;
+        Atom atom;
+        bool found = false;
         //Lookup the atom
         for(Atom a: settings.ATOMS)
         {
             //Assume it is this one, TODO account for isotopes
             if(a.charge == charge)
             {
-                atom = &a;
+                atom = a;
                 break;
             }
         }
         //If somehow charge didn't match
-        if(atom==NULL)
+        if(!found)
         {
             //Assume it is default atom, and log an error.
             debug_file<<"No Atom found for charge "<<charge<<std::endl;
             //TODO maybe make a new atom for it instead?
-            atom = &settings.ATOMS[0];
+            atom = settings.ATOMS[0];
         }
-        //Add the site
-        add_site(*atom, values[0], values[1], values[2]);
+        //Make a new site
+        Site* s = make_site(&atom, values[0], values[1], values[2]);
+        //Add it to our list
+        loaded_sites.push_back(*s);
         //Cleanup the values array.
         delete []values;
     }
+
+    Vec3d dir;
+    //We like "Up"
+    dir.set(0,0,1);
+    Vec3d face;
+    face.set(settings.face);
+
+    //Basis vectors in the basis coordinates 
+    //TODO configurable this
+    Vec3d ex_basis;
+    ex_basis.set(1,0,0);
+    Vec3d ey_basis;
+    ey_basis.set(0,1,0);
+    Vec3d ez_basis;
+    ez_basis.set(0,0,1);
+
+    //Basis vectors for lattice.
+    Vec3d ex;
+    Vec3d ey;
+    Vec3d ez;
+
+    //Index of topmost site in the basis
+    int maxZI = 0;
+
+    std::vector<Site> processed_sites;
+
+    if(dir * face.normalize() != 1)
+    {
+        std::cout << "Rotating Lattice" << std::endl;
+        //Populate the rotated vectors
+        rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
+                    &ex, &ey, &ez,
+                    &processed_sites, loaded_sites, &maxZI);
+    }
+    else
+    {
+        std::cout << "No need to Rotate Lattice" << std::endl;
+        std::cout << dir[0] << " " << dir[1] << " " << dir[2] << std::endl;
+        std::cout << face[0] << " " << face[1] << " " << face[2] << std::endl;
+        processed_sites = loaded_sites;
+    }
+
+    int num = processed_sites.size();
+    for(int i = 0; i<num; i++)
+    {
+        //We want a copy to add, rather than the original
+        Site site = processed_sites[i];
+        //Add the site
+        add_site(site);
+    }
+    debug_file<< "Loaded " << sites.size() << " sites from file" << std::endl;
 }
 
 Cell* Lattice::get_cell(double x, double y, double z)
@@ -227,11 +323,6 @@ Lattice::Lattice(const Lattice& other)
 
     //This should be a deep copy, so long as cells copy correctly.
     cell_map = other.cell_map;
-}
-
-Lattice::~Lattice()
-{
-    cell_map.~unordered_map<int,Cell>();
 }
 
 Cell::Cell(const Cell& other)

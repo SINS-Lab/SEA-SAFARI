@@ -134,6 +134,15 @@ Vec3d Vec3d::operator+(Vec3d b)
     return sum;
 }
 
+Vec3d Vec3d::operator+(double* b)
+{
+    Vec3d sum;
+    sum[0] = v[0] + b[0];
+    sum[1] = v[1] + b[1];
+    sum[2] = v[2] + b[2];
+    return sum;
+}
+
 Vec3d Vec3d::operator-(Vec3d b)
 {
     Vec3d diff;
@@ -148,6 +157,14 @@ Vec3d& Vec3d::operator+=(const Vec3d &b)
     v[0] = v[0] + b.v[0];
     v[1] = v[1] + b.v[1];
     v[2] = v[2] + b.v[2];
+    return *this;
+}
+
+Vec3d& Vec3d::operator+=(const double* b)
+{
+    v[0] = v[0] + b[0];
+    v[1] = v[1] + b[1];
+    v[2] = v[2] + b[2];
     return *this;
 }
 

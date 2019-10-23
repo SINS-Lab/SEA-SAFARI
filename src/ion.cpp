@@ -32,9 +32,9 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     Ion &ion = *this;
 
     //Initial locations are where ion is.
-    int cell_x = ion[0];
-    int cell_y = ion[1];
-    int cell_z = ion[2];
+    int cell_x = ion.r[0];
+    int cell_y = ion.r[1];
+    int cell_z = ion.r[2];
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
     //If we were just here, we should use the same near sites.

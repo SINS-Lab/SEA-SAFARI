@@ -94,9 +94,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     double atomk = settings.ATOMK; 
 
     //Initialize ion coordinates
-    x = ion[0];
-    y = ion[1];
-    z = ion[2];
+    x = ion.r[0];
+    y = ion.r[1];
+    z = ion.r[2];
 
     //Relevant force for this run
     double *F;

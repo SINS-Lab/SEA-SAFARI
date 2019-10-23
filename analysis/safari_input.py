@@ -145,6 +145,7 @@ class SafariInput:
         self.ZMAX = [0]
 
         self.face = [1,0,0]
+        self.load_crystal = False
 
         self.load()
         # Instead here we should check for a default file, and use that
@@ -381,6 +382,8 @@ class SafariInput:
             # load in the face
             if n == 27:
                 self.face = [args[0], args[1], args[2]]
+                if len(args) > 3:
+                    self.load_crystal = args[3]
                 
             # Decrement our sub-line first.
             o = o - 1
@@ -481,7 +484,8 @@ class SafariInput:
         
         file = file + serialize(self.CORR, self.ATOMK, self.RNEIGH) + '\n'
         
-        file = file + serializeArr(self.face) + '\n'
+        file = file + serializeArr(self.face) + ' ' \
+                    + serialize(self.load_crystal) + '\n'
             
         output.write(file)
         output.close()

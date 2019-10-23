@@ -241,9 +241,9 @@ void Safio::load(std::string safio_file)
                 else
                 {
                     Site s;
-                    s[0] = atof(args[0].c_str());
-                    s[1] = atof(args[1].c_str());
-                    s[2] = atof(args[2].c_str());
+                    s.r_0[0] = atof(args[0].c_str());
+                    s.r_0[1] = atof(args[1].c_str());
+                    s.r_0[2] = atof(args[2].c_str());
                     s.index = atoi(args[3].c_str());
                     BASIS.push_back(s);
                 }
@@ -268,7 +268,7 @@ void Safio::load(std::string safio_file)
                     }
                     else
                     {
-                        Atom a = ATOMS.back();
+                        Atom &a = ATOMS.back();
                         a.spring[0] = atof(args[0].c_str());
                         a.spring[1] = atof(args[1].c_str());
                         a.spring[2] = atof(args[2].c_str());
@@ -284,6 +284,7 @@ void Safio::load(std::string safio_file)
             if (n == 27)
             {
                 face = to_double_array(args, 0, 2);
+                load_crystal = args.size() > 3 and args[3] == "t"; 
             }
             // Decrement our sub-line first.
             o--;
@@ -292,6 +293,15 @@ void Safio::load(std::string safio_file)
                 n++;
 
         }
+
+        //Populate basis atoms indecies
+        for(int i = 0; i<NBASIS; i++)
+        {
+            Site &site = BASIS[i];
+            site.atom = &ATOMS[site.index-1];
+        }
+
+
         safio_input.close();
         debug_file << "\nLoaded SAFIO" << '\n';
 

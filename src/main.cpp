@@ -58,35 +58,47 @@ int main(int argc, char* argv[])
     //Load the input file
     settings.load(safio_file);
     debug_file << "Loaded Settings, Initializing Potentials" << '\n';
-    std::cout << "Loaded Settings, Initializing Potentials" << '\n';
 
     //Initialize potentials
     init_potentials();
 
     debug_file << "Initialized Potentials, Building Lattice" << '\n';
-    std::cout << "Initialized Potentials, Building Lattice" << '\n';
 
     char buffer[200];
 
     Lattice lattice;
-    lattice.build_lattice();
 
-    int num = lattice.sites.size();
-
+    if(settings.load_crystal)
+    {
+        std::ifstream input;
+        std::string crys_in_file = safio_file +".crys_in";
+        debug_file << "Loading Lattice from "<< crys_in_file << '\n';
+        input.open(crys_in_file);
+        lattice.load_lattice(input);
+        input.close();
+        debug_file << "Lattice loaded"<<'\n';
+        std::cout << "Lattice loaded" << '\n';
+    }
+    else
+    {
+        lattice.build_lattice();
+    }
+    
     debug_file << "Printing Lattice" << '\n';
     std::cout << "Printing Lattice" << '\n';
+    int num = lattice.sites.size();
     for (int i = 0; i < num; i++)
     {
         Site &s = *lattice.sites[i];
         Atom* a = s.atom;
-        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n", s[0], s[1], s[2], a->charge, a->mass);
+        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",
+                         s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass);
         crystal_file << buffer;
     }
 
     crystal_file.close();
 
     debug_file << "Initializing RNG" << '\n';
-    std::cout << "Initializing RNG" << '\n';
     //Initialize the RNG
     rng.seed(settings.SEED);
 
@@ -161,5 +173,6 @@ int main(int argc, char* argv[])
     out_file.close();
     debug_file.close();
     traj_file.close();
+    debug_file << "Files Closed, Exiting." << std::endl;
     return 0;
 }
