@@ -1,5 +1,4 @@
-#ifndef ION_H_INCLUDED
-#define ION_H_INCLUDED
+#pragma once
 #include "lattice.h"
 
 /**
@@ -70,5 +69,3 @@ public:
      */ 
     int fill_nearest(Lattice &lattice, int radius, int target_number);
 };
-
-#endif // ION_H_INCLUDED

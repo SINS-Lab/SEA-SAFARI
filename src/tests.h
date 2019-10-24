@@ -1,5 +1,4 @@
-#ifndef TESTS_H_INCLUDED
-#define TESTS_H_INCLUDED
+#pragma once
 #include "lattice.h"
 
 /**
@@ -14,5 +13,3 @@ void test_cache();
  * multiple instances of safari.
  */
 void test_lattice_copy(Lattice &lattice);
-
-#endif // TESTS_H_INCLUDED

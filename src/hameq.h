@@ -1,5 +1,4 @@
-#ifndef HAMEQ_H_INCLUDED
-#define HAMEQ_H_INCLUDED
+#pragma once
 #include "ion.h"
 
 /**
@@ -21,5 +20,3 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted);
  * @param dt - timestep for interaction
  */
 void apply_hameq(Ion &ion, Lattice &lattice, double dt);
-
-#endif // HAMEQ_H_INCLUDED

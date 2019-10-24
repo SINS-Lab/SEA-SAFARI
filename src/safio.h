@@ -1,6 +1,4 @@
-#ifndef SAFIO_H_INCLUDED
-#define SAFIO_H_INCLUDED
-
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -147,5 +145,3 @@ extern std::ofstream xyz_file;
 extern std::ofstream debug_file;
 //This is the .dbug file to lattice info in
 extern std::ofstream crystal_file;
-
-#endif // SAFIO_H_INCLUDED

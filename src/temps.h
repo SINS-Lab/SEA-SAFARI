@@ -1,5 +1,4 @@
-#ifndef TEMPS_H_INCLUDED
-#define TEMPS_H_INCLUDED
+#pragma once
 #include "ion.h"
 #include "vec_math.h"
 #include <random>
@@ -50,5 +49,3 @@ void thermaize(Site &site);
  * @param ion - the ion to adjust energy for.
  */ 
 void thermaize_ion(Ion &ion);
-
-#endif // TEMPS_H_INCLUDED

@@ -1,6 +1,4 @@
-#ifndef VEC_MATH_H_INCLUDED
-#define VEC_MATH_H_INCLUDED
-
+#pragma once
 #define M_PI           3.14159265358979323846  /* pi */
 
 class Vec3d
@@ -60,5 +58,3 @@ void print(Vec3d V, char* header);
  * Squares the given array, assuming it is 3x1
  */
 double sqr(double*V);
-
-#endif // VEC_MATH_H_INCLUDED

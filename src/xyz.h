@@ -1,6 +1,4 @@
-#ifndef XYZ_H_INCLUDED
-#define XYZ_H_INCLUDED
-
+#pragma once
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -36,5 +34,3 @@ struct XYZ
     void load(std::ifstream& input);
     void save(std::ofstream& output);
 };
-
-#endif // XYZ_H_INCLUDED

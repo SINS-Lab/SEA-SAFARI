@@ -1,5 +1,4 @@
-#ifndef SPACE_MATH_H_INCLUDED
-#define SPACE_MATH_H_INCLUDED
+#pragma once
 #include "vec_math.h"
 
 extern double space_mask[3375][3];
@@ -52,5 +51,3 @@ Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
  * an int-indexed map.
  */ 
 int to_hash(double x, double y, double z);
-
-#endif // SPACE_MATH_H_INCLUDED

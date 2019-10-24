@@ -1,5 +1,4 @@
-#ifndef TRAJ_H_INCLUDED
-#define TRAJ_H_INCLUDED
+#pragma once
 #include "lattice.h"
 #include "ion.h"
 
@@ -37,5 +36,3 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
  * Sending a NULL buffer will force it to save any not saved.
  */ 
 void save(char* buffer);
-
-#endif // TRAJ_H_INCLUDED

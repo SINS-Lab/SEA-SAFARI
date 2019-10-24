@@ -1,5 +1,4 @@
-#ifndef SCAT_H_INCLUDED
-#define SCAT_H_INCLUDED
+#pragma once
 #include "lattice.h"
 #include <random>
 
@@ -30,5 +29,3 @@ void gridscat(Lattice &lattice, int *num);
  * spacing between particles.
  */
 void chainscat(Lattice &lattice, int *num);
-
-#endif // SCAT_H_INCLUDED

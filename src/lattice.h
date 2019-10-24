@@ -1,5 +1,4 @@
-#ifndef LATTICE_H_INCLUDED
-#define LATTICE_H_INCLUDED
+#pragma once
 #include <iostream>
 #include "vec_math.h"
 #include "particles.h"
@@ -94,5 +93,3 @@ struct Lattice
                     std::vector<Site>* sites_out, std::vector<Site>& sites_in, int* maxZI);
 
 };
-
-#endif // LATTICE_H_INCLUDED

@@ -1,5 +1,4 @@
-#ifndef POTENTIALS_H_INCLUDED
-#define POTENTIALS_H_INCLUDED
+#pragma once
 #include <vector>
 
 const double eqsr = 14.398;
@@ -71,5 +70,3 @@ double Vi_z(double z, int q);
  * @return the value of the potential
  */
 double dVi_dz(double z, int q);
-
-#endif // POTENTIALS_H_INCLUDED

@@ -1,5 +1,4 @@
-#ifndef PARTICLES_H_INCLUDED
-#define PARTICLES_H_INCLUDED
+#pragma once
 #include <string>
 
 struct Atom
@@ -63,5 +62,3 @@ public:
 
     void write_info();
 };
-
-#endif
