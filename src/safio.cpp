@@ -1,5 +1,6 @@
 #include "safio.h"
 #include "string_utils.h"
+#include "temps.h"
 #include <vector>
 
 void Safio::load(std::string safio_file)
@@ -316,6 +317,7 @@ void Safio::load(std::string safio_file)
 
         safio_input.close();
         debug_file << "\nLoaded SAFIO" << '\n';
+        std::cout << "\nLoaded SAFIO" << '\n';
 
         //Then we need these files.
         if (NUMCHA == 1)
@@ -337,11 +339,9 @@ void Site::reset()
 {
     //Reset positions and momenta
     std::copy(r_0, r_0 + 3, r);
-    std::copy(r_0, r_0 + 3, r_t);
     std::copy(p_0, p_0 + 3, p);
-    //Reset forces
-    std::copy(std::begin(zeros), std::end(zeros), dp_dt);
-    std::copy(std::begin(zeros), std::end(zeros), dp_dt_t);
+    //Add thermalization for this site.
+    thermaize(*this);
 }
 
 void Site::write_info()

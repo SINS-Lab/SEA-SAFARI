@@ -3,8 +3,6 @@
 #include "lattice.h"
 #include <random>
 
-extern std::default_random_engine rng;
-
 /**
  * Fires ions randomly at the surface, rng is used to
  * determine the target location, so this results in the

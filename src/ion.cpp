@@ -129,7 +129,7 @@ end:
 }
 
 
-void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
+void Ion::set_KE(double theta0, double phi0,double x, double y)
 {
     atom = &settings.ion;
     //TODO lookup table for atomic symbols...
@@ -140,7 +140,7 @@ void Ion::set_KE(double eV, double theta0, double phi0,double x, double y)
     theta0 = theta0 * M_PI / 180;
     phi0 = phi0 * M_PI / 180;
 
-    double p0 = sqrt(2 * atom->mass * eV);
+    double p0 = sqrt(2 * atom->mass * E0);
     double p_trans = p0 * sin(theta0);
 
     //This is the initial momentum, before surface effects.

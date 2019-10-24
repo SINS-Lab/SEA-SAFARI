@@ -15,6 +15,8 @@ public:
     int q = 1;
     //Index of the ion, each one fired should be different.
     int index = 0;
+    //The initial energy of this ion
+    double E0 = 0;
 
     //Number of traj steps done, note that this is not
     //the same as the number of time steps, as this is
@@ -50,13 +52,12 @@ public:
      * Sets the initial conditions for the ion.
      *
      *
-     * @param eV - energy in eV
      * @param theta0 - Theta angle for incoming beam
      * @param phi0 - Phi angle for the incoming beam
      * @param x - x impact parameter
      * @param y - y impact parameter
      */
-    void set_KE(double eV, double theta0, double phi0,double x, double y);
+    void set_KE(double theta0, double phi0,double x, double y);
 
     /**
      * This updates the value of near for this ion. it will search for

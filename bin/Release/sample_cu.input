@@ -20,7 +20,7 @@ t                            Targets Recoil
 2051.73 3.753 11163.2 6.877  NPAR Parameters for IPOT
 2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
 1.26 2.0                     NIMPAR parameters for IIMPOT
-0.0 0.9436337324 1           Temperature, Seed, NITER - unused NITER
+300.0 0.9436337324 1         Temperature, Seed, NITER - unused NITER
 f                            Use Image Charge
 -1.5 8.18                    Stuck Energy, Buried Distance
 3.6147 3.6147 3.6147         AX, AY, AZ for basis

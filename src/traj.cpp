@@ -4,6 +4,7 @@
 #include "space_math.h"
 #include "hameq.h"
 #include "potentials.h"
+#include "safio.h"
 #include <cmath>
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,

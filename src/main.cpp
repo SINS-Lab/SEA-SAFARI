@@ -13,6 +13,7 @@
 #include "scat.h"
 #include "potentials.h"
 #include "tests.h"
+#include "temps.h"
 
 //Initialize the global variables.
 Safio settings;
@@ -22,7 +23,6 @@ std::ofstream traj_file;
 std::ofstream xyz_file;
 std::ofstream crystal_file;
 
-std::default_random_engine rng;
 double space_mask[3375][3];
 
 int main(int argc, char* argv[])
@@ -98,12 +98,11 @@ int main(int argc, char* argv[])
 
     crystal_file.close();
 
-    debug_file << "Initializing RNG" << '\n';
-    //Initialize the RNG
-    rng.seed(settings.SEED);
-
     //Initialize the space_math's lookup table
     init_lookup();
+
+    //Initialize temperatures
+    init_temps();
 
     //Starts trajectory timer.
     clock_t start = clock();

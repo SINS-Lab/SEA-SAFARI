@@ -15,7 +15,7 @@ _FILES_SAFARI_R = main.cpp \
                 vec_math.cpp space_math.cpp \
                 lattice.cpp ion.cpp \
                 potentials.cpp hameq.cpp \
-                scat.cpp traj.cpp tests.cpp
+                scat.cpp traj.cpp tests.cpp temps.cpp
 FILES_SAFARI_R = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_R))
 
 _FILES_SAFARI_D = main.cpp \
@@ -23,7 +23,7 @@ _FILES_SAFARI_D = main.cpp \
                 vec_math.cpp space_math.cpp \
                 lattice.cpp ion.cpp \
                 potentials.cpp hameq.cpp \
-                scat.cpp traj.cpp tests.cpp
+                scat.cpp traj.cpp tests.cpp temps.cpp
 FILES_SAFARI_D = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_D))
 
 _FILES_XYZ = xyz_process.cpp xyz.cpp \

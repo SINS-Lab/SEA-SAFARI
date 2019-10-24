@@ -1,16 +1,7 @@
 #include "scat.h"
 #include "safio.h"
 #include "traj.h"
-
-/**
- * Returns a random, floating point
- * number from 0 to 1;
- */ 
-double frand()
-{
-    double max = rng.max();
-    return rng()/max;
-}
+#include "temps.h"
 
 /**
  * Fires the given ion at the given lattice.
@@ -29,16 +20,23 @@ double frand()
  */ 
 void fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
 {
-    ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
+    ion.E0 = settings.E0;
+    if(settings.ESIZE > 0)
+    {
+        thermaize_ion(ion);
+    }
+    ion.set_KE(settings.THETA0, settings.PHI0, x, y);
     ion.index = index;
     traj(ion, lattice, log, xyz);
 }
 
 void montecarloscat(Lattice &lattice, int *num)
 {
-    //Before montecarloscat is called, the RNG has its
-    //Seed set, this will result in each seperate call
-    //being identical, unless the seed is changed.
+    //Make a new RNG instance, and then set the seed to what it should be
+    std::default_random_engine rng;
+    debug_file << "Initializing RNG, seed: " << settings.SEED << '\n';
+    //Initialize the RNG
+    rng.seed(settings.SEED * UINT_FAST32_MAX);
 
     //Find the range of the region we are covering
     double x_size = (settings.XSTOP - settings.XSTART);
@@ -47,8 +45,8 @@ void montecarloscat(Lattice &lattice, int *num)
     for(int n = 0; n < settings.NUMCHA; n++)
     {
         //Find a new random location, these rands are 0-1
-        double rx = frand();
-        double ry = frand();
+        double rx = frand(rng);
+        double ry = frand(rng);
         //Use the random numbers to find the impact parameter
         double x = settings.XSTART + x_size * rx;
         double y = settings.YSTART + y_size * ry;

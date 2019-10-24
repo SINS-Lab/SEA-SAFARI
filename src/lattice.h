@@ -2,7 +2,7 @@
 #define LATTICE_H_INCLUDED
 #include <iostream>
 #include "vec_math.h"
-#include "safio.h"
+#include "particles.h"
 #include <vector>
 #include <unordered_map>
 

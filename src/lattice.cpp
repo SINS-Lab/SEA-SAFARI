@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <algorithm>    //std::sort
 #include <vector>
+#include "safio.h"
 #include "space_math.h"
 #include "string_utils.h"
 
@@ -215,7 +216,7 @@ void Lattice::load_lattice(std::ifstream& input)
         Atom *atom;
         bool found = false;
         //Lookup the atom
-        for(Atom a: settings.ATOMS)
+        for(Atom &a: settings.ATOMS)
         {
             //Assume it is this one, TODO account for isotopes
             double diff = a.charge - charge;
