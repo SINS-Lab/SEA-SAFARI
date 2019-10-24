@@ -148,14 +148,14 @@ class PointViewer:
 
     def save(self):
         if self.particles.steps:
-            self.particles.save('crystal.crys')
+            self.particles.save('sample.crys')
         self.outputfile.close()
 
     def load(self):
         self.outputfile = open('T.output', 'w')
         self.particles.coupling = False
         self.particles.steps = False
-        self.particles.load('crystal.crys')
+        self.particles.load('sample.crys')
         self.points.update(self.particles)
         self.translateAll([self.width/2,self.height/2,0])
         self.scaleAll(15)

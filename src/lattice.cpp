@@ -7,7 +7,7 @@
 #include "string_utils.h"
 
 void Lattice::rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
-                Vec3d* ex, Vec3d* ey, Vec3d* ez,
+                Vec3d* ex, Vec3d* ey, Vec3d* ez, bool scale_basis,
                 std::vector<Site>* sites_out, std::vector<Site>& sites_in, int* maxZI)
 {
     //Rotation matrix for lattice
@@ -35,9 +35,12 @@ void Lattice::rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_b
         Vec3d tmp;
         //Make basis of correct size.
         tmp.set(old.r_0);
-        tmp[0] *= settings.AX;
-        tmp[1] *= settings.AY;
-        tmp[2] *= settings.AZ;
+        if(scale_basis)
+        {
+            tmp[0] *= settings.AX;
+            tmp[1] *= settings.AY;
+            tmp[2] *= settings.AZ;
+        }
         Vec3d v = R * tmp;
         s.r_0[0] = v[0];
         s.r_0[1] = v[1];
@@ -67,8 +70,8 @@ void Lattice::build_lattice()
     std::vector<Site> basis;
 
     Vec3d dir;
-    //We like "Up"
-    dir.set(0,0,1);
+    //We this is 001 if not specified
+    dir.set(settings.loaded_face);
     Vec3d face;
     face.set(settings.face);
 
@@ -91,7 +94,7 @@ void Lattice::build_lattice()
 
     //Populate the basis vectors
     rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
-                &ex, &ey, &ez,
+                &ex, &ey, &ez, true,
                 &basis, settings.BASIS, &maxZI);
 
     Vec3d cell_pos;
@@ -243,8 +246,8 @@ void Lattice::load_lattice(std::ifstream& input)
     }
 
     Vec3d dir;
-    //We like "Up"
-    dir.set(0,0,1);
+    //We this is 001 if not specified
+    dir.set(settings.loaded_face);
     Vec3d face;
     face.set(settings.face);
 
@@ -272,7 +275,7 @@ void Lattice::load_lattice(std::ifstream& input)
         std::cout << "Rotating Lattice" << std::endl;
         //Populate the rotated vectors
         rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
-                    &ex, &ey, &ez,
+                    &ex, &ey, &ez, false,
                     &processed_sites, loaded_sites, &maxZI);
     }
     else

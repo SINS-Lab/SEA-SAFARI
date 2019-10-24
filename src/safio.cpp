@@ -285,6 +285,19 @@ void Safio::load(std::string safio_file)
             {
                 face = to_double_array(args, 0, 2);
                 load_crystal = args.size() > 3 and args[3] == "t"; 
+                if(load_crystal)
+                {
+                    loaded_face = to_double_array(args, 4,6);
+                }
+                else
+                {
+                    //Default basis should be defined in 001 direction
+                    loaded_face = new double[3];
+                    loaded_face[0] = 0;
+                    loaded_face[1] = 0;
+                    loaded_face[2] = 1;
+                }
+                
             }
             // Decrement our sub-line first.
             o--;

@@ -156,6 +156,8 @@ struct Safio
     double* face;
     //If true, will load the crystal from appropriate file name.
     bool load_crystal;
+    //The surface face of the loaded crystal
+    double* loaded_face;
 
     //Basis Atoms
     int NTYPES;

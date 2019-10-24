@@ -82,13 +82,15 @@ struct Lattice
      * @param ey - new direction of second lattice reference
      * @param ez - new direction of third lattice reference
      * 
+     * @param scale_basis - If true, the sites_in will be scaled by lattice parameters
+     * 
      * @param sites_in - the vector to populate with rotated sites
      * @param sites_out - the vector to populate with rotated sites
      * @param maxZI - the index of the dir-most point in the new basis
      * 
      */ 
     void rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
-                    Vec3d* ex, Vec3d* ey, Vec3d* ez,
+                    Vec3d* ex, Vec3d* ey, Vec3d* ez, bool scale_basis,
                     std::vector<Site>* sites_out, std::vector<Site>& sites_in, int* maxZI);
 
 };

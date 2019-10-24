@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 
 # A bunch of functions for fortran IO
@@ -144,8 +145,9 @@ class SafariInput:
         self.NZ = [0]
         self.ZMAX = [0]
 
-        self.face = [1,0,0]
+        self.face = [0,0,1]
         self.load_crystal = False
+        self.loaded_face = [0,0,1]
 
         self.load()
         # Instead here we should check for a default file, and use that
@@ -384,6 +386,8 @@ class SafariInput:
                 self.face = [args[0], args[1], args[2]]
                 if len(args) > 3:
                     self.load_crystal = args[3]
+                if self.load_crystal:
+                    self.loaded_face = [args[4], args[5], args[6]]
                 
             # Decrement our sub-line first.
             o = o - 1
@@ -420,6 +424,17 @@ class SafariInput:
             output = open(self.fileIn, 'w')
         else:
             output = open(file, 'w')
+            if self.load_crystal:
+                # We need to copy the crystal file over as well.
+                crys_file_in = self.fileIn.replace('.input', '.crys_in')
+                crys_file_out = file.replace('.input', '.crys_in')
+                try:
+                    shutil.copy(crys_file_in, crys_file_out)
+                except:
+                    print("Error copying the crystal file over!")
+                    print(crys_file_in)
+                    print(crys_file_out)
+                                
             
         # Ensure phi is between -180 and 180
         while self.PHI0 > 180:
@@ -485,7 +500,8 @@ class SafariInput:
         file = file + serialize(self.CORR, self.ATOMK, self.RNEIGH) + '\n'
         
         file = file + serializeArr(self.face) + ' ' \
-                    + serialize(self.load_crystal) + '\n'
+                    + serialize(self.load_crystal) + ' ' \
+                    + serializeArr(self.loaded_face) + '\n'
             
         output.write(file)
         output.close()
