@@ -298,7 +298,11 @@ void Safio::load(std::string safio_file)
                     loaded_face[1] = 0;
                     loaded_face[2] = 1;
                 }
-                
+            }
+            if(n == 28)
+            {
+                F_a = atof(args[0].c_str());
+                F_b = atof(args[1].c_str());
             }
             // Decrement our sub-line first.
             o--;

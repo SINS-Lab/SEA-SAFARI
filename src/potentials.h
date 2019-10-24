@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "ion.h"
 
 const double eqsr = 14.398;
 
@@ -70,3 +71,8 @@ double Vi_z(double z, int q);
  * @return the value of the potential
  */
 double dVi_dz(double z, int q);
+
+/**
+ * Applies a frictional force to F.
+ */ 
+void apply_friction(Ion &ion, double* F);

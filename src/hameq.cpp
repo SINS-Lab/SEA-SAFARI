@@ -237,6 +237,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         //TODO add atom-atom interactions here.
     }
 
+    if(settings.F_a > 0)
+    {
+        apply_friction(ion, F);
+    }
+
     if(!predicted)
     {
         //set the predictions

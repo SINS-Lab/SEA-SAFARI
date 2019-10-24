@@ -180,3 +180,32 @@ double dVi_dz(double z, int q)
     }
     return 0;
 }
+
+void apply_friction(Ion &ion, double* F)
+{
+    double z = ion.r[2];
+    //TODO some better "above surfaceness"
+    if(z > 0) return;
+
+    double vx = ion.p[0]/ion.atom->mass;
+    double vy = ion.p[1]/ion.atom->mass;
+    double vz = ion.p[2]/ion.atom->mass;
+
+    double v_sq = vx*vx + vy*vy + vz*vz;
+    double v = sqrt(v_sq);
+    //No velocity, no friction.
+    if(v == 0) return;
+
+    //Components of the velocity direction.
+    vx/=v;
+    vy/=v;
+    vz/=v;
+
+    //assume magnitude of friction is:
+    //Av + Bv^2, where v is magnitude of velocity.
+    double fric = (settings.F_a*v + settings.F_b*v_sq);
+    //Direction of friction is opposite of velocity.
+    F[0] -= vx*fric;
+    F[1] -= vy*fric;
+    F[2] -= vz*fric;
+}

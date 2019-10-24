@@ -118,6 +118,9 @@ struct Safio
     double YSTART;
     double YSTEP;
     double YSTOP;
+
+    double F_a = 0;
+    double F_b = 0;
     
     //These were ZBL-potential related in the old 
     //version of safari, not currently used.
