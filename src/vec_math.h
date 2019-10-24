@@ -1,6 +1,8 @@
 #ifndef VEC_MATH_H_INCLUDED
 #define VEC_MATH_H_INCLUDED
 
+#define M_PI           3.14159265358979323846  /* pi */
+
 class Vec3d
 {
 public:

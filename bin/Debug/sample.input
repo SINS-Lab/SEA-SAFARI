@@ -33,4 +33,4 @@ f                            Use Image Charge
 196.967 79 Au                Atom Parameters
 5.0 5.0 5.0                  Atom Springs
 t 0 8.36405                  Whether atoms are springy, ATOMK,RNEIGH - last 2 unused
-7 8 8 t 1 1 1                Surface face of crystal, use existing, existing face
+0 0 1 f 1 1 1                Surface face of crystal, use existing, existing face
