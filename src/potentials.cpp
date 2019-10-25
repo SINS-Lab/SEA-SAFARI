@@ -116,27 +116,6 @@ double dVr_dr(double r, int n)
     return interp_r(r, dVr_dr_cache[n-1]);
 }
 
-double Vr_r(double r[], int n[], int num)
-{
-    double out = 0;
-    for(int i = 0; i < num; i++)
-    {
-        out += Vr_r(r[i], n[i]);
-    }
-    return out;
-}
-
-double * dVr_dr(double r[], int n[], int num)
-{
-    double arr[num];
-    for(int i = 0; i < num; i++)
-    {
-        arr[i] = dVr_dr(r[i], n[i]);
-    }
-    double *out = arr;
-    return out;
-}
-
 double Vi_z(double z, int q)
 {
     double z_min = settings.PIMPAR[1];
@@ -148,7 +127,11 @@ double Vi_z(double z, int q)
             double dz = z - z_min;
             double eq = 0.25*eqsr*q;
             double eq_v = eq/v_min;
-            return eq/sqrt(dz*dz + eq_v*eq_v);
+            return -eq/sqrt(dz*dz + eq_v*eq_v);
+        }
+        else 
+        {
+            return -v_min;
         }
     }
     else
@@ -172,6 +155,7 @@ double dVi_dz(double z, int q)
             double eq_v = eq/v_min;
             return eq*dz/pow(dz*dz + eq_v*eq_v, 1.5);
         }
+        return 0;
     }
     else
     {

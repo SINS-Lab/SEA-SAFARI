@@ -83,9 +83,6 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
            fx = 0, fy = 0, fz = 0, 
            ftx = 0, fty = 0, ftz = 0;
 
-    //Ion coordinates
-    double x = 0, y = 0, z = 0;
-
     //Lattice atom coordintates.
     double ax = 0, ay = 0, az = 0;
 
@@ -94,9 +91,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     double atomk = settings.ATOMK; 
 
     //Initialize ion coordinates
-    x = ion.r[0];
-    y = ion.r[1];
-    z = ion.r[2];
+    double *r;
+    r = ion.r;
 
     //Relevant force for this run
     double *F;
@@ -113,9 +109,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         F = ion.dp_dt_t;
         V = &ion.V_t;
         //Use predictions
-        x = ion.r_t[0];
-        y = ion.r_t[1];
-        z = ion.r_t[2];
+        r = ion.r_t;
     }
 
     //Reset V
@@ -160,9 +154,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             }
 
             //Distances from site to atom
-            dx = ax - x;
-            dy = ay - y;
-            dz = az - z;
+            dx = ax - r[0];
+            dy = ay - r[1];
+            dz = az - r[2];
 
             double r = sqrt(dx*dx + dy*dy + dz*dz);
 
@@ -235,6 +229,12 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         F[2] = -ftz;
 
         //TODO add atom-atom interactions here.
+    }
+
+    if(settings.IMAGE)
+    {
+        F[2] -= dVi_dz(r[2], ion.q);
+        *V += ion.q * Vi_z(r[2], ion.q);
     }
 
     if(settings.F_a > 0)

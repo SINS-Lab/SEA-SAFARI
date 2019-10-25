@@ -427,7 +427,7 @@ end:
             pzz = pz;
         }
         //Ion is not escaping.
-        if(pzz < 0)
+        if(pzz <= 0 || psq <= 0)
         {
             theta = 0;
             phi = 90;

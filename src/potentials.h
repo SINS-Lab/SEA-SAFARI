@@ -33,27 +33,6 @@ double dVr_dr_init(double r, int n);
 
 /**
  * Computes the potential for the
- * given radial separations
- *
- * @param r the radial separations
- * @param n the lattice indices
- * @return the value of the potential
- */
-double Vr_r(double r[], int n[], int num);
-
-/**
- * Computes the derivative of the potential
- * with respect to the position, for the given
- * radial separations.
- *
- * @param r the radial separations
- * @param n the lattice indices
- * @return an array of the derivatives.
- */
-double * dVr_dr(double r[], int n[], int num);
-
-/**
- * Computes the potential for the
  * image charge for the given height
  *
  * @param z the displacement from the surface
