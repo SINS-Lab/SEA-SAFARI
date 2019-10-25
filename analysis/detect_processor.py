@@ -74,6 +74,13 @@ def unit(theta, phi):
     s = math.sqrt(x*x + y*y + z*z)
     return np.array([x/s, y/s, z/s])
 
+def sort_z(val):
+    return val[2]
+
+def sort_basis(basis):
+    basis.sort(key=sort_z)
+    return basis
+    
 # x is an array containing the values to do the gaussian for.
 def gauss(x, winv):
     return np.exp(-x*x*2.*winv*winv)*winv*0.7978845608
@@ -240,9 +247,12 @@ class Detector:
             maxX = np.max(x)
             maxY = np.max(y)
             
-        z_threshold = -self.safio.BDIST;
+        z_threshold = -self.safio.BDIST*1e3;
         
         if basis is not None:
+            
+            basis = sort_basis(basis)
+            
             minz = 1e6
             for site in basis:
                 if site[2] < z_threshold:
@@ -254,14 +264,14 @@ class Detector:
         ax.set_xlim(self.safio.XSTART, self.safio.XSTOP)
         ax.set_ylim(self.safio.YSTART, self.safio.YSTOP)
 
-        p = PatchCollection(patches, alpha=0.4)
+        p = PatchCollection(patches, cmap=plt.get_cmap('BuGn'))
         p.set_array(np.array(colours))
         
         #Draw the basis
         ax.add_collection(p)
         
         #Draw the points
-        scat = ax.scatter(x, y, c=c)
+        scat = ax.scatter(x, y, c=c, cmap=plt.get_cmap('plasma'))
         fig.colorbar(scat, ax=ax)
         
         #Add a heightmap
