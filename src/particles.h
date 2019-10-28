@@ -44,6 +44,9 @@ public:
     //this is used for xyz output of nearest.
     bool near_check = 0;
 
+    //hash of the cell this site is in.
+    int cell_hash = -1;
+
     Site()
     {
         r_0 = new double[6];

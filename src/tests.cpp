@@ -63,13 +63,13 @@ void test_lattice_copy(Lattice &lattice)
     Lattice new_lat = lattice;
     for (auto x : lattice.cell_map)
     {
-        Cell cell = x.second;
+        Cell cell = *x.second;
         //Find first un-filled cell.
         if (cell.num == 0) continue;
 
         //Could use the second, but lets just pull from map to be sure.
-        Site &a = lattice.cell_map[x.first].sites[0];
-        Site &b = new_lat.cell_map[x.first].sites[0];
+        Site &a = lattice.cell_map[x.first]->sites[0];
+        Site &b = new_lat.cell_map[x.first]->sites[0];
         std::cout << &a << " " << &b << std::endl;
 
         //r_0 is not copied, so we need to test r.

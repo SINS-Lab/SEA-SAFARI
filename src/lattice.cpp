@@ -168,6 +168,7 @@ void Lattice::add_site(Site& s)
     //can be looked up to find their atom later.
     s.index = sites.size();
     sites.push_back(&s);
+    s.cell_hash = cell->pos_hash;
     cel_sites[num] = s;
     *cel_num = num + 1;
     //Initializes the site
@@ -308,7 +309,7 @@ Cell* Lattice::get_cell(double x, double y, double z)
 Cell* Lattice::get_cell(int pos_hash)
 {
     if(cell_map.find(pos_hash) == cell_map.end()) return NULL;
-    return &cell_map[pos_hash];
+    return cell_map[pos_hash];
 }
 
 Cell* Lattice::make_cell(double x, double y, double z)
@@ -319,7 +320,7 @@ Cell* Lattice::make_cell(double x, double y, double z)
     //Otherwise, make a new one.
     int pos_hash = to_hash(x,y,z);
     cell = new Cell();
-    cell_map[pos_hash] = *cell;
+    cell_map[pos_hash] = cell;
     cell->num = 0;
     cell->pos_hash = pos_hash;
     cell->sites = new Site[100];
@@ -351,6 +352,7 @@ Cell::Cell(const Cell& other)
         delete []site.p_0;
         site.r_0 = original.r_0;
         site.p_0 = original.p_0;
+        site.cell_hash = original.cell_hash;
         site.index = original.index;
         sites[i] = site;
     }

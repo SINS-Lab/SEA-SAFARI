@@ -8,9 +8,10 @@
 //Whatever -O3 does to it. Maybe it should be looked into.
 int to_hash(double x, double y, double z)
 {
-    int i = (int)(x/5.0 + 512);
-    int j = (int)(y/5.0 + 512);
-    int k = (int)(z/5.0 + 512);
+    double scale = 5.0;
+    int i = (int)(x/scale + 512);
+    int j = (int)(y/scale + 512);
+    int k = (int)(z/scale + 512);
     return i + (j << 10) + (k << 20);
 }
 
@@ -51,8 +52,8 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
     if (index == 0)
     {
         location[0] = -radius;
-        location[1] = radius;
-        location[2] = -radius;
+        location[1] = -radius;
+        location[2] = radius;
         return;
     }
     // Fill z
@@ -68,9 +69,10 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
         location[2] = index > layerSize ? -radius : radius;
     }
     
-    // Fill x
+    // Fill x and y
     if (!(location[2] == radius || location[2] == -radius))
     {
+        //Fill x
         int temp = (index) % diffSq;
         if (temp < diffSq / 2)
         {
@@ -97,18 +99,9 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
             }
             else location[0] = -radius;
         }
-    }
-    else
-    {
-        int temp = (index % layerSize);
-        temp = temp % (2 * radius + 1);
-        temp -= radius;
-        location[0] = temp;
-    }
-    // Fill y
-    if (!(location[2] == radius || location[2] == -radius))
-    {
-        int temp = (index) % diffSq;
+
+        //Fill y
+        temp = (index) % diffSq;
         temp = (temp + 2 * radius - 1) % diffSq + 1;
         if (temp < diffSq / 2)
         {
@@ -138,7 +131,12 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
     }
     else
     {
-        int temp = (index % layerSize) / (2 * radius + 1);
+        int temp = (index % layerSize);
+        temp = temp % (2 * radius + 1);
+        temp -= radius;
+        location[0] = temp;
+
+        temp = (index % layerSize) / (2 * radius + 1);
         temp -= radius;
         location[1] = temp;
     }
@@ -154,6 +152,7 @@ void init_lookup()
     {
         Vec3d loc;
         index_to_loc(i, loc);
+
         space_mask[i][0] = loc[0];
         space_mask[i][1] = loc[1];
         space_mask[i][2] = loc[2];
@@ -171,7 +170,9 @@ void index_to_loc(int index, Vec3d &location)
     {
         double ind = index;
         //Radius of cube we are on.
-        int radius = floor(ceil(cbrt(ind)/2.0));
+        int radius = floor(ceil(cbrt(ind))/2.0);
+        //This is a special case where this formula doesn't work
+        if(index==1) radius = 1;
 
         //Area of a face of the current cube.
         int current_area = (2*radius + 1) *  (2*radius + 1); 

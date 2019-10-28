@@ -40,7 +40,7 @@ public:
 
     //All of the sites nearby, only guarenteed to be filled
     //with site up to near
-    Site *near_sites[100];
+    Site *near_sites[256];
 
     //potential energy the particle is in.
     double V = 0;

@@ -40,7 +40,7 @@ struct Lattice
 
     //All cells in the lattice, This is
     //what is used for any lookups
-    std::unordered_map<int,Cell> cell_map;
+    std::unordered_map<int,Cell*> cell_map;
 
     int id = 1;
 
