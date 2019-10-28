@@ -136,11 +136,12 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     double p_y0 = p_trans * sin(phi0);
     double p_z0 = -p0 * cos(theta0);
 
-    //Impact parameters offsets.
+    //Impact parameters offsets, this aims at the impact point.
     r[0] = -settings.Z1 * tan(theta0) * cos(phi0) + x;
     r[1] = -settings.Z1 * tan(theta0) * sin(phi0) + y;
     r[2] = settings.Z1;
 
+    //Set the "initial" location to the targetted impact point.
     r_0[0] = x;
     r_0[1] = y;
     r_0[2] = settings.Z1;

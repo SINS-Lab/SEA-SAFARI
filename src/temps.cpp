@@ -2,7 +2,7 @@
 #include <cmath>
 #include "safio.h"
 
-#define boltz 8.617e-5
+#define boltz 8.617e-5 /* Units of eV/K */
 
 std::default_random_engine temperature_rng;
 
@@ -15,6 +15,7 @@ double frand(std::default_random_engine &rng)
 void init_temps()
 {
     init_temp_seed();
+    //Convert from temperature to energy.
     double energy = boltz * settings.TEMP;
     for(Atom &a : settings.ATOMS)
     {
