@@ -313,6 +313,29 @@ class Spectrum(detect.Spectrum):
                 pass
         impbutton.clicked.connect(runIMP)
         layout.addWidget(impbutton)
+        
+        #Button to run the spectrum stuff.
+        impbutton2 = QPushButton('Impact Plot No Basis')
+        def runIMP2():
+            try:
+                self.setDetector(data)
+                self.clean(data,emin=float(emin.displayText()),\
+                                emax=float(emax.displayText()),\
+                                phimin=float(phimin.displayText()),\
+                                phimax=float(phimax.displayText()),\
+                                thmin=float(thmin.displayText()),\
+                                thmax=float(thmax.displayText()),\
+                                lmin=float(lmin.displayText()),\
+                                lmax=float(lmax.displayText()))
+                self.detector.safio = self.safio
+                self.detector.impactParam(None,
+                                         self.safio.AX, 
+                                         self.safio.AY)
+            except Exception as e:
+                print(e)
+                pass
+        impbutton2.clicked.connect(runIMP2)
+        layout.addWidget(impbutton2)
 
         # Button to close the window
         close = QPushButton('Done')

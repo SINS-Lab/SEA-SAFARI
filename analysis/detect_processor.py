@@ -260,22 +260,22 @@ class Detector:
                 colours.append(site[2])
                 circle = Circle((site[0], site[1]), 1)
                 patches.append(circle)
+
+            p = PatchCollection(patches, cmap=plt.get_cmap('BuGn'))
+            p.set_array(np.array(colours))
+            
+            #Draw the basis
+            ax.add_collection(p)
+        
+            #Add a heightmap
+            fig.colorbar(p, ax=ax)
         
         ax.set_xlim(self.safio.XSTART, self.safio.XSTOP)
         ax.set_ylim(self.safio.YSTART, self.safio.YSTOP)
-
-        p = PatchCollection(patches, cmap=plt.get_cmap('BuGn'))
-        p.set_array(np.array(colours))
-        
-        #Draw the basis
-        ax.add_collection(p)
         
         #Draw the points
         scat = ax.scatter(x, y, c=c, cmap=plt.get_cmap('plasma'))
         fig.colorbar(scat, ax=ax)
-        
-        #Add a heightmap
-        fig.colorbar(p, ax=ax)
 
         #Add selected point label
         text = fig.text(0.1, 0.95, 'None Selected',fontsize=9)
