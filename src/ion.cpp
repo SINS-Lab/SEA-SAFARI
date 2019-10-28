@@ -15,18 +15,6 @@
 #include <cstdio>
 #include <cmath>
 
-/**
- * Computes the squared difference of the given arrays
- * assuming they are 3x1
- */
-double diff_sqr(double *X, double *Y)
-{
-    double dx = X[0] - Y[0];
-    double dy = X[1] - Y[1];
-    double dz = X[2] - Y[2];
-    return dx*dx + dy*dy + dz*dz;
-}
-
 int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
 {
     Ion &ion = *this;
