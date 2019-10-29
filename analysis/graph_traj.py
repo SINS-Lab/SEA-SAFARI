@@ -96,9 +96,9 @@ traj.load(args.input)
 
 fig, ax = plt.subplots()
 ax.plot(traj.t, traj.V, label="Potential Energy")
-ax.plot(traj.t, traj.T, label="Kinetic Energy")   
-ax.plot(traj.t, traj.E, label="Total Energy")   
-ax.set_title('Energy vs Time')
+ax.plot(traj.t, traj.T, label="Kinetic Energy")
+ax.plot(traj.t, traj.E, label="Total Energy")
+
 ax.set_xlabel('Time (fs)')
 ax.set_ylabel('Energy (eV)')
 ax.legend()
