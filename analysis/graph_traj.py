@@ -8,13 +8,13 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import scipy.constants as consts
 
-def time_unit():
-    amu = consts.physical_constants["atomic mass unit-kilogram relationship"][0]
-    eV = consts.physical_constants["atomic unit of charge"][0]
-    A = consts.angstrom
-    return A*math.sqrt(amu/eV)
-
 class Traj:
+
+    def time_unit(self):
+        amu = consts.physical_constants["atomic mass unit-kilogram relationship"][0]
+        eV = consts.physical_constants["atomic unit of charge"][0]
+        A = consts.angstrom
+        return A*math.sqrt(amu/eV)
 
     def load(self, filename):
 
@@ -79,30 +79,30 @@ class Traj:
 
         self.t = np.array(self.t)
         #Convert to femtoseconds
-        self.t = self.t * time_unit() * 1e15
+        self.t = self.t * self.time_unit() * 1e15
 
         self.T = np.array(self.T)
         self.V = np.array(self.V)
         self.E = np.array(self.E)
 
+if __name__ == "__main__" :
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", help="input file")
+    parser.add_argument("-s", "--save", help="Whether to save the graphs", action='store_true')
+    args = parser.parse_args()
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", help="input file")
-parser.add_argument("-s", "--save", help="Whether to save the graphs", action='store_true')
-args = parser.parse_args()
+    traj = Traj()
+    traj.load(args.input)
 
-traj = Traj()
-traj.load(args.input)
+    fig, ax = plt.subplots()
+    ax.plot(traj.t, traj.V, label="Potential Energy")
+    ax.plot(traj.t, traj.T, label="Kinetic Energy")
+    ax.plot(traj.t, traj.E, label="Total Energy")
 
-fig, ax = plt.subplots()
-ax.plot(traj.t, traj.V, label="Potential Energy")
-ax.plot(traj.t, traj.T, label="Kinetic Energy")
-ax.plot(traj.t, traj.E, label="Total Energy")
-
-ax.set_xlabel('Time (fs)')
-ax.set_ylabel('Energy (eV)')
-ax.legend()
-fig.show()
-if args.save:
-    fig.savefig(args.input.replace('.traj', '_energy.png'))
-input("Enter to exit.")
+    ax.set_xlabel('Time (fs)')
+    ax.set_ylabel('Energy (eV)')
+    ax.legend()
+    fig.show()
+    if args.save:
+        fig.savefig(args.input.replace('.traj', '_energy.png'))
+    input("Enter to exit.")
