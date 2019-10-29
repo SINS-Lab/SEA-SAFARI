@@ -240,23 +240,19 @@ class Detector:
         patches = []
         colours = []
         
-        maxX = dx
-        maxY = dy
-        
         if dx == 0 and dy == 2:
             maxX = np.max(x)
             maxY = np.max(y)
             
-        z_threshold = -self.safio.BDIST*1e3;
+        z_threshold = -self.safio.BDIST*1e3
         
         if basis is not None:
             
             basis = sort_basis(basis)
             
-            minz = 1e6
             for site in basis:
                 if site[2] < z_threshold:
-                    continue;
+                    continue
                 colours.append(site[2])
                 circle = Circle((site[0], site[1]), 1)
                 patches.append(circle)
@@ -319,7 +315,7 @@ class Detector:
                 output_file = self.safio.fileIn.replace('.input', '') + \
                               '{},{}.xyz'.format(imp_x, imp_y)
                 cmd = ['python3 detect_impact.py -i {} -o {}'.format(input_file, output_file)]
-                sub = subprocess.Popen(cmd, shell=True)
+                subprocess.Popen(cmd, shell=True)
 
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
@@ -336,7 +332,7 @@ class Detector:
                 output_file = self.safio.fileIn.replace('.input', '') + \
                               '{},{}.xyz'.format(imp_x, imp_y)
                 cmd = ['python3 detect_impact.py -i {} -o {} -c nearest'.format(input_file, output_file)]
-                sub = subprocess.Popen(cmd, shell=True)
+                subprocess.Popen(cmd, shell=True)
 
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
@@ -353,7 +349,7 @@ class Detector:
                 output_file = self.safio.fileIn.replace('.input', '') + \
                               '{},{}.xyz'.format(imp_x, imp_y)
                 cmd = ['python3 detect_impact.py -i {} -o {} -c velocity'.format(input_file, output_file)]
-                sub = subprocess.Popen(cmd, shell=True)
+                subprocess.Popen(cmd, shell=True)
 
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
@@ -393,7 +389,7 @@ class StripeDetector(Detector):
     def isInDetector(self, theta, phi, e):
         #These are failed trajectories, shouldn't be here!
         if e < 0:
-            return False;
+            return False
         return theta > self.tmin and theta < self.tmax\
              and phi > self.phiMin and phi < self.phiMax
 
@@ -416,7 +412,7 @@ class SpotDetector(Detector):
     def isInDetector(self, theta, phi, e):
         #These are failed trajectories, shouldn't be here!
         if e < 0:
-            return False;
+            return False
         dir = unit(theta, phi)
         dotdir = dir.dot(self.dir)
         for dot in self.quadDots:

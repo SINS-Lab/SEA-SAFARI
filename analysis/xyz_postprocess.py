@@ -5,6 +5,7 @@ import os
 import platform
 import time as T
 import numpy as np
+import argparse
 import math
 
 def process_velocities(xyz):
@@ -26,10 +27,11 @@ def process_velocities(xyz):
             p = math.sqrt(px*px + py*py + pz*pz)
             p_arr.append(p)
             avg = avg + p
-        avg = avg / num;
+        avg = avg / num
         for i in range(num):
             p = p_arr[i]
-            if p > 0 and i != 0:
+            # TODO better definition of "fast"
+            if p > 2*avg + 1 and i != 0:
                 xyz_single.atoms[i] = 'X'
     return
 
@@ -60,22 +62,23 @@ def process_file(fileIn, fileOut=None, color="", load_vmd=False):
     
     if not os.path.exists(fileOut):
         #Get the XYZ executable to handle smoothing.
-        command = 'XYZ.exe {} {}';
+        command = 'XYZ.exe {} {}'
         if platform.system() == 'Linux':
             command = './XYZ {} {}'
-        command = command.format(fileIn, fileOut);
+        command = command.format(fileIn, fileOut)
         subprocess.run(command, shell=True)
     
     xyz = XYZ()
     xyz.load(fileOut)
+
     if color != "":
+        if color == "nearest":
+            fileOut = fileOut[:-4] + "COLOREDNear.xyz"
+        elif color == "velocity":
+            fileOut = fileOut[:-4] + "COLOREDVel.xyz"
         #We need to edit the xyz to have different atom names
         xyz = process(xyz, color=color)
         xyz.save(fileOut)
-    if color == "nearest":
-        fileOut = fileOut[:-4] + "COLOREDNear.xyz"
-    elif color == "velocity":
-        fileOut = fileOut[:-4] + "COLOREDVel.xyz"
     
     if load_vmd:
         # MAKE THE FILENAME INCLUDE DIRECTORY
@@ -96,4 +99,15 @@ def process_file(fileIn, fileOut=None, color="", load_vmd=False):
 
 
 if __name__ == '__main__':
-    process_file('tests/sample_mod.xyz', 'tests/sample_mod.xyz', color='velocity')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", help="Input file to use")
+    parser.add_argument("-o", "--output", help="Output file to use")
+    parser.add_argument("-c", "--colour", help="Colouring method to use")
+    args = parser.parse_args()
+
+    colour = ''
+    if args.colour:
+        colour = args.colour
+    inputfile = args.input
+    outputfile = args.output
+    process_file(inputfile, outputfile, color=colour)
