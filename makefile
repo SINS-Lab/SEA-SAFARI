@@ -1,7 +1,7 @@
 CXX = g++
 
 #-Ofast cuts runtime to approximately 1/3. -mstackrealign -malign-double 
-CXXFLAGS_D = -Wall -std=c++11 -O4 -pg -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
+CXXFLAGS_D = -Wall -std=c++11 -O4 -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double -pg
 CXXFLAGS_X = -Wall -std=c++11 -O4 -fopenmp -march=native
 CXXFLAGS_R = -Wall -std=c++11 -O4 -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
 

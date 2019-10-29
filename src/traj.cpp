@@ -333,11 +333,11 @@ start:
         {
             Site &s = *lattice.sites[i];
             //Note that this is same format as the ion, index has 1 added to it, as ion is 0
-            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\t%d\n",
+            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
                     s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],
                                            s.p[0],s.p[1],s.p[2],
                                            s.atom->mass,s.index + 1,
-                                           s.near_check, s.cell_hash);
+                                           s.near_check);
             xyz_file << buffer;
             //Reset this flag for next run
             s.near_check = false;

@@ -13,7 +13,7 @@ struct XYZ_Single
     int number;
     //Number of values per row, note everything in the row
     //must be a double as currently implemented.
-    int num_per_row;
+    int max_row_index;
     //Comment for the XYZ
     std::string comment;
     //Arrays of positions for the particles.

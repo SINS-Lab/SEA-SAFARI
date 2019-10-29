@@ -19,8 +19,8 @@ void XYZ_Single::load(std::ifstream& input, int number)
         getline(input, line);
         std::vector<std::string> args = split(line);
         atoms[i] = args[0];
-        num_per_row = args.size()-2;
-        values[i] = to_double_array(args, 1, num_per_row);
+        max_row_index = args.size()-2;
+        values[i] = to_double_array(args, 1, max_row_index);
     }
 }
 
@@ -31,7 +31,7 @@ void XYZ_Single::save(std::ofstream& output)
     for(int i = 0; i<number; i++)
     {
         output << atoms[i] << " ";
-        int num = num_per_row;
+        int num = max_row_index;
         for(int j = 0; j<num; j++)
         {
             output << values[i][j];

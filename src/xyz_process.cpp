@@ -43,7 +43,7 @@ XYZ_Single from_Particles(double time, std::vector<Particle> pset)
     XYZ_Single xyz_single;
     xyz_single.number = pset.size();
     xyz_single.comment = to_string(time);
-    xyz_single.num_per_row = 9;
+    xyz_single.max_row_index = 9;
     xyz_single.atoms = new std::string[xyz_single.number];
     xyz_single.values = new double*[xyz_single.number];
     #pragma omp parallel for num_threads(THREADCOUNT)
@@ -91,7 +91,7 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
             break;
         }
     }
-    //If next time is 0, return empty set.
+    //If next time is 0, return first frame.
     if(next_index == 0) return particles[0];
     std::vector<Particle> new_particles;
     int prev_index = next_index - 1;
@@ -109,9 +109,9 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
 
         //Copy previous into interp
         Particle interp = prev;
-        interp.position = linear_interpolate(time, t_prev, prev.position, t_next, prev.position);
-        interp.momentum = linear_interpolate(time, t_prev, prev.momentum, t_next, prev.momentum);
-        interp.velocity = linear_interpolate(time, t_prev, prev.velocity, t_next, prev.velocity);
+        interp.position = linear_interpolate(time, t_prev, prev.position, t_next, next.position);
+        interp.momentum = linear_interpolate(time, t_prev, prev.momentum, t_next, next.momentum);
+        interp.velocity = linear_interpolate(time, t_prev, prev.velocity, t_next, next.velocity);
         new_particles[i] = interp;
     }
     return new_particles;
