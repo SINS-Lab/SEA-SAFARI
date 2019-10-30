@@ -3,6 +3,7 @@
 #include "safio.h"
 #include "hameq.h"
 #include "lattice.h"
+#include "temps.h"
 #include "space_math.h"
 
 #include <functional> // std::minus 
@@ -95,8 +96,8 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
             //If some other ion has seen the site, reset it here.
             if(s->last_ion!=ion.index)
             {
-                s->reset();
                 s->last_ion = ion.index;
+                s->reset();
             }
             //Check if site is close enough
             double rr = diff_sqr(ion.r, s->r);
@@ -156,4 +157,25 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     p[0] = p_x0;
     p[1] = p_y0;
     p[2] = p_z0;
+}
+
+double zeros[3] = { 0,0,0 };
+void Site::reset()
+{
+    //Reset positions and momenta
+    std::copy(r_0, r_0 + 3, r);
+    std::copy(p_0, p_0 + 3, p);
+    
+    //Thermalize the site
+    thermaize(*this);
+}
+
+void Site::write_info()
+{
+    debug_file << "Atom: " << atom->symbol << std::endl;
+    debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
+    debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+    debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
+    debug_file << "F: " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
+    debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
 }

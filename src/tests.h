@@ -13,3 +13,9 @@ void test_cache();
  * multiple instances of safari.
  */
 void test_lattice_copy(Lattice &lattice);
+
+/**
+ * Tests some RNG related things
+ * 
+ */ 
+void test_rngs();

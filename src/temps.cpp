@@ -12,9 +12,17 @@ double frand(std::default_random_engine &rng)
     return rng()/max;
 }
 
+uint_fast32_t make_seed(double value)
+{
+	if(value < 0) value = -value;
+    value/=M_PI;
+	value -= floor(value);
+	uint_fast32_t val = UINT_FAST32_MAX * value;
+	return val;
+}
+
 void init_temps()
 {
-    init_temp_seed();
     //Convert from temperature to energy.
     double energy = boltz * settings.TEMP;
     for(Atom &a : settings.ATOMS)
@@ -41,15 +49,16 @@ void init_temps()
     }
 }
 
-void init_temp_seed()
-{
-    temperature_rng.seed(settings.SEED * UINT_FAST32_MAX);
-}
-
 void thermaize(Site &site)
 {
     if(settings.TEMP > 0)
     {
+        //site.last_ion is usually set before this is called, this ensures
+        //that if the scat is run using the same index as last time, then we will
+        //be able to properly repeat specfic trajectories.
+        double seed = settings.SEED * (site.index + site.last_ion*settings.SEED);
+
+        temperature_rng.seed(seed);
         //2 random numbers
         double r1 = 0, r2 = 0;
         for(int i = 0; i<3; i++)

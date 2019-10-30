@@ -215,7 +215,7 @@ void Safio::load(std::string safio_file)
             {
                 TEMP = atof(args[0].c_str());
                 SEED = atof(args[1].c_str());
-                NITER = atoi(args[2].c_str());
+                ion_index = atoi(args[2].c_str());
             }
             if (n == 21)
             {
@@ -336,28 +336,4 @@ void Safio::load(std::string safio_file)
         std::cout << "Error opening Safio File" << '\n';
     }
     return;
-}
-
-double zeros[3] = { 0,0,0 };
-void Site::reset()
-{
-    //Reset counters
-    last_ion = -1;
-    near_check = 0;
-
-    //Reset positions and momenta
-    std::copy(r_0, r_0 + 3, r);
-    std::copy(p_0, p_0 + 3, p);
-    //Add thermalization for this site.
-    thermaize(*this);
-}
-
-void Site::write_info()
-{
-    debug_file << "Atom: " << atom->symbol << std::endl;
-    debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
-    debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-    debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
-    debug_file << "F: " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
-    debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
 }

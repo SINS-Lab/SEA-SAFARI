@@ -10,8 +10,8 @@ t                            Targets Recoil
 4000                         Max steps before failure
 10.0 0.0025                  Max interaction distance, R table step
 0.0 0.0003                   ^ for Z, not implemented atm
-4 100                        Max distance for search, Threshold for dE
-1000                         Montecarlo/chainscat runs, if 1 does Single shot
+5 100                        Max distance for search, Threshold for dE
+10000                         Montecarlo/chainscat runs, if 1 does Single shot
 -10 0.005 10                 X range (min, step, max)
 -10 0.005 10                 Y range (min, step, max)
 666 666                      SCAT_FLAG, SCAT_TYPE
@@ -20,7 +20,7 @@ t                            Targets Recoil
 4153.6 3.625 27017.57 7.286  NPAR Parameters for IPOT
 2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
 1.26 2.0                     NIMPAR parameters for IIMPOT
-0.0 0.9436337324 1           Temperature, Seed, NITER - unused NITER
+300.0 0.9436337324 1         Temperature, Seed, initial ion_index
 f                            Use Image Charge
 -1.5 8.18                    Stuck Energy, Buried Distance
 4.0786 4.0786 4.0786         AX, AY, AZ for basis

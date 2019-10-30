@@ -286,24 +286,19 @@ start:
     //Update energy trackers, propogate them backwards.
     E3 = E2;
     E2 = E1;
-    E1 = T + (ion.V + ion.V_t) / 2;
+    E1 = T + ion.V;
 
     //Log things if needed
     if(log)
     {
-        //Average potential energy
-        double V = (ion.V + ion.V_t) / 2;
-        double dV = ion.V_t - ion.V;
         //This log file is just the ion itself, not the full xyz including the lattice
-        sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\t%.3f\n",
+        sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
                 ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
-                ion.time,ion.steps,T,V,(T+V),ion.near,dt,dr_max,dV);
+                ion.time,ion.steps,T,ion.V,(T+ion.V),ion.near,dt,dr_max);
         traj_file << buffer;
     }
     if(xyz)
     {
-        double V = (ion.V + ion.V_t) / 2;
-
         //Update the lattice site momenta...
         for(int i = 0; i<ion.near; i++)
         {
@@ -319,13 +314,15 @@ start:
 
         //Next line is a "comment", we will stuff the time here.
         sprintf(buffer, "%f\t%d\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
-                ion.time,ion.steps,T,V,ion.near,dt,dr_max);
+                ion.time,ion.steps,T,ion.V,ion.near,dt,dr_max);
         xyz_file << buffer;
 
         //Next stuff the symbol, position, momentum and mass for the ion itself
         //The ion is given index 0
         sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],ion.atom->mass,0,1);
+                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2], // Sym, x, y, z,
+                                         ion.p[0],ion.p[1],ion.p[2], //     px,py,pz,
+                                         ion.atom->mass,0,1);        //mass, index, near
         xyz_file << buffer;
 
         //Then stuff in the entire lattice, why not...
@@ -334,10 +331,10 @@ start:
             Site &s = *lattice.sites[i];
             //Note that this is same format as the ion, index has 1 added to it, as ion is 0
             sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],
-                                           s.p[0],s.p[1],s.p[2],
-                                           s.atom->mass,s.index + 1,
-                                           s.near_check);
+                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],     // Sym, x, y, z,
+                                           s.p[0],s.p[1],s.p[2],     //     px,py,pz,
+                                           s.atom->mass,s.index + 1, //mass, index,
+                                           s.near_check);            //Near
             xyz_file << buffer;
             //Reset this flag for next run
             s.near_check = false;
@@ -462,7 +459,7 @@ end:
     sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
             ion.r_0[0],ion.r_0[1],ion.r_0[2],
             E,theta,phi,
-            1,1.0/settings.NUMCHA,
+            ion.index,1.0, //TODO make the second 1 be an area based on gridscat depth?
             ion.max_n, ion.r_min, ion.steps, ion.time);
     //Then save it
     save(buffer);

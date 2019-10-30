@@ -2,7 +2,9 @@
 #include <cstdio>
 #include <time.h>
 #include <iostream>
+#include <random>
 #include "safio.h"
+#include "temps.h"
 #include "potentials.h"
 
 void test_cache()
@@ -97,4 +99,40 @@ void test_lattice_copy(Lattice &lattice)
     //Convert to ms;
     dt *= 1000;
     std::cout << " execution time: " << dt << "ms " << x << std::endl;
+}
+
+void test_rngs()
+{
+	std::default_random_engine rng;
+	rng.seed(make_seed(2.4563));
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << " " << std::endl;
+	rng.seed(make_seed(1.4563));
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << " " << std::endl;
+	rng.seed(make_seed(2.4563));
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << " " << std::endl;
+	rng.seed(make_seed(1.4563));
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
+	std::cout << rng() << std::endl;
 }

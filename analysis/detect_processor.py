@@ -230,6 +230,23 @@ class Detector:
             if self.pics:
                 fig.savefig('energyplot.png')
         return energy, intensity
+
+    def run_single_shot(self, close, index, args):
+        self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
+        self.safio.setGridScat(True)
+        self.safio.NUMCHA = 1
+        self.safio.XSTART = close[0]
+        self.safio.YSTART = close[1]
+        self.safio.Ion_Index = index
+        self.safio.genInputFile(fileIn=self.safio.fileIn)
+        imp_x = round(close[0],3)
+        imp_y = round(close[1],3)
+        input_file = self.safio.fileIn
+        output_file = self.safio.fileIn.replace('.input', '') + \
+                        '{},{}.xyz'.format(imp_x, imp_y)
+        cmd = [args.format(input_file, output_file)]
+        subprocess.Popen(cmd, shell=True)
+
         
     def impactParam(self, basis=None, dx=0, dy=0):
         x = self.detections[..., 0]
@@ -290,6 +307,7 @@ class Detector:
             close = [1e20, 1e20]
             distsq = close[0]**2 + close[1]**2
             index = -1
+            ion_index = -1
 
             for i in range(len(x)):
                 dxsq = (x[i]-event.xdata)**2
@@ -299,58 +317,26 @@ class Detector:
                     close[0] = x[i]
                     close[1] = y[i]
                     index = i
+                    ion_index = self.detections[..., 6][i]
 
             if event.dblclick and event.button == 1 and not shift_is_held:
+                print("Setting up a safari run for a single shot")
                 # Setup a single run safari for this.
-                self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
-                self.safio.setGridScat(True)
-                self.safio.NUMCHA = 1
-                self.safio.XSTART = close[0]
-                self.safio.YSTART = close[1]
-                self.safio.genInputFile(fileIn=self.safio.fileIn)
-                
-                imp_x = round(close[0],2)
-                imp_y = round(close[1],2)
-                input_file = self.safio.fileIn
-                output_file = self.safio.fileIn.replace('.input', '') + \
-                              '{},{}.xyz'.format(imp_x, imp_y)
-                cmd = ['python3 detect_impact.py -i {} -o {}'.format(input_file, output_file)]
-                subprocess.Popen(cmd, shell=True)
-
+                run_single_shot(close, ion_index,\
+                                'python3 detect_impact.py -i {} -o {}')
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
                 print("Setting up a safari run for a nearness colored dataset")
-                self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
-                self.safio.setGridScat(True)
-                self.safio.NUMCHA = 1
-                self.safio.XSTART = close[0]
-                self.safio.YSTART = close[1]
-                self.safio.genInputFile(fileIn=self.safio.fileIn)                
-                imp_x = round(close[0],2)
-                imp_y = round(close[1],2)
-                input_file = self.safio.fileIn
-                output_file = self.safio.fileIn.replace('.input', '') + \
-                              '{},{}.xyz'.format(imp_x, imp_y)
-                cmd = ['python3 detect_impact.py -i {} -o {} -c nearest'.format(input_file, output_file)]
-                subprocess.Popen(cmd, shell=True)
-
+                # Setup a single run safari for this.
+                run_single_shot(close, ion_index,\
+                                'python3 detect_impact.py -i {} -o {} -c nearest')
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
                 print("Setting up a safari run for a velocity colored dataset")
-                self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
-                self.safio.setGridScat(True)
-                self.safio.NUMCHA = 1
-                self.safio.XSTART = close[0]
-                self.safio.YSTART = close[1]
-                self.safio.genInputFile(fileIn=self.safio.fileIn)            
-                imp_x = round(close[0],2)
-                imp_y = round(close[1],2)
-                input_file = self.safio.fileIn
-                output_file = self.safio.fileIn.replace('.input', '') + \
-                              '{},{}.xyz'.format(imp_x, imp_y)
-                cmd = ['python3 detect_impact.py -i {} -o {} -c velocity'.format(input_file, output_file)]
-                subprocess.Popen(cmd, shell=True)
-
+                # Setup a single run safari for this.
+                run_single_shot(close, ion_index,\
+                                'python3 detect_impact.py -i {} -o {} -c velocity')
+            
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
             energy = round(self.detections[index][3], 2)

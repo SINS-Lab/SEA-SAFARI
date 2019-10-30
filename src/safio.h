@@ -71,7 +71,8 @@ struct Safio
     double TEMP;
     double SEED;
 
-    int NITER;//Unused
+    //initial index of ion, setting this allows same-trajectory thermal runs.
+    int ion_index;
 
     //Whether to use image potentials
     bool IMAGE;
@@ -119,6 +120,7 @@ struct Safio
     double YSTEP;
     double YSTOP;
 
+    //Parameters for electronic frictional forces.
     double F_a = 0;
     double F_b = 0;
     

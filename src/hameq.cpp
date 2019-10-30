@@ -97,23 +97,18 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     //Relevant force for this run
     double *F;
     F = ion.dp_dt;
-
-    //Relevant potential for this run
-    double *V;
-    V = &ion.V;
     
     //if not 0, we are computing for the predicted location.
     if(predicted)
     {
         //Use the one for next time step
         F = ion.dp_dt_t;
-        V = &ion.V_t;
         //Use predictions
         r = ion.r_t;
     }
 
     //Reset V
-    *V = 0;
+    ion.V = 0;
 
     //Reset the force array.
     F[0] = 0;
@@ -173,7 +168,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             double dV_dr = dVr_dr(r, s.atom->index);
 
             //Potential for this location.
-            *V += Vr_r(r, s.atom->index);
+            if(predicted) ion.V += Vr_r(r, s.atom->index);
 
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
@@ -234,7 +229,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     if(settings.IMAGE)
     {
         F[2] -= dVi_dz(r[2], ion.q);
-        *V += ion.q * Vi_z(r[2], ion.q);
+        if(predicted) ion.V += ion.q * Vi_z(r[2], ion.q);
     }
 
     if(settings.F_a > 0)

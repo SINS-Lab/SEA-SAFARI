@@ -108,7 +108,7 @@ class SafariInput:
         self.PIMPAR = [1.26, 2.0]
         self.TEMP = 0.0
         self.SEED = 0.9436337324
-        self.NITER = 1
+        self.Ion_Index = 1
         self.IMAGE = True
         self.SENRGY = -1.5
         self.BDIST = 8.18
@@ -326,11 +326,11 @@ class SafariInput:
                             self.NG.append(args[i])
                         else:
                             self.NG.append(0)
-            # Temp, Seed, NITER
+            # Temp, Seed, Ion_Index
             if n == 20:
                 self.TEMP = args[0]
                 self.SEED = args[1]
-                self.NITER = args[2]
+                self.Ion_Index = args[2]
             # Use Image Charge
             if n == 21:
                 self.IMAGE = args[0]
@@ -479,7 +479,7 @@ class SafariInput:
             +  serializeArr(self.NG)  + '\n'
             
         file = file \
-            +  serialize(self.TEMP, self.SEED, self.NITER)  + '\n' \
+            +  serialize(self.TEMP, self.SEED, self.Ion_Index)  + '\n' \
             +  serialize(self.IMAGE)  + '\n' \
             +  serialize(self.SENRGY, self.BDIST)  + '\n' \
             +  serialize(self.AX, self.AY, self.AZ)  + '\n' \

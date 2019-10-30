@@ -108,10 +108,9 @@ int main(int argc, char* argv[])
     clock_t start = clock();
     int n = 0;
 
-    out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tlevel\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
-
     if (settings.SCAT_FLAG == 666)
     {
+        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
         if (settings.NUMCHA == 1 || settings.SCAT_TYPE == 777)
         {
             if (settings.NUMCHA == 1)
@@ -149,6 +148,10 @@ int main(int argc, char* argv[])
         else if (settings.SCAT_FLAG == 777)
         {
             test_lattice_copy(lattice);
+        }
+        else if (settings.SCAT_FLAG == 888)
+        {
+            test_rngs();
         }
     }
 

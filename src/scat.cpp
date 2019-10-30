@@ -36,7 +36,7 @@ void montecarloscat(Lattice &lattice, int *num)
     std::default_random_engine rng;
     debug_file << "Initializing RNG, seed: " << settings.SEED << '\n';
     //Initialize the RNG
-    rng.seed(settings.SEED * UINT_FAST32_MAX);
+    rng.seed(make_seed(settings.SEED));
 
     //Find the range of the region we are covering
     double x_size = (settings.XSTOP - settings.XSTART);
@@ -61,14 +61,14 @@ void montecarloscat(Lattice &lattice, int *num)
 
 void gridscat(Lattice &lattice, int *num)
 {
-    bool log = settings.NUMCHA == 1;
-
     int n = 0;
-    if(log)
+    if(settings.NUMCHA == 1)
     {
         //If we are in log mode, we only run this for the first coord
         Ion ion;
-        fire(lattice, ion, settings.XSTART, settings.YSTART, n, log, log);
+        //We also use the settings ion_index for single shot mode, to
+        //guarentee that any thermal effects can be repeated.
+        fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
         n++;
     }
     else
@@ -77,7 +77,7 @@ void gridscat(Lattice &lattice, int *num)
             for(double y = settings.YSTART; y <= settings.YSTOP; y+=settings.YSTEP)
             {
                 Ion ion;
-                fire(lattice, ion, x, y, n, log, log);
+                fire(lattice, ion, x, y, n, false, false);
                 n++;
             }
     }
