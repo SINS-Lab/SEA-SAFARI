@@ -2,6 +2,10 @@
 # Lines starting with # are comment lines, otherwise
 # All lines must follow the order found here,
 # blank lines are ignored also.
+# 
+# For boolean flags:
+#   t : true
+#   f : false (or anything not t)
 
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
@@ -103,7 +107,6 @@ t
 300.0 0.9436337324 1
 
 # This is a flag that controls whether image charge effects are included
-
 f
 
 # These control failure conditions for the code
