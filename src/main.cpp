@@ -94,8 +94,8 @@ int main(int argc, char* argv[])
     {
         Site &s = *lattice.sites[i];
         Atom* a = s.atom;
-        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\t%d\n",
-                         s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass, s.cell_hash);
+        sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",
+                         s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass);
         crystal_file << buffer;
     }
 

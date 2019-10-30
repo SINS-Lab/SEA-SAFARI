@@ -389,7 +389,6 @@ def run(spectrum, directory='.'):
             app.spectrums.append(spectrum)
             file = filebox.currentText()
             spectrum.name = file
-            filename = os.path.basename(file)
             if file.endswith('.data'):
                 file = file.replace('.data', '.input')
             elif file.endswith('.txt'):
@@ -421,7 +420,6 @@ def run(spectrum, directory='.'):
                 spectrum = Spectrum()
                 app.spectrums.append(spectrum)
                 spectrum.name = file
-                filename = os.path.basename(file)
                 if file.endswith('.data'):
                     file = file.replace('.data', '.input')
                 elif file.endswith('.txt'):

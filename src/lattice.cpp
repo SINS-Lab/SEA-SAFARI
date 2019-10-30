@@ -168,7 +168,6 @@ void Lattice::add_site(Site& s)
     //can be looked up to find their atom later.
     s.index = sites.size();
     sites.push_back(&s);
-    s.cell_hash = cell->pos_hash;
     cel_sites[num] = s;
     *cel_num = num + 1;
     //Initializes the site
@@ -352,7 +351,6 @@ Cell::Cell(const Cell& other)
         delete []site.p_0;
         site.r_0 = original.r_0;
         site.p_0 = original.p_0;
-        site.cell_hash = original.cell_hash;
         site.index = original.index;
         sites[i] = site;
     }

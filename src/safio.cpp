@@ -23,7 +23,7 @@ void Safio::load(std::string safio_file)
 
     //Number of parameters for potentials.
     //This is used to know how many values to look for in a line
-    int npar;
+    int npar = -1;
 
     if (safio_input.is_open())
     {

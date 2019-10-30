@@ -120,7 +120,7 @@ class Detector:
         self.emax = -1e20
         self.safio = None
         self.plots = True
-        self.pics = False
+        self.pics = True
 
     def clear(self):
         self.detections = np.zeros((0,8))
@@ -146,11 +146,12 @@ class Detector:
 
         intensity = integrate(numpoints, winv, tArr, aArr, angles)
 
-        out = open(self.outputprefix\
+        file_name = self.outputprefix\
                   + 'Theta-'\
                   + str(self.tmin) + '-'\
                   + str(self.tmax)+'_'\
-                  + str(res)+'.txt', 'w')
+                  + str(res)
+        out = open(file_name+'.txt', 'w')
         out.write(str(len(aArr))+'\n')
         #writes the angle 
         for i in range(numpoints):
@@ -167,7 +168,7 @@ class Detector:
                 fig.show()
         #The following saves the plot as a png file
             if self.pics:
-                fig.savefig('thetaplot.png')
+                fig.savefig(file_name+'.png')
         return angles, intensity
         
     def spectrumE(self, res, numpoints=1000):
@@ -186,14 +187,13 @@ class Detector:
         #Calculate the kinematic factor
         k = kinematicFactor(self.tmax, self.safio.THETA0,\
                             self.safio.MASS,self.safio.ATOMS[0][0])
-                            
-        file = self.outputprefix\
+        
+        file_name = self.outputprefix\
                   + 'Energy-'\
                   + str(self.emin) + '-'\
                   + str(self.emax)+'_'\
-                  + str(res)+'.txt'
-
-        out = open(file, 'w')
+                  + str(res)
+        out = open(file_name+'.txt', 'w')
         out.write('energy\tintensity\tcounts\tk-factor\n')
         #This writes out the energy into a text file
         for i in range(numpoints):
@@ -217,7 +217,7 @@ class Detector:
             
             kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
             
-            ax.set_title("I_E, Detections: "+str(len(aArr)))
+            print("I_E, Detections: "+str(len(aArr)))
             
             ax.set_xlabel('Energy (E/E0)')
             ax2.set_xlabel('Energy (eV)')
@@ -228,7 +228,7 @@ class Detector:
                 fig.show()
             #The following saves the plot as a png file
             if self.pics:
-                fig.savefig('energyplot.png')
+                fig.savefig(file_name+'.png')
         return energy, intensity
 
     def run_single_shot(self, close, index, args):
@@ -261,10 +261,6 @@ class Detector:
         patches = []
         colours = []
         
-        if dx == 0 and dy == 2:
-            maxX = np.max(x)
-            maxY = np.max(y)
-            
         z_threshold = -self.safio.BDIST*1e3
         
         if basis is not None:
@@ -423,7 +419,7 @@ class Spectrum:
         self.safio = None
         self.name = None
         self.plots = True
-        self.pics = False
+        self.pics = True
         self.rawData = []
         self.stuck = []
         self.buried = []
@@ -514,7 +510,7 @@ class Spectrum:
         
         colour = [(var,0,0) for var in c]
         
-        if self.plots or self.pics:
+        if self.plots:
             fig, ax = plt.subplots()
             ax.scatter(x, y, c=colour)
             ax.set_title("Energy vs Theta, Detections: "+str(len(x)))
@@ -522,9 +518,6 @@ class Spectrum:
             ax.set_ylabel('Energy (eV)')
             if self.plots:
                 fig.show()
-            #The following saves the plot as a png file
-            if self.pics:
-                fig.savefig('energythetaplot.png')
 
     def plotPhiTheta(self):
         

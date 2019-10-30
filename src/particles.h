@@ -44,9 +44,6 @@ public:
     //this is used for xyz output of nearest.
     bool near_check = 0;
 
-    //hash of the cell this site is in.
-    int cell_hash = -1;
-
     Site()
     {
         r_0 = new double[6];
@@ -61,7 +58,16 @@ public:
         index = other.index;
     }
 
+    /**
+     * Resets the site to r_0 and p_0.
+     * This also then calls thermalize, so
+     * if an ion index is assigned previously,
+     * that willl be used for seeding the RNG
+     */ 
     void reset();
 
+    /**
+     * Prints some info for this site to debug_file
+     */ 
     void write_info();
 };
