@@ -13,12 +13,12 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
     safio = safari_input.SafariInput('template.input')
     rundir = os.path.join('.','runs')
     try:
-        os.mkdir(rundir)
+        os.makedirs(rundir)
     except:
         pass
     rundir = os.path.join(rundir,basename)
     try:
-        os.mkdir(rundir)
+        os.makedirs(rundir)
     except:
         pass
     for theta in frange(tstart, tend + tstep, tstep):
@@ -26,7 +26,7 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
             for e0 in frange(estart, eend + estep, estep):
                 edir = os.path.join(rundir,str(e0))
                 try:
-                    os.mkdir(edir)
+                    os.makedirs(edir)
                 except:
                     pass
                 safio.E0 = e0
