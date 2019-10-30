@@ -21,6 +21,10 @@ void Safio::load(std::string safio_file)
     debug_file.open(filename);
     debug_file << "Loading Info From: " << safio_file << "\n\n";
 
+    //Number of parameters for potentials.
+    //This is used to know how many values to look for in a line
+    int npar;
+
     if (safio_input.is_open())
     {
         std::string line;
@@ -75,11 +79,11 @@ void Safio::load(std::string safio_file)
             }
             if (n == 3)
             {
-                NDTECT = atoi(args[0].c_str());
+                detector_type = atoi(args[0].c_str());
             }
             if (n == 4)
             {
-                DTECTPAR = to_double_array(args, 0, 3);
+                detect_parameters = to_double_array(args, 0, 3);
             }
             if (n == 5)
             {
@@ -88,9 +92,9 @@ void Safio::load(std::string safio_file)
             }
             if (n == 6)
             {
-                DEMAX = atof(args[0].c_str());
+                error_exponent = atof(args[0].c_str());
                 DEMIN = atof(args[1].c_str());
-                ABSERR = atof(args[2].c_str());
+                error_scale = atof(args[2].c_str());
             }
             if (n == 7)
             {
@@ -162,25 +166,25 @@ void Safio::load(std::string safio_file)
             }
             if (n == 16)
             {
-                NPAR = atoi(args[0].c_str());
-                IPOT = atoi(args[1].c_str());
+                npar = atoi(args[0].c_str());
+                binary_potential_type = atoi(args[1].c_str());
             }
             if (n == 17)
             {
-                POTPAR = to_double_array(args, 0, NPAR - 1);
+                binary_potential_parameters = to_double_array(args, 0, npar - 1);
             }
             if (n == 18)
             {
-                NIMPAR = atoi(args[0].c_str());
-                IIMPOT = atoi(args[1].c_str());
+                npar = atoi(args[0].c_str());
+                image_potential_type = atoi(args[1].c_str());
             }
             if (n == 19)
             {
                 if (o <= 0)
                 {
-                    PIMPAR = to_double_array(args, 0, NIMPAR - 1);
+                    image_parameters = to_double_array(args, 0, npar - 1);
                     //If this is the case, we have more arguments
-                    if (IIMPOT == 2)
+                    if (image_potential_type == 2)
                     {
                         //This will be decremented after leaving this if
                         o = 4;
@@ -224,7 +228,7 @@ void Safio::load(std::string safio_file)
             }
             if (n == 21)
             {
-                IMAGE = args[0] == "t";
+                use_image = args[0] == "t";
             }
             if (n == 22)
             {

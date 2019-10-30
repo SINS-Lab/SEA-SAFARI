@@ -113,11 +113,18 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     double psq;
 
     //exit conditions
+    
+    //Below -BDIST
     bool buried = false;
+    //Took longer than MAX_STEPS
     bool froze = false;
+    //Energy lower than SENRGY
     bool stuck = false;
+    //Left RAX/RAY
     bool off_edge = false;
+    //Too much change in energy over last 2 ticks
     bool discont = false;
+    //Above Z1
     bool left = false;
 
     //Kinetic Energy
@@ -228,7 +235,7 @@ start:
     if(dr_max != 0)
     {
         //check if energy has changed too much.
-        change = pow(settings.ABSERR/dr_max, settings.DEMAX);
+        change = pow(settings.error_scale/dr_max, settings.error_exponent);
         //don't allow speedups of more than 2x, as those can
         //cause major discontinuities later
         if(change >= 2)
@@ -417,7 +424,7 @@ end:
         double pz = ion.p[2];
         psq = sqr(ion.p);
         //Find the momentum at infinity
-        if(settings.IMAGE)
+        if(settings.use_image)
         {
             //Image charge would pull it towards surface, this accounts
             //for that effect.

@@ -13,17 +13,17 @@ int n_rmax;
 
 double dVr_dr_init(double r, int n)
 {
-    if(settings.IPOT==1)
+    if(settings.binary_potential_type==1)
     {
         double a,b,c,d;
         //The potpars are in groups of 4,
         //in order of the listed basis atoms
         //The first atom is listed as 1.
         int index = (n-1)*4;
-        a = settings.POTPAR[index];
-        b = settings.POTPAR[index + 1];
-        c = settings.POTPAR[index + 2];
-        d = settings.POTPAR[index + 3];
+        a = settings.binary_potential_parameters[index];
+        b = settings.binary_potential_parameters[index + 1];
+        c = settings.binary_potential_parameters[index + 2];
+        d = settings.binary_potential_parameters[index + 3];
         return -b*a*exp(-b*r) - d*c*exp(-d*r);
     }
     else
@@ -35,17 +35,17 @@ double dVr_dr_init(double r, int n)
 
 double Vr_r_init(double r, int n)
 {
-    if(settings.IPOT==1)
+    if(settings.binary_potential_type==1)
     {
         double a,b,c,d;
         //The potpars are in groups of 4,
         //in order of the listed basis atoms
         //The first atom is listed as 1.
         int index = (n-1)*4;
-        a = settings.POTPAR[index];
-        b = settings.POTPAR[index + 1];
-        c = settings.POTPAR[index + 2];
-        d = settings.POTPAR[index + 3];
+        a = settings.binary_potential_parameters[index];
+        b = settings.binary_potential_parameters[index + 1];
+        c = settings.binary_potential_parameters[index + 2];
+        d = settings.binary_potential_parameters[index + 3];
         return a*exp(-b*r) + c*exp(-d*r);
     }
     else
@@ -118,9 +118,9 @@ double dVr_dr(double r, int n)
 
 double Vi_z(double z, int q)
 {
-    double z_min = settings.PIMPAR[0];
-    double v_min = settings.PIMPAR[1];
-    if(settings.IIMPOT == 1)
+    double z_min = settings.image_parameters[0];
+    double v_min = settings.image_parameters[1];
+    if(settings.image_potential_type == 1)
     {
         if(z > z_min)
         {
@@ -144,9 +144,9 @@ double Vi_z(double z, int q)
 
 double dVi_dz(double z, int q)
 {
-    double z_min = settings.PIMPAR[0];
-    double v_min = settings.PIMPAR[1];
-    if(settings.IIMPOT == 1)
+    double z_min = settings.image_parameters[0];
+    double v_min = settings.image_parameters[1];
+    if(settings.image_potential_type == 1)
     {
         if(z > z_min)
         {
@@ -165,11 +165,18 @@ double dVi_dz(double z, int q)
     return 0;
 }
 
-void apply_friction(Ion &ion, double* F)
+double electron_density(Lattice &lattice, Ion &ion)
+{
+    //TODO see https://github.com/SINS-Lab/SAFARI/blob/10305e6f9ee597e89a6df7acfede3554371f42bc/src/hameqinel.f
+    // it has calculations for electron density.
+    return 1;
+}
+
+double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt)
 {
     double z = ion.r[2];
     //TODO some better "above surfaceness"
-    if(z > 0) return;
+    if(z > 0) return 0;
 
     double vx = ion.p[0]/ion.atom->mass;
     double vy = ion.p[1]/ion.atom->mass;
@@ -178,18 +185,25 @@ void apply_friction(Ion &ion, double* F)
     double v_sq = vx*vx + vy*vy + vz*vz;
     double v = sqrt(v_sq);
     //No velocity, no friction.
-    if(v == 0) return;
+    if(v == 0) return 0;
 
     //Components of the velocity direction.
     vx/=v;
     vy/=v;
     vz/=v;
 
+    double density = electron_density(lattice, ion);
+
     //assume magnitude of friction is:
     //Av + Bv^2, where v is magnitude of velocity.
-    double fric = (settings.F_a*v + settings.F_b*v_sq);
+    //This is then scaled by electron density for the location
+    double fric = (settings.F_a*v + settings.F_b*v_sq)
+                      * density;
     //Direction of friction is opposite of velocity.
     F[0] -= vx*fric;
     F[1] -= vy*fric;
     F[2] -= vz*fric;
+
+    //TODO return effective "potential" from this interaction.
+    return 0;
 }

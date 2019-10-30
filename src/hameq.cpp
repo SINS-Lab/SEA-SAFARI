@@ -227,7 +227,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         //TODO add atom-atom interactions here.
     }
 
-    if(settings.IMAGE)
+    if(settings.use_image)
     {
         F[2] -= dVi_dz(r[2], ion.q);
         if(predicted) ion.V += ion.q * Vi_z(r[2], ion.q);
@@ -235,7 +235,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
     if(settings.F_a > 0)
     {
-        apply_friction(ion, F);
+        ion.V += apply_friction(lattice, ion, F, dt);
     }
 
     if(!predicted)

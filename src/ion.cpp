@@ -154,7 +154,7 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     r_0[2] = settings.Z1;
 
     //If we have image effect, account for that here.
-    if(settings.IMAGE)
+    if(settings.use_image)
     {
         p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom->mass * Vi_z(settings.Z1, q)));
     }

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "ion.h"
+#include "lattice.h"
 
 const double eqsr = 14.398;
 
@@ -53,5 +54,16 @@ double dVi_dz(double z, int q);
 
 /**
  * Applies a frictional force to F.
+ * 
+ * @return the energy change which would result from this interaction.
  */ 
-void apply_friction(Ion &ion, double* F);
+double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt);
+
+/**
+ * Returns the electron density at the site of the ion.
+ * The units on this should be whatever are needed to
+ * allow directly scaling the force by the return value
+ * 
+ * @return the density of electrons at this location.
+ */ 
+double electron_density(Lattice &lattice, Ion &ion);

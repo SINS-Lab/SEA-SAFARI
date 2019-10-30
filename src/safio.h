@@ -7,32 +7,58 @@
 #include <vector>
 #include "particles.h"
 
+/**
+ * This is the main configuration and settings header for Sea-Safari.
+ * 
+ * Units used:
+ *   
+ *   Energy - eV
+ *   Distance - Angstroms
+ *   Mass - AMU
+ *   Angles - Degrees
+ * 
+ * Note that this results in times in Angstrom * sqrt(AMU/eV).
+ * 
+ */
+
 struct Safio
 {
     //Parameters for the beam
-    double E0;         //Beam Energy
-    double THETA0;     //Beam Theta
-    double PHI0;       //Crystal Phi
-    double MASS;       //Ion Mass
-    char* SYMION;      //Ion Atomic Symbol
+    //Initial Energy
+    double E0;
+    //Initial Theta
+    double THETA0;   
+    //Phi Orientation of Crystal 
+    double PHI0;
+    //Ion Mass
+    double MASS;
+    //Ion Atomic Symbol
+    char* SYMION;
 
-    Atom ion;          //The Atom object for the ions
+    //Ion's Atom object
+    Atom ion; //Note this is not read in from the file.
 
-    //Parameters for the detector
+    //Parameters for the detector, currently unused
+
     double EMIN;       //Min Energy
     double EMAX;       //Max Energy
     double ESIZE;      //Energy Resolution
     double ASIZE;      //Angular Resolution
-
-    int NDTECT;        //Detector index
-    double* DTECTPAR;  //Parameters for detector
+    //Detector index
+    int detector_type;    
+    //Parameters for detector    
+    double* detect_parameters;
 
     //Integration parameters
-    double DELLOW;     //Low time step
-    double DELT0;      //High time step
-    double DEMAX;      //Exponent on error check
-    double DEMIN;      //unused at present
-    double ABSERR;     //Reference value for error check
+    //Minimum time step
+    double DELLOW;
+    //Maximum time step
+    double DELT0;
+    //Exponent on position error check
+    double error_exponent;
+    double DEMIN;         //unused
+    //Reference value for position error check
+    double error_scale;   
 
     int NPART;         //Target interaction number
     bool RECOIL;       //Whether ions recoil on impact
@@ -40,42 +66,50 @@ struct Safio
     int MAX_STEPS;     //Maximum integration steps before failing
 
     double R_MAX;      //Maximum R value for interactions
-    double rr_max;     // ^ squared.
+    double rr_max;     // ^ squared, this is calculated from R_MAX
     double DR_MIN_TAB; //Step for cached values
 
     double ZMIN;       //Start point for values caches
     double ZSTEP;      //Step for cached values
 
-    int DIST_SEARCH;   //Unused
-    int FAILED_DE;     //Unused
+    //Radial distance from the ion to search for cells of lattice sites
+    int DIST_SEARCH;
+    //Average change in energy over last 3 steps to consider a failure
+    int FAILED_DE;
 
-    int SCAT_FLAG;     //If this is 666, will run scats, otherwise tests
-    int SCAT_TYPE;     // 666 = montecarlo, 777 = gridscat 888 = chainscat
+    //Flag controlling whether scat or test mode, scat mode is 666
+    int SCAT_FLAG;
+    //Flag controlling scat type, 
+    //666 = montecarlo, 777 = gridscat 888 = chainscat
+    int SCAT_TYPE;     
 
     //This is how many AX and AY
     //to build the lattice for,
     //The "radius" of the slab
+
+    //Radius for Y
     double RAY;
+    //Radius for X
     double RAX;
 
     //Site Potential Values
-    int NPAR;
-    int IPOT;
-    double* POTPAR;
+    int binary_potential_type;
+    double* binary_potential_parameters;
 
     //Image Potential Values
-    int NIMPAR;
-    int IIMPOT;
-    double* PIMPAR;
+    int image_potential_type;
+    double* image_parameters;
 
+    //Temperature to use for the simulation
     double TEMP;
+    //Seed for RNG for the simulation, same seed will result in same random numbers
     double SEED;
 
     //initial index of ion, setting this allows same-trajectory thermal runs.
     int ion_index;
 
     //Whether to use image potentials
-    bool IMAGE;
+    bool use_image;
 
     //Energy to consider "stuck"
     double SENRGY;
@@ -89,7 +123,10 @@ struct Safio
     double AZ;
 
     //Basis Coordinates
+
+    //Number in the basis
     int NBASIS;
+    //Sites in the basis (need scaling by AX,AY,AZ before use)
     std::vector<Site> BASIS;
 
     //Surface face
@@ -100,12 +137,17 @@ struct Safio
     double* loaded_face;
 
     //Basis Atoms
+
+    //Number of types of atoms in basis
     int NTYPES;
+    //Atoms in the basis
     std::vector<Atom> ATOMS;
     //Whether the lattice sites are springy
     bool CORR;
-    double ATOMK;
-    double RNEIGH;
+
+    //These two are currently not used
+    double ATOMK;  //unused - spring constant between neighbours
+    double RNEIGH; //unused - max distance squared between neighbours
 
     //Number of trajectories to run.
     //If this is 1, it will run a single gridscat,
@@ -121,11 +163,16 @@ struct Safio
     double YSTOP;
 
     //Parameters for electronic frictional forces.
+
+    //Linear Coefficient
     double F_a = 0;
+    //Quadratic Coefficient
     double F_b = 0;
     
-    //These were ZBL-potential related in the old 
-    //version of safari, not currently used.
+    //These were used for corregated image potentials
+    //in the old version of Safari, that hasn't
+    //been implemented yet, so these are currently unused.
+
     int NBZ;
     double TOL;
     int NBG;
@@ -135,6 +182,13 @@ struct Safio
     double* NZ;
     double* ZMAX;
 
+    /**
+     * Loads input from file of the given name,
+     * This also opens the relvant output streams,
+     * for debug, data, xyz, etc.
+     * 
+     * @param safio_file - The input file to load from
+     */ 
     void load(std::string safio_file);
 };
 
