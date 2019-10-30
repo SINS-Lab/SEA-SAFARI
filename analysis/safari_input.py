@@ -149,6 +149,9 @@ class SafariInput:
         self.load_crystal = False
         self.loaded_face = [0,0,1]
 
+        self.F_a = 0
+        self.F_b = 0
+
         self.load()
         # Instead here we should check for a default file, and use that
         # if we do not have the requested input file.
@@ -191,7 +194,7 @@ class SafariInput:
             # Ignore blank lines.
             if num == 0:
                 continue
-            
+
             # E0 THETA0 PHI0 MASS SYMION
             if n == 1:
                 self.E0 = args[0]
@@ -396,6 +399,9 @@ class SafariInput:
                     self.load_crystal = args[3]
                 if self.load_crystal:
                     self.loaded_face = [args[4], args[5], args[6]]
+            if n==28:
+                self.F_a = args[0]
+                self.F_b = args[1]
                 
             # Decrement our sub-line first.
             o = o - 1
@@ -510,6 +516,9 @@ class SafariInput:
         file = file + serializeArr(self.face) + ' ' \
                     + serialize(self.load_crystal) + ' ' \
                     + serializeArr(self.loaded_face) + '\n'
+
+        if self.F_b != 0 or self.F_a != 0:
+            file = file + serialize(self.F_a, self.F_b) + '\n'
             
         output.write(file)
         output.close()
