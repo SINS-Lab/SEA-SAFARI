@@ -182,15 +182,16 @@ class SafariInput:
             # the ones used in the fortran source.
 
             # This is a comment in the file
-            if line.startwith("#"):
-                continue
-            # Ignore blank lines.
-            if line == "":
+            if line.startswith("#"):
                 continue
             
             args = parseLine(line)
             # Number of arguments, used for padding arrays with 0
             num = len(args)
+            # Ignore blank lines.
+            if num == 0:
+                continue
+            
             # E0 THETA0 PHI0 MASS SYMION
             if n == 1:
                 self.E0 = args[0]
