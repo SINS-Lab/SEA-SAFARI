@@ -118,8 +118,8 @@ double dVr_dr(double r, int n)
 
 double Vi_z(double z, int q)
 {
-    double z_min = settings.PIMPAR[1];
-    double v_min = settings.PIMPAR[2];
+    double z_min = settings.PIMPAR[0];
+    double v_min = settings.PIMPAR[1];
     if(settings.IIMPOT == 1)
     {
         if(z > z_min)
@@ -144,8 +144,8 @@ double Vi_z(double z, int q)
 
 double dVi_dz(double z, int q)
 {
-    double z_min = settings.PIMPAR[1];
-    double v_min = settings.PIMPAR[2];
+    double z_min = settings.PIMPAR[0];
+    double v_min = settings.PIMPAR[1];
     if(settings.IIMPOT == 1)
     {
         if(z > z_min)
