@@ -39,7 +39,6 @@ int main(int argc, char* argv[])
         {
             while (getline(input, safio_file))
             {
-                std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
                 break;
             }
             input.close();
@@ -55,6 +54,7 @@ int main(int argc, char* argv[])
         safio_file = argv[1];
     }
 
+    std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
     //Load the input file
     settings.load(safio_file);
     debug_file << "Loaded Settings, Initializing Potentials and Temperatures" << '\n';
