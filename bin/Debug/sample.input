@@ -84,6 +84,8 @@ t
 # The second is the type of potential, currently only 1 is implemented.
 #
 #   1 - double exponential function - has 4 parameters per lattice atom type.
+#       this is of form: a * exp(-b * r) + c * exp(-d * r)
+#       where a, b, c, d are the 4 parameters per lattice atom
 4 1
 
 # The parameters for the potentials
@@ -93,7 +95,9 @@ t
 # The first is how many parameters, the second is the type.
 # Only image potential type 1 is implemented
 #
-#   1 - Basic flat image potential, only has 2 parameters.
+#   1 - Flat image potential, only has 2 parameters:
+#       1: z_min, potential is constant v_min below this.
+#       2: v_min, this is the minimum value for the potential
 2 1
 
 # The parameters for the image potential
