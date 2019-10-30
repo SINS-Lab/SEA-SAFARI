@@ -469,7 +469,6 @@ class Spectrum:
             e = traj[3]
             t = traj[4]
             p = traj[5]
-            l = traj[6]
             # Stuck
             if e == -100:
                 self.stuck.append(traj)
@@ -480,8 +479,9 @@ class Spectrum:
             if e < 0:
                 self.other_failed.append(traj)
                 continue
-            if e < emin or e > emax or l > lmax or l < lmin\
-            or t > thmax or t < thmin or p > phimax or p < phimin:
+            if e < emin or e > emax\
+            or t > thmax or t < thmin\
+            or p > phimax or p < phimin:
                 continue
             if self.detector.isInDetector(t, p, e):
                 self.detector.addDetection(traj)
