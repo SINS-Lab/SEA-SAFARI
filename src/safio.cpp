@@ -2,6 +2,7 @@
 #include "string_utils.h"
 #include "temps.h"
 #include <vector>
+#include <string.h>
 
 void Safio::load(std::string safio_file)
 {
@@ -32,11 +33,15 @@ void Safio::load(std::string safio_file)
 
         while (getline(safio_input, line))
         {
-            debug_file << line << '\n';
-
             //Skip blank lines
             if (line == "")
                 continue;
+            //Allow having comment lines in the file
+            //Comment lines start with a #
+            if(strncmp(line.c_str(), "#", 1) == 0) continue;
+
+            //Print the input line to debug file.
+            debug_file << line << '\n';
 
             //Splits line for parsing.
             std::vector<std::string> args = split(line);

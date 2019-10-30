@@ -180,6 +180,13 @@ class SafariInput:
         for line in file:
             # The variable names here are identical to 
             # the ones used in the fortran source.
+
+            # This is a comment in the file
+            if line.startwith("#"):
+                continue
+            # Ignore blank lines.
+            if line == "":
+                continue
             
             args = parseLine(line)
             # Number of arguments, used for padding arrays with 0

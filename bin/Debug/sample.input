@@ -1,36 +1,165 @@
-250.0 45.0 0.00 22.989 Na    E0,THETA0,PHI0,MASS,SYMBOL - Beam Parameters
-0.5 250 2.5 0.5              EMIN,EMAX,ERES,ARES        - Detector Limits
-1                            DETECTOR TYPE
-45.0 0.00 3.0 0.0            DETECTOR PARAMS
-1e-08 10.0                   Time Step, Min/Max
-0.3 0.0 1e-06                DEMAX,DEMIN,ABSERR
-45                           Target Interaction number
-t                            Targets Recoil
-5.0                          Z0, initial/maximum Z
-4000                         Max steps before failure
-10.0 0.0025                  Max interaction distance, R table step
-0.0 0.0003                   ^ for Z, not implemented atm
-5 100                        Max distance for search, Threshold for dE
-10000                         Montecarlo/chainscat runs, if 1 does Single shot
--10 0.005 10                 X range (min, step, max)
--10 0.005 10                 Y range (min, step, max)
-666 666                      SCAT_FLAG, SCAT_TYPE
-15.0 15.0                    RAX/RAY - This many unit cells are tiled radially
-4 1                          NPAR, IPOT - Radial potential parameters/mode
-4153.6 3.625 27017.57 7.286  NPAR Parameters for IPOT
-2 1                          NIMPAR, IIMPOT - Image potential parameters/mode
-1.26 2.0                     NIMPAR parameters for IIMPOT
-300.0 0.9436337324 1         Temperature, Seed, initial ion_index
-f                            Use Image Charge
--1.5 8.18                    Stuck Energy, Buried Distance
-4.0786 4.0786 4.0786         AX, AY, AZ for basis
-4                            # Of atoms in given basis, next # lines are basis
-1.0 1.0 1.0 1                X Y Z Type
+# This is a sample input file for Sea-Safari.
+# Lines starting with # are comment lines, otherwise
+# All lines must follow the order found here,
+# blank lines are ignored also.
+
+# Beam Parameters:
+# E0, Theta0, Phi0, atomic mass, atomic symbol
+250.0 45.0 0.00 22.989 Na
+
+# Detector Limits:
+# EMIN,EMAX,ERES,ARES
+0.5 250 2.5 0.5
+
+# Detector type and parameters
+1
+45.0 0.00 3.0 0.0
+
+# Integration Parameters
+# time steps
+1e-08 10.0
+# Error parameters
+0.3 0.0 1e-06
+
+# max number of atoms to interact with
+45
+
+# this one should always be true.
+# This is whether the surface recoils on impact.
+t
+
+#Initial Z for the ions, this is also when it leaves
+5.0
+
+# Number of allowed integration steps before failing.
+4000
+
+# These are search related, max distances and table steps
+# for r:
+10.0 0.002
+# for z: (not yet implemented)
+0.0 0.0003
+
+# These are more search and failure conditions.
+# max distance to search, threshold for failing due to energy change
+5 100
+
+# This is how many runs to do for Montecarlo or Chainscat modes.
+# If this is 1, it will run a single shot run at x:min y:min.
+10000
+
+# Range of the crystal to scatter off
+# Montecarlo mode ignores the step, and chainscat
+# will run from xmin, ymin to xmax, ymax, with the above
+# number of trajectories.
+# x:(min, step, max)
+-10 0.005 10
+# y:(min, step, max)
+-10 0.005 10
+
+# These flags control the mode of operation (unless single shot mode)
+# SCAT_FLAG of 666 means we are doing normal scattering, anything else
+# is a debug flag for running tests.
+# SCAT_TYPE has the following values:
+#   666 - Montecarlo - N Random shots in the range
+#   777 - Grid Scat - Shots in a grid, with the given steps
+#   888 - Chainscat - N shots in a line from min to max
+
+# SCAT_FLAG, SCAT_TYPE
+666 666
+
+# These are the number of unit cells to generate for the crystal.
+# These are also used to cull trajectories which leave the crystal
+# The bounds of the crystal are these values multiplied by AX and AY
+#
+# RAX, RAY
+15.0 15.0
+
+# These parameters are for the radial ion-atom potentials
+# The first number is how many parameters there are,
+# The second is the type of potential, currently only 1 is implemented.
+#
+#   1 - double exponential function - has 4 parameters per lattice atom type.
+4 1
+
+# The parameters for the potentials
+4153.6 3.625 27017.57 7.286
+
+# These parameters are for the image charge.
+# The first is how many parameters, the second is the type.
+# Only image potential type 1 is implemented
+#
+#   1 - Basic flat image potential, only has 2 parameters.
+2 1
+
+# The parameters for the image potential
+1.26 2.0
+
+# These are parameters for temperature and randomization.
+# They are: Temperature, Seed, initial ion_index
+# Seed is used for both temperature and Montecarlo mode.
+# Initial Ion Index allows repeating runs done on thermalized surfaces.
+
+300.0 0.9436337324 1
+
+# This is a flag that controls whether image charge effects are included
+
+f
+
+# These control failure conditions for the code
+# They are: Stuck Energy, Buried Distance
+#
+# Stuck energy is the amount of total energy for the ion to be considered
+# bound to the surface, and not leaving.
+# Buried Distance is the minimum distance below Z=0 before failing
+-1.5 8.1
+
+# This section controls the lattice to scatter off.
+# First is the basis to generate the lattice from.
+#
+# These 3 values are AX, AY, AZ, the lattice constants for the basis.
+4.0786 4.0786 4.0786
+
+# This line is how many sites are in the basis
+4
+# Below are the above number of lines, each defining a basis site.
+# These are in the format: X, Y, Z, Type.
+# Type corresponds to one of the atoms defined below, and X,Y,Z are
+# the coordinates of this site, to be scaled by AX,AY,AZ.
+1.0 1.0 1.0 1
 1.0 0.5 0.5 1
 0.5 1.0 0.5 1
 0.5 0.5 1.0 1
-1                            # of types of atoms, followed by pairs of lines
-196.967 79 Au                Atom Parameters
-5.0 5.0 5.0                  Atom Springs
-t 0 8.36405                  Whether atoms are springy, ATOMK,RNEIGH - last 2 unused
-0 0 1 f 1 1 1                Surface face of crystal, use existing, existing face
+
+# Here we define the atoms in the lattice.
+# First we start with how many atoms there are.
+1
+
+# Next we have pairs of lines, containing the following information:
+# Atomic Mass, Atomic Number, Atomic Symbol
+# Spring Constants (kx, ky, kz)
+196.967 79 Au
+5.0 5.0 5.0
+
+# These control inter-atomic forces
+# The first parameter is a flag which controls whether the inter-atomic
+# forces are even applied. The second and third are currently unused,
+# They should enable correlations other than basic einstien springs.
+t 0 8.36405
+
+# This line defines the surface face of the crystal to generate.
+# The first three parameters are nessisary, they are the 
+# miller indecies of the surface face of the crystal.
+# If the 4th parameter is t, then an existing crystal will be loaded.
+# The existing crystal needs to be in a file with extension "crys_in", with
+# the same name as the input file.
+# the crystal loading is enabled, then 3 more parameters are also needed.
+# These are to define the surface face of the loaded crystal, to be used
+# to rotate the crystal to the requested surface face.
+0 0 1 f 1 1 1
+
+# The next line is frictional force coefficients.
+# Friction is modelled as |F| = av + bv^2,
+# where v is the velocity of the ion, and the direction of F
+# is opposite to the direction of the velocity
+0 0
