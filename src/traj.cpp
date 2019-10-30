@@ -82,6 +82,8 @@ void save(char* buffer)
             {
                 out_file << save_cache[n];
             }
+            //Output the latest one as well
+            out_file << buffer;
             //Reset cache index
             save_index = 0;
         }
