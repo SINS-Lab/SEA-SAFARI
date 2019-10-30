@@ -57,10 +57,13 @@ int main(int argc, char* argv[])
 
     //Load the input file
     settings.load(safio_file);
-    debug_file << "Loaded Settings, Initializing Potentials" << '\n';
+    debug_file << "Loaded Settings, Initializing Potentials and Temperatures" << '\n';
 
     //Initialize potentials
     init_potentials();
+
+    //Initialize temperatures
+    init_temps();
 
     debug_file << "Initialized Potentials, Building Lattice" << '\n';
 
@@ -100,9 +103,6 @@ int main(int argc, char* argv[])
 
     //Initialize the space_math's lookup table
     init_lookup();
-
-    //Initialize temperatures
-    init_temps();
 
     //Starts trajectory timer.
     clock_t start = clock();

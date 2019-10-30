@@ -183,7 +183,12 @@ start:
     //These are our standard exit conditions
     if(froze || buried || stuck || left || off_edge)
     {
-        if(log) debug_file << "Exited" << std::endl;
+        if(log) debug_file << "Exited " << froze
+                                 << " " << buried
+                                 << " " << stuck
+                                 << " " << left
+                                 << " " << off_edge
+                                 << std::endl;
         goto end;
     }
 
@@ -302,10 +307,10 @@ start:
         //Update the lattice site momenta...
         for(int i = 0; i<ion.near; i++)
         {
-            Site *s = ion.near_sites[i];
-            lattice.sites[s->index] = ion.near_sites[i];
+            Site &s = *ion.near_sites[i];
+            lattice.sites[s.index] = &s;
             //Flag as nearby
-            s->near_check = true;
+            s.near_check = true;
         }
 
         //First line for xyz file is number involved.

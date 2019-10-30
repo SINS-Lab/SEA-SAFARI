@@ -15,7 +15,7 @@ double frand(std::default_random_engine &rng)
 uint_fast32_t make_seed(double value)
 {
 	if(value < 0) value = -value;
-    value/=M_PI;
+    value /= M_PI;
 	value -= floor(value);
 	uint_fast32_t val = UINT_FAST32_MAX * value;
 	return val;
@@ -25,6 +25,7 @@ void init_temps()
 {
     //Convert from temperature to energy.
     double energy = boltz * settings.TEMP;
+    debug_file << "Initializing Temperature" << std::endl;
     for(Atom &a : settings.ATOMS)
     {
         if(settings.TEMP > 0)

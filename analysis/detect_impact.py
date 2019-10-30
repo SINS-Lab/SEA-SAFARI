@@ -38,7 +38,7 @@ else:
     try:
         with open("commands.vmd", "w") as file:
             file.writelines(commands)
-        subprocess.Popen(["vmd", "-e", "commands.vmd"])
+        subprocess.run(["vmd", "-e", "commands.vmd"])
     finally:
         time.sleep(5)
         os.remove("commands.vmd")

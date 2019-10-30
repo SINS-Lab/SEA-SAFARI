@@ -232,6 +232,9 @@ class Detector:
         return energy, intensity
 
     def run_single_shot(self, close, index, args):
+        #things default nicely to py on windows, the linux machine like python3
+        if platform.system() != 'Linux':
+            args = args.replace('python3', 'py')
         self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
         self.safio.setGridScat(True)
         self.safio.NUMCHA = 1
@@ -245,8 +248,9 @@ class Detector:
         output_file = self.safio.fileIn.replace('.input', '') + \
                         '{},{}.xyz'.format(imp_x, imp_y)
         cmd = [args.format(input_file, output_file)]
+        if platform.system() != 'Linux':
+            cmd = cmd[0] #Not sure why this was needed on windows...
         subprocess.Popen(cmd, shell=True)
-
         
     def impactParam(self, basis=None, dx=0, dy=0):
         x = self.detections[..., 0]
@@ -322,19 +326,19 @@ class Detector:
             if event.dblclick and event.button == 1 and not shift_is_held:
                 print("Setting up a safari run for a single shot")
                 # Setup a single run safari for this.
-                run_single_shot(close, ion_index,\
+                self.run_single_shot(close, ion_index,\
                                 'python3 detect_impact.py -i {} -o {}')
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
                 print("Setting up a safari run for a nearness colored dataset")
                 # Setup a single run safari for this.
-                run_single_shot(close, ion_index,\
+                self.run_single_shot(close, ion_index,\
                                 'python3 detect_impact.py -i {} -o {} -c nearest')
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
                 print("Setting up a safari run for a velocity colored dataset")
                 # Setup a single run safari for this.
-                run_single_shot(close, ion_index,\
+                self.run_single_shot(close, ion_index,\
                                 'python3 detect_impact.py -i {} -o {} -c velocity')
             
             close[0] = round(close[0], 5)

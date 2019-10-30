@@ -94,6 +94,7 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
         {
             Site *s = &cell_sites[i];
             //If some other ion has seen the site, reset it here.
+            //This reset puts it back to where it should be.
             if(s->last_ion!=ion.index)
             {
                 s->last_ion = ion.index;
@@ -117,6 +118,7 @@ end:
     return near;
 }
 
+double zeros[3] = { 0,0,0 };
 
 void Ion::set_KE(double theta0, double phi0,double x, double y)
 {
@@ -138,9 +140,13 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     double p_z0 = -p0 * cos(theta0);
 
     //Impact parameters offsets, this aims at the impact point.
-    r[0] = -settings.Z1 * tan(theta0) * cos(phi0) + x;
-    r[1] = -settings.Z1 * tan(theta0) * sin(phi0) + y;
-    r[2] = settings.Z1;
+    r[0] = r_t[0] = -settings.Z1 * tan(theta0) * cos(phi0) + x;
+    r[1] = r_t[1] = -settings.Z1 * tan(theta0) * sin(phi0) + y;
+    r[2] = r_t[2] = settings.Z1;
+    
+    //Reset the forces, this cleans up some of the debug output.
+    std::copy(zeros, zeros + 3, dp_dt);
+    std::copy(zeros, zeros + 3, dp_dt_t);
 
     //Set the "initial" location to the targetted impact point.
     r_0[0] = x;
@@ -159,7 +165,6 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     p[2] = p_z0;
 }
 
-double zeros[3] = { 0,0,0 };
 void Site::reset()
 {
     //Reset positions and momenta

@@ -90,7 +90,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     bool springs = settings.CORR;
     double atomk = settings.ATOMK; 
 
-    //Initialize ion coordinates
+    //Coordinate of the Ion
     double *r;
     r = ion.r;
 
@@ -153,12 +153,13 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             dy = ay - r[1];
             dz = az - r[2];
 
+            //Lattice/Ion distance
             double r = sqrt(dx*dx + dy*dy + dz*dz);
 
             //No force if ion is on an atom.
             if(r==0)
             {
-                // debug_file << "Ion intersected with atom?" <<std::endl;
+                debug_file << "Ion intersected with atom?: " << ion.index << " " << s.index << std::endl;
                 continue;
             }
 
