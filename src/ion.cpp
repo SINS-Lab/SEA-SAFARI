@@ -52,9 +52,6 @@ int Ion::fill_nearest(Lattice &lattice, int radius, int target_num)
     //volume of the mask to check.
     int nmax = pow(2*radius+1, 3);
 
-    //Centre the cell on the surface if it is above it.
-    cell_z = std::min(cell_z, 0);
-
     int last_check = -1;
 
     //Loop over the mask, this is a radial loop.
