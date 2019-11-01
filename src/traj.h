@@ -1,5 +1,6 @@
 #pragma once
 #include "lattice.h"
+#include <iostream>
 #include "ion.h"
 
 /**
@@ -28,11 +29,7 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
  * 
  * @param ion - the ion to scatter off the lattice
  * @param lattice - the lattice to scatter off.
+ * @param log - log the trajectory to .traj file
+ * @param xyz - log the xyz trajectory
  */ 
 void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
-
-/**
- * Either saves the buffer, or stores it for saving later.
- * Sending a NULL buffer will force it to save any not saved.
- */ 
-void save(char* buffer);

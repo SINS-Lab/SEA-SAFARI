@@ -49,47 +49,6 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
     return true;
 }
 
-//File output cache related things
-int save_index = 0;                //Current index for cache
-const int cache_size = 100;        //Size of cache
-std::string save_cache[cache_size];//The cache itself
-
-void save(char* buffer)
-{
-    //If NULL, flush the cache
-    if(buffer==NULL)
-    {
-        //Save all to outfile
-        for(int n = 0; n<save_index; n++)
-        {
-            out_file << save_cache[n];
-        }
-        //Reset index
-        save_index = 0;
-    }
-    else
-    {
-        //If not enough in cache, add to cache
-        if(save_index < cache_size)
-        {
-            save_cache[save_index] = buffer;
-            save_index++;
-        }
-        else
-        {
-            //Save all to outfile
-            for(int n = 0; n<save_index; n++)
-            {
-                out_file << save_cache[n];
-            }
-            //Output the latest one as well
-            out_file << buffer;
-            //Reset cache index
-            save_index = 0;
-        }
-    }
-}
-
 void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 {
     //Get some constants for the loop
@@ -480,7 +439,6 @@ end:
             ion.index,1.0, //TODO make the second 1 be an area based on gridscat depth?
             ion.max_n, ion.r_min, ion.steps, ion.time);
     //Then save it
-    save(buffer);
-
+    out_file << buffer;
     return;
 }

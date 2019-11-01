@@ -135,8 +135,6 @@ int main(int argc, char* argv[])
         {
             chainscat(lattice, &n);
         }
-        //Forces output of remaining trajectories.
-        save(NULL);
     }
     else
     {
