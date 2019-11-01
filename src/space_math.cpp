@@ -8,10 +8,9 @@
 //Whatever -O3 does to it. Maybe it should be looked into.
 int to_hash(double x, double y, double z)
 {
-    double scale = 5.0;
-    int i = (int)(x/scale + 512);
-    int j = (int)(y/scale + 512);
-    int k = (int)(z/scale + 512);
+    int i = (int)(x/CELL_SIZE + 512);
+    int j = (int)(y/CELL_SIZE + 512);
+    int k = (int)(z/CELL_SIZE + 512);
     return i + (j << 10) + (k << 20);
 }
 

@@ -6,6 +6,7 @@
 #include "safio.h"
 #include "temps.h"
 #include "potentials.h"
+#include "space_math.h"
 
 void test_cache()
 {
@@ -99,6 +100,16 @@ void test_lattice_copy(Lattice &lattice)
     //Convert to ms;
     dt *= 1000;
     std::cout << " execution time: " << dt << "ms " << x << std::endl;
+}
+
+void test_mask()
+{
+	Vec3d loc;
+	for(int i = 0; i<10*10*10; i++)
+	{	
+		index_to_loc(i, loc);
+		debug_file << loc[0] << " " << loc[1] << " " << loc[2] << std::endl;
+	}
 }
 
 void test_rngs()

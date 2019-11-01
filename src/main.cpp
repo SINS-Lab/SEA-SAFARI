@@ -153,6 +153,10 @@ int main(int argc, char* argv[])
         {
             test_rngs();
         }
+        else if (settings.SCAT_FLAG == 999)
+        {
+            test_mask();
+        }
     }
 
 

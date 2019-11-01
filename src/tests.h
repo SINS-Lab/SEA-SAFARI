@@ -19,3 +19,5 @@ void test_lattice_copy(Lattice &lattice);
  * 
  */ 
 void test_rngs();
+
+void test_mask();

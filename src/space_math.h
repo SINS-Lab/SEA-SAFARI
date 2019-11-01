@@ -1,6 +1,8 @@
 #pragma once
 #include "vec_math.h"
 
+#define CELL_SIZE 5.0
+
 extern double space_mask[3375][3];
 
 //Populates space_mask.
