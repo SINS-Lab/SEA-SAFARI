@@ -1,4 +1,5 @@
 #include "string_utils.h"
+#include <string.h>
 
 std::vector<std::string> split(std::string input)
 {
@@ -27,4 +28,38 @@ double* to_double_array(std::vector<std::string> input, int start, int end)
         ret[i-start] = atof(input[i].c_str());
     }
     return ret;
+}
+
+bool starts_with(std::string string, const char* start)
+{
+    return strncmp(string.c_str(), start, 1) == 0;
+}
+
+std::map<std::string, std::string> get_arguments(int argc, char* argv[])
+{
+    std::map<std::string, std::string> map;
+
+    std::string key;
+    std::string val;
+
+    //Index 0 is executable name, we ignore it.
+    for(int i = 1; i<argc; i++)
+    {
+        //We found a key!
+        if(strncmp(argv[i], "-", 1)==0)
+        {
+            key = argv[i];
+            //Assume value follows, or a "t" if end of args
+            val = i+1 < argc ? argv[i+1] : "t";
+            //Check that it isn't another key
+            if(starts_with(val, "-")) val = "t";
+            //Increment again if we actually had a value.
+            if(val != "t")
+            {
+                i++;
+            }
+            map[key] = val;
+        }
+    }
+    return map;
 }

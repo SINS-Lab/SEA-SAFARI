@@ -18,7 +18,6 @@ from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 import safari_input
 import subprocess
-import xyz_postprocess as xyz_p
 
 # Used for shift-click functionality
 shift_is_held = False
@@ -329,7 +328,7 @@ class Detector:
                 print("Setting up a safari run for a nearness colored dataset")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -c nearest')
+                                'python3 detect_impact.py -i {} -o {} -c nearby')
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
                 print("Setting up a safari run for a velocity colored dataset")

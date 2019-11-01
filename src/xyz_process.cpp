@@ -117,7 +117,53 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
     return new_particles;
 }
 
-XYZ smooth(const XYZ& original)
+void apply_colour(std::vector<Particle> pset, std::string colour)
+{
+    if(colour == "velocity")
+    {
+        //We need to compute an average velocity, and then determine if
+        //The particle is significantly above it.
+        double avgvsq = 0;
+        int n = 0;
+        for(Particle& p: pset)
+        {
+            //Ignore the ion
+            if(p.id==0) continue;
+            n++;
+            avgvsq += p.velocity[0]*p.velocity[0]
+                    + p.velocity[1]*p.velocity[1]
+                    + p.velocity[2]*p.velocity[2];
+        }
+        avgvsq /= n;
+        for(Particle& p: pset)
+        {
+            //Ignore the ion
+            if(p.id==0) continue;
+            double vsq = p.velocity[0]*p.velocity[0]
+                       + p.velocity[1]*p.velocity[1]
+                       + p.velocity[2]*p.velocity[2];
+            //TODO better way to decide this.
+            if(vsq > 1 + 2*avgvsq) p.atom = "X";
+        }
+    }
+    else if(colour == "nearby")
+    {
+        //Just flag it as an X if it is nearby.
+        for(Particle& p: pset)
+        {
+            //Ignore the ion
+            if(p.id==0) continue;
+            if(p.nearby) p.atom = "X";
+        }
+    }
+    else if(colour!="")
+    {
+        std::cout << "Colour should be nearby or velocity" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+XYZ smooth(const XYZ& original, std::string colour)
 {
     //first, lets convert the xyz into a 2d vector of particles.
     std::vector<std::vector<Particle>> particles;
@@ -148,6 +194,7 @@ XYZ smooth(const XYZ& original)
     {
         double time = i * end_time/1000;
         std::vector<Particle> pset = interpolate_states(time, times, particles);
+        apply_colour(pset, colour);
         XYZ_Single single = from_Particles(time, pset);
         new_xyz.xyzs[i] = single;
     }
@@ -156,14 +203,19 @@ XYZ smooth(const XYZ& original)
 
 int main(int argc,char* argv[])
 {
-    if(argc<3) 
+    std::map<std::string, std::string> args = get_arguments(argc, argv);
+    std::string safio_file = args["-i"];
+
+    std::string in_file = args["-i"];
+    std::string out_file = args["-o"];
+    std::string colour = args["-c"];
+
+    if(in_file == "" || out_file == "") 
     {
-        std::cout << "Please include argument of file to parse, and output file name" << std::endl;
+        std::cout << "Usage: -i [inputfile] -o [outputfile] | optional: -c [nearest|velocity]" << std::endl;
         return 1;
     }
 
-    std::string in_file = argv[1];
-    std::string out_file = argv[2];
     XYZ xyz;
     std::ifstream input;
     std::cout << "Opening input" << std::endl;
@@ -177,7 +229,7 @@ int main(int argc,char* argv[])
     std::cout << "Opening output" << std::endl;
     output.open(out_file);
     std::cout << "Smoothing xyz" << std::endl;
-    xyz = smooth(xyz);
+    xyz = smooth(xyz, colour);
     std::cout << "Saving xyz, frames saved: " <<xyz.xyzs.size() << std::endl;
     xyz.save(output);
     std::cout << "Closing output" << std::endl;

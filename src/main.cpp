@@ -1,19 +1,16 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <stdlib.h>     /* srand, rand */
 #include <cstdio>
-#include "safio.h"
-#include "vec_math.h"
-#include "space_math.h"
-#include "traj.h"
-#include <time.h>
+#include <time.h>       /* For runtime tracker */
 #include <iomanip>
-#include "scat.h"
-#include "potentials.h"
-#include "tests.h"
-#include "temps.h"
+
+#include "safio.h"       /* settings */
+#include "vec_math.h"    /* General math */
+#include "space_math.h"  /* fast lookup stuff */
+#include "string_utils.h"/* Used for argument parsing */
+#include "scat.h"        /* The actual scattering routines */
+#include "potentials.h"  /* We initialize these here */
+#include "tests.h"       /* Debugging stuff */
+#include "temps.h"       /* These are also initialized */
 
 //Initialize the global variables.
 Safio settings;
@@ -30,11 +27,14 @@ int main(int argc, char* argv[])
     //Starts total runtime timer.
     clock_t load = clock();
 
-    std::string safio_file = "safari.input";
-    if (argc < 2)
+    std::map<std::string, std::string> args = get_arguments(argc, argv);
+    std::string safio_file = args["-i"];
+    
+    //We had no input file.
+    if ((safio_file == ""))
     {
         std::ifstream input;
-        input.open(safio_file.c_str());
+        input.open("safari.input");
         if (input.is_open())
         {
             while (getline(input, safio_file))

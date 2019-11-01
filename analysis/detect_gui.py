@@ -18,7 +18,6 @@ from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 import safari_input
 import subprocess
-import xyz_postprocess as xyz_p
 import detect_processor as detect
 
 class Spectrum(detect.Spectrum):

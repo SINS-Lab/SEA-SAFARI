@@ -5,6 +5,7 @@
 #include <string>
 #include <stdlib.h>
 #include <vector>
+#include <map>
 
 /**
  * Splits the given string input into a vector of strings.
@@ -26,3 +27,17 @@ std::vector<std::string> split(std::string input);
  * @return an array containing the strings converted to doubles.
  */ 
 double* to_double_array(std::vector<std::string> input, int start, int end);
+
+/**
+ * Returns whether string starts with start
+ */ 
+bool starts_with(std::string string, const char* start);
+
+/**
+ * This returns a map of arguments given, It assumes the following:
+ * 
+ * Argument keys start with -, and are a single entry.
+ * Argument values directly follow the key, and do not start with -
+ * if no value is given, the value is taken to be "t", ie a boolean flag
+ */ 
+std::map<std::string, std::string> get_arguments(int argc, char* argv[]);

@@ -2,7 +2,6 @@
 #include "string_utils.h"
 #include "temps.h"
 #include <vector>
-#include <string.h>
 
 void Safio::load(std::string safio_file)
 {
@@ -42,7 +41,7 @@ void Safio::load(std::string safio_file)
                 continue;
             //Allow having comment lines in the file
             //Comment lines start with a #
-            if(strncmp(line.c_str(), "#", 1) == 0) continue;
+            if(starts_with(line, "#")) continue;
 
             //Print the input line to debug file.
             debug_file << line << '\n';
