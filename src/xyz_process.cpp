@@ -117,16 +117,18 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
     return new_particles;
 }
 
-void apply_colour(std::vector<Particle> pset, std::string colour)
+void apply_colour(std::vector<Particle>& pset, std::string& colour)
 {
+    int num = pset.size();
     if(colour == "velocity")
     {
         //We need to compute an average velocity, and then determine if
         //The particle is significantly above it.
         double avgvsq = 0;
         int n = 0;
-        for(Particle& p: pset)
+        for(int i = 0; i<num; i++)
         {
+            Particle&p = pset[i];
             //Ignore the ion
             if(p.id==0) continue;
             n++;
@@ -135,8 +137,9 @@ void apply_colour(std::vector<Particle> pset, std::string colour)
                     + p.velocity[2]*p.velocity[2];
         }
         avgvsq /= n;
-        for(Particle& p: pset)
+        for(int i = 0; i<num; i++)
         {
+            Particle&p = pset[i];
             //Ignore the ion
             if(p.id==0) continue;
             double vsq = p.velocity[0]*p.velocity[0]
@@ -149,8 +152,9 @@ void apply_colour(std::vector<Particle> pset, std::string colour)
     else if(colour == "nearby")
     {
         //Just flag it as an X if it is nearby.
-        for(Particle& p: pset)
+        for(int i = 0; i<num; i++)
         {
+            Particle&p = pset[i];
             //Ignore the ion
             if(p.id==0) continue;
             if(p.nearby) p.atom = "X";

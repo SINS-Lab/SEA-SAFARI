@@ -20,16 +20,18 @@ if platform.system() == 'Linux':
 subprocess.run(command, shell=True)
 
 xyz_in = args.input.replace('.input', '.xyz')
+fileOut = args.output
 
 command = ''
 
 #format input argument for XYZ processor
 if args.colour:
+    fileOut = fileOut.replace('.xyz', '_{}.xyz'.format(args.colour))
     command = 'XYZ.exe -i {} -o {} -c {}'
-    command = command.format(xyz_in, args.output, args.colour)
+    command = command.format(xyz_in, fileOut, args.colour)
 else:
     command = 'XYZ.exe -i {} -o {}'
-    command = command.format(xyz_in, args.output)
+    command = command.format(xyz_in, fileOut)
 
 #Change command accordingly for linux
 if platform.system() == 'Linux':
@@ -37,7 +39,6 @@ if platform.system() == 'Linux':
 
 #Run XYZ processor and wait for it to finish.
 subprocess.run(command, shell=True)
-fileOut = args.output
 
 # MAKE THE FILENAME INCLUDE DIRECTORY
 #Replace \ with / in filenames
