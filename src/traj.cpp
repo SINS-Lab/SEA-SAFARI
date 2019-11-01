@@ -136,7 +136,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //change in location since last nearby update
     Vec3d dr;
     //Distancesq we travelled since last nearby update
-    double diff;
+    double diff = 0;
     //Error in the associated coordinate.
     double dxp, dyp, dzp;
     //difference in forces between here and destination
@@ -149,7 +149,9 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 
     //Distance in angstroms to consider far enough moved.
     //After it moves this far, it will re-calculate nearest.
-    double r_reset = 1;
+    double r_reset = d_search/10.0;
+    //This is set true whenever r_reset's condition is met
+    bool sort = true;
 
     //Multiplier on timestep.
     double change;
@@ -173,13 +175,15 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
         debug_file << "Recoil: " << (settings.RECOIL?"T":"F") << "\n";
         debug_file << "\nIon:\n";
         ion.write_info();
-        traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\tdV\n";
+        traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\n";
     }
     r.set(ion.r);
 
 start:
     //Find nearby lattice atoms
-    ion.fill_nearest(lattice, d_search, n_parts);
+    ion.fill_nearest(lattice, d_search, n_parts, sort);
+    //This is set back true later if needed.
+    sort = false;
     //Increment counter for how many steps we have taken
     ion.steps++;
     
@@ -259,6 +263,7 @@ start:
             //Reset the last index the ion saw, 
             //this forces a re-check of nearby atoms
             ion.last_index = -1;
+            sort = true;
             //Return back to start of traj run.
             goto start;
         }
@@ -276,15 +281,14 @@ start:
     //check if we have gone too far, and need to re-calculate nearby atoms
     dr = r - ion.r;
     diff = sqr(dr.v);
-    //Reset at either 1A, or 1/3 the distance to nearest, whichever is larger.
-    r_reset = std::max(1.0, ion.rr_min_find / 9.0);
+    //Reset at either 1/10 of the search distance, or 1/3 the distance to nearest, whichever is larger.
+    r_reset = std::max(0.1 * d_search, ion.rr_min_find / 9.0);
     if(diff > r_reset)
     {
         //Update ion location for last check
         r.set(ion.r);
-        //Reset the index considered as "last found",
-        //This forces it to re-calculate nearest atoms
-        ion.last_index = -1;
+        //We need to re-sort the lists.
+        sort = true;
     }
 
     //Update some parameters for saving.

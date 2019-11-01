@@ -26,7 +26,7 @@
 0.3 0.0 1e-06
 
 # max number of atoms to interact with
-45
+12
 
 # this one should always be true.
 # This is whether the surface recoils on impact.
@@ -46,7 +46,8 @@ t
 
 # These are more search and failure conditions.
 # max distance to search, threshold for failing due to energy change
-5 100
+# Max distance is in "cells", each of which is roughly 5 angstroms across
+2 5
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
@@ -163,7 +164,7 @@ t 0 8.36405
 # the crystal loading is enabled, then 3 more parameters are also needed.
 # These are to define the surface face of the loaded crystal, to be used
 # to rotate the crystal to the requested surface face.
-0 0 1 f 1 1 1
+1 1 1 f 1 1 1
 
 # The next line is frictional force coefficients.
 # Friction is modelled as |F| = av + bv^2,

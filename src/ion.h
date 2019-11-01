@@ -1,5 +1,6 @@
 #pragma once
 #include "lattice.h"
+#include "vec_math.h"
 
 /**
  * This is a particle which can fly by the lattice.
@@ -41,11 +42,20 @@ public:
     //All of the sites nearby, only guarenteed to be filled
     //with site up to near
     Site *near_sites[256];
+    //This is the total number of Site*s stored in near_sites
+    int total_near = 0;
 
     //potential energy the particle is in.
     double V = 0;
     //potential energy the particle is in.
     double V_t = 0;
+
+    bool compare_sites(const Site* a, const Site* b)
+    {
+        double dist_a = diff_sqr(a->r, this->r);
+        double dist_b = diff_sqr(b->r, this->r);
+        return dist_a < dist_b;
+    }
 
     /**
      * Sets the initial conditions for the ion.
@@ -66,6 +76,7 @@ public:
      * @param lattice - the lattice containing atoms to look for
      * @param radius - max search distance for atoms
      * @param target_number - max value of near to allow
+     * @param re_sort - whether the list needs to be re-sorted by nearest
      */ 
-    int fill_nearest(Lattice &lattice, int radius, int target_number);
+    int fill_nearest(Lattice &lattice, int radius, int target_number, bool re_sort);
 };
