@@ -183,7 +183,7 @@ Site* make_site(Atom* a, double px, double py, double pz)
     s->r_0[1] = py;
     s->r_0[2] = pz;
 
-    //TODO instead do some thermal distribution.
+    //Initialize rest momentum to 0, it thermalizes later.
     s->p_0[0] = 0;
     s->p_0[1] = 0;
     s->p_0[2] = 0;
