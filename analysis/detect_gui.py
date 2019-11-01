@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
+from functools import cmp_to_key
 import os
 import math
 import time
@@ -196,7 +197,7 @@ class Spectrum(detect.Spectrum):
 
         #Button to run the spectrum stuff.
         runbutton = QPushButton('I vs Energy')
-        def run():
+        def runIE():
             try:
                 self.setDetector(data)
                 self.clean(data,emin=float(emin.displayText()),\
@@ -211,7 +212,7 @@ class Spectrum(detect.Spectrum):
             except Exception as e:
                 print(e)
                 pass
-        runbutton.clicked.connect(run)
+        runbutton.clicked.connect(runIE)
         layout.addWidget(runbutton)
         
         #Button to run the spectrum stuff.
@@ -347,20 +348,40 @@ class Spectrum(detect.Spectrum):
         window.show()
         return
 
-def addDropdownItems(dropdown, directory, subdirectories):
+def addDropdownItems(directory, subdirectories, input_list):
     for filename in os.listdir(directory):
         # Load in the inputs, but not _mod or _ss as those are temporary ones.
         if filename.endswith('.input') and not filename==('safari.input')\
            and not (filename.endswith('_mod.input') or filename.endswith('_ss.input')):
-            dropdown.addItem(os.path.join(directory, filename).replace('.input', ''))
+            input_list.append(os.path.join(directory, filename).replace('.input', ''))
         # Also add any input files in the next level down from here.
         newDir = os.path.join(directory, filename)
         if subdirectories and os.path.isdir(newDir):
-            addDropdownItems(dropdown, newDir, True)
-   
+            addDropdownItems(newDir, True, input_list)
+
+def compare_file_name(file1, file2):
+    args1 = file1.split('_')
+    args2 = file2.split('_')
+    o1 = 0
+    o2 = 0
+    try:
+        o1 = float(args1[len(args1)-1])
+    except:
+        o1 = 2e5
+    try:
+        o2 = float(args2[len(args2)-1])
+    except:
+        o2 = 2e5
+    return o1-o2
+
+
 def fileSelection(directory='.'):
     dropdown = QComboBox()
-    addDropdownItems(dropdown, directory, True)
+    input_list = []
+    addDropdownItems(directory, True, input_list)
+    input_list.sort(key=cmp_to_key(compare_file_name))
+    for line in input_list:
+        dropdown.addItem(line)
     return dropdown
         
 def run(spectrum, directory='.'):
