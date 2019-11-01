@@ -7,7 +7,20 @@ double sqr(double *V)
     return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
 }
 
+double sqr(const double *V)
+{
+    return V[0]*V[0]+V[1]*V[1]+V[2]*V[2];
+}
+
 double diff_sqr(double *X, double *Y)
+{
+    double dx = X[0] - Y[0];
+    double dy = X[1] - Y[1];
+    double dz = X[2] - Y[2];
+    return dx*dx + dy*dy + dz*dz;
+}
+
+double diff_sqr(const double *X,const double *Y)
 {
     double dx = X[0] - Y[0];
     double dy = X[1] - Y[1];

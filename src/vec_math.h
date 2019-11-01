@@ -58,9 +58,11 @@ void print(Vec3d V, char* header);
  * Squares the given array, assuming it is 3x1
  */
 double sqr(double*V);
+double sqr(const double*V);
 
 /**
  * Computes the squared difference of the given arrays
  * assuming they are 3x1
  */
 double diff_sqr(double *X, double *Y);
+double diff_sqr(const double *X,const double *Y);
