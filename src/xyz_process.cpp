@@ -146,7 +146,7 @@ void apply_colour(std::vector<Particle>& pset, std::string& colour)
                        + p.velocity[1]*p.velocity[1]
                        + p.velocity[2]*p.velocity[2];
             //TODO better way to decide this.
-            if(vsq > 1 + 2*avgvsq) p.atom = "X";
+            if(vsq > 0.125 + 2*avgvsq) p.atom = "X";
         }
     }
     else if(colour == "nearby")
