@@ -7,6 +7,19 @@
 #include <vector>
 #include <map>
 
+class ArgValue
+{
+private:
+    std::string raw_value;
+public:
+    ArgValue(){raw_value="";}
+    ArgValue(const std::string& value){raw_value = value;}
+    bool as_bool();
+    double as_double();
+    std::string as_string();
+    int as_int();
+};
+
 /**
  * Splits the given string input into a vector of strings.
  * The string is split by whitespace characters.
@@ -40,4 +53,4 @@ bool starts_with(std::string string, const char* start);
  * Argument values directly follow the key, and do not start with -
  * if no value is given, the value is taken to be "t", ie a boolean flag
  */ 
-std::map<std::string, std::string> get_arguments(int argc, char* argv[]);
+std::map<std::string, ArgValue> get_arguments(int argc, char* argv[]);

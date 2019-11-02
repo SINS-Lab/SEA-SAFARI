@@ -51,9 +51,6 @@ public:
     Mat3d dot(Mat3d m);
 };
 
-void print(Mat3d R, char* header);
-void print(Vec3d V, char* header);
-
 /**
  * Squares the given array, assuming it is 3x1
  */

@@ -27,11 +27,11 @@ int main(int argc, char* argv[])
     //Starts total runtime timer.
     clock_t load = clock();
 
-    std::map<std::string, std::string> args = get_arguments(argc, argv);
-    std::string safio_file = args["-i"];
+    std::map<std::string, ArgValue> args = get_arguments(argc, argv);
+    std::string safio_file = args["-i"].as_string();
     
     //We had no input file.
-    if ((safio_file == ""))
+    if (safio_file == "")
     {
         std::ifstream input;
         input.open("safari.input");
@@ -48,15 +48,13 @@ int main(int argc, char* argv[])
             std::cout << "Error opening Safari.input" << '\n';
             exit(EXIT_FAILURE);
         }
-    }
-    else
-    {
-        safio_file = argv[1];
+        //Add the safio file to the arguments.
+        args["-i"] = safio_file;
     }
 
     std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
     //Load the input file
-    settings.load(safio_file);
+    settings.load(args);
     debug_file << "Loaded Settings, Initializing Potentials and Temperatures" << '\n';
 
     //Initialize potentials

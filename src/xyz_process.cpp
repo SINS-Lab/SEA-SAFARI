@@ -207,12 +207,12 @@ XYZ smooth(const XYZ& original, std::string colour)
 
 int main(int argc,char* argv[])
 {
-    std::map<std::string, std::string> args = get_arguments(argc, argv);
-    std::string safio_file = args["-i"];
+    std::map<std::string, ArgValue> args = get_arguments(argc, argv);
+    std::string safio_file = args["-i"].as_string();
 
-    std::string in_file = args["-i"];
-    std::string out_file = args["-o"];
-    std::string colour = args["-c"];
+    std::string in_file = args["-i"].as_string();
+    std::string out_file = args["-o"].as_string();
+    std::string colour = args["-c"].as_string();
 
     if(in_file == "" || out_file == "") 
     {

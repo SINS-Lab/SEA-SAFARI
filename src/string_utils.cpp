@@ -1,6 +1,26 @@
 #include "string_utils.h"
 #include <string.h>
 
+bool ArgValue::as_bool()
+{
+    return raw_value == "t";
+}
+
+double ArgValue::as_double()
+{
+    return atof(raw_value.c_str());
+}
+
+int ArgValue::as_int()
+{
+    return atoi(raw_value.c_str());
+}
+
+std::string ArgValue::as_string()
+{
+    return raw_value;
+}
+
 std::vector<std::string> split(std::string input)
 {
     std::vector<std::string> args;
@@ -35,9 +55,9 @@ bool starts_with(std::string string, const char* start)
     return strncmp(string.c_str(), start, 1) == 0;
 }
 
-std::map<std::string, std::string> get_arguments(int argc, char* argv[])
+std::map<std::string, ArgValue> get_arguments(int argc, char* argv[])
 {
-    std::map<std::string, std::string> map;
+    std::map<std::string, ArgValue> map;
 
     std::string key;
     std::string val;

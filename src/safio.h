@@ -5,7 +5,9 @@
 #include <string>
 #include <stdlib.h>
 #include <vector>
+#include <map>
 #include "particles.h"
+#include "string_utils.h"
 
 /**
  * This is the main configuration and settings header for Sea-Safari.
@@ -183,13 +185,21 @@ struct Safio
     double* ZMAX;
 
     /**
-     * Loads input from file of the given name,
+     * Loads input from file of the given name in the args
+     * Main should auto-populate this with the correct arguments.
      * This also opens the relvant output streams,
      * for debug, data, xyz, etc.
      * 
-     * @param safio_file - The input file to load from
+     * Valid args:
+     *      
+     *      -i [inputfile] - same format that goes in safari.input
+     *      -s - Enables single shot mode (NUMCHA=1, SCAT_FLAG=666)
+     *      -x [value] - sets x-start (if -s is present)
+     *      -y [value] - sets y-start (if -s is present)
+     * 
+     * @param args - a map containing program arguments.
      */ 
-    void load(std::string safio_file);
+    void load(std::map<std::string, ArgValue>& args);
 };
 
 //Global settings variable, we only need this loaded once anyway.

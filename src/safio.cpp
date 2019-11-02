@@ -3,8 +3,11 @@
 #include "temps.h"
 #include <vector>
 
-void Safio::load(std::string safio_file)
+void Safio::load(std::map<std::string, ArgValue>& args)
 {
+    //This should have been included to args if not originally present.
+    std::string safio_file = args["-i"].as_string();
+
     settings = *this;
     std::ifstream safio_input;
     std::string filename = safio_file + ".input";
@@ -326,6 +329,22 @@ void Safio::load(std::string safio_file)
             BASIS[i].atom = &ATOMS[BASIS[i].index-1];
         }
 
+        //check arguments for specifically enabling single-shot mode
+        if(args["-s"].as_bool())
+        {
+            NUMCHA = 1;
+            SCAT_FLAG = 666;
+            //Set x-start
+            if(args["-x"].as_string()!="")
+            {
+                XSTART = args["-x"].as_double();
+            }
+            //Set y-start
+            if(args["-y"].as_string()!="")
+            {
+                YSTART = args["-y"].as_double();
+            }
+        }
 
         safio_input.close();
         debug_file << "\nLoaded SAFIO" << '\n';
