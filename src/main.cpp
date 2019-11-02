@@ -133,6 +133,20 @@ int main(int argc, char* argv[])
         {
             chainscat(lattice, &n);
         }
+        //Compute time per trajectory.
+        double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
+        dt /= n;
+        //Convert to ms;
+        dt *= 1000;
+
+        std::cout << "\nFinished Running\n" << std::endl;
+        std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
+        debug_file << "\nTotal number particles: " << n << std::endl;
+        debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
+        //End final timer.
+        dt = ((double)clock() - load) / CLOCKS_PER_SEC;
+        std::cout << "Total Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
+        debug_file << "\nTotal Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
     }
     else
     {
@@ -153,28 +167,15 @@ int main(int argc, char* argv[])
         {
             test_mask();
         }
+        //Compute time per trajectory.
+        double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
+        std::cout << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
+        debug_file << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
     }
-
-
-    //Compute time per trajectory.
-    double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
-    dt /= n;
-    //Convert to ms;
-    dt *= 1000;
-
-    std::cout << "\nFinished Running\n" << std::endl;
-    std::cout << "Time per particle: " << std::setprecision(2) << dt << "ms" << std::endl;
-    debug_file << "\nTotal number particles: " << n << std::endl;
-    debug_file << "Time per particle: " << std::setprecision(2) << dt << "ms" << std::endl;
-    //End final timer.
-    dt = ((double)clock() - load) / CLOCKS_PER_SEC;
-    std::cout << "Total Runtime: " << std::setprecision(2) << dt << "s" << std::endl;
-    debug_file << "\nTotal Runtime: " << std::setprecision(2) << dt << "s" << std::endl;
 
     //Close files.
     out_file.close();
     debug_file.close();
     traj_file.close();
-    debug_file << "Files Closed, Exiting." << std::endl;
     return 0;
 }
