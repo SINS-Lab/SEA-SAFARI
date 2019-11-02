@@ -65,7 +65,15 @@ t
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
 # is a debug flag for running tests.
-# SCAT_TYPE has the following values:
+#
+# SCAT_FLAG values:
+#   555 - Run performance test on cached values vs computed ones
+#   666 - Run normal scattering routine, defined by SCAT_TYPE/number
+#   777 - Run tests of lattice copying speeds.
+#   888 - Run tests of reliablity of RNG
+#   999 - Test whether the space mask is working correctly.
+#
+# SCAT_TYPE values:
 #   666 - Montecarlo - N Random shots in the range
 #   777 - Grid Scat - Shots in a grid, with the given steps
 #   888 - Chainscat - N shots in a line from min to max
