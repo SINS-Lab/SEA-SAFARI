@@ -68,7 +68,48 @@ void gridscat(Lattice &lattice, int *num)
         Ion ion;
         //We also use the settings ion_index for single shot mode, to
         //guarentee that any thermal effects can be repeated.
-        fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
+        if(settings.SCAT_TYPE)
+        {
+            //Dry run to find bounds of operation
+            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
+
+            //Set min bounds from ion positions
+            lattice.xyz_bounds[0] = std::min(ion.r_0[0],ion.r[0]);
+            lattice.xyz_bounds[1] = std::min(ion.r_0[1],ion.r[1]);
+            lattice.xyz_bounds[2] = std::min(ion.r_0[2],ion.r[2]) - 5;//Subtract 5 for some padding
+
+            //Set max bounds from ion positions
+            lattice.xyz_bounds[3] = std::max(ion.r_0[0],ion.r[0]);
+            lattice.xyz_bounds[4] = std::max(ion.r_0[1],ion.r[1]);
+            lattice.xyz_bounds[5] = std::max(ion.r_0[2],ion.r[2]);
+
+            //Lets make this a square slab, so find midpoint of x,y
+            //and then make it equal sized.
+            double dx = lattice.xyz_bounds[3] - lattice.xyz_bounds[0];
+            double dy = lattice.xyz_bounds[4] - lattice.xyz_bounds[1];
+            double dr = std::max(dx, dy)/2 + 5;//Add extra 5 for some padding
+            //Set x/y to avg +- dr
+            lattice.xyz_bounds[0] = (lattice.xyz_bounds[3] + lattice.xyz_bounds[0])/2 - dr;
+            lattice.xyz_bounds[3] = (lattice.xyz_bounds[3] + lattice.xyz_bounds[0])/2 + dr;
+            lattice.xyz_bounds[1] = (lattice.xyz_bounds[4] + lattice.xyz_bounds[1])/2 - dr;
+            lattice.xyz_bounds[4] = (lattice.xyz_bounds[4] + lattice.xyz_bounds[1])/2 + dr;
+
+            //Reset each site in the lattice.
+            for(std::pair<int,Cell*> val: lattice.cell_map)
+            {
+                for(int i = 0; i<val.second->num; i++)
+                {
+                    val.second->sites[i].reset();
+                }
+            }
+            //Run to output the xyz file
+            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, false, true);
+        }
+        else
+        {
+            //Fire, log entire lattice, and also output xyz at once
+            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
+        }
         n++;
     }
     else

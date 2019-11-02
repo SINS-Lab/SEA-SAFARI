@@ -112,6 +112,9 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //This is set true whenever r_reset's condition is met
     bool sort = true;
 
+    //Used for xyz output
+    int lattice_num = 1;
+
     //Multiplier on timestep.
     double change;
 
@@ -125,6 +128,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
 
     //Initialize these to 0
     ion.steps = 0;
+    ion.time = 0;
     ion.V = 0;
     ion.V_t = 0;
 
@@ -136,6 +140,31 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
         ion.write_info();
         traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\n";
     }
+
+    if(xyz)
+    {
+        int num = lattice.sites.size();
+        //Here we initialize lattice_num, it was set to 1 earlier for the ion.
+        //Now it gets incremented for each valid site
+        for(int i = 0; i<num; i++)
+        {
+            Site &s = *lattice.sites[i];
+            //Check if we want to ignore the lattice site
+            if(settings.SCAT_TYPE)
+            {
+                //check out of bounds, from r_0
+                if(s.r_0[0] < lattice.xyz_bounds[0] //x
+                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
+                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
+                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
+                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
+                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
+                 continue;
+            }
+            lattice_num++;
+        }
+    }
+
     r.set(ion.r);
 
 start:
@@ -286,8 +315,7 @@ start:
         }
 
         //First line for xyz file is number involved.
-        int num = lattice.sites.size() + 1;
-        xyz_file << num << "\n";
+        xyz_file << lattice_num << "\n";
 
         //Next line is a "comment", we will stuff the time here.
         sprintf(buffer, "%f\t%d\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
@@ -302,10 +330,25 @@ start:
                                          ion.atom->mass,0,1);        //mass, index, near
         xyz_file << buffer;
 
+        int num = lattice.sites.size();
         //Then stuff in the entire lattice, why not...
-        for(int i = 0; i<num-1; i++)
+        for(int i = 0; i<num; i++)
         {
             Site &s = *lattice.sites[i];
+
+            //Check if we want to ignore the lattice site
+            if(settings.SCAT_TYPE)
+            {
+                //check out of bounds, from r_0
+                if(s.r_0[0] < lattice.xyz_bounds[0] //x
+                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
+                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
+                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
+                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
+                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
+                 continue;
+            }
+
             //Note that this is same format as the ion, index has 1 added to it, as ion is 0
             sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
                     s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],     // Sym, x, y, z,

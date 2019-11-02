@@ -44,6 +44,13 @@ struct Lattice
 
     int id = 1;
 
+    //If relevant, this is used to determine
+    //the range of locations used for the 
+    //xyz trajectories, the 6 entries are:
+    //x1,y1,z1,x2,y2,z2
+    //This is relevant if settings.SCAT_TYPE
+    double xyz_bounds[6];
+
     //Default constructor
     Lattice(){}
     //Copy constructor

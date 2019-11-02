@@ -344,6 +344,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             {
                 YSTART = args["-y"].as_double();
             }
+            //If this is true, it will output only nearish to xyz
+            SCAT_TYPE = args["-r"].as_bool();
         }
 
         safio_input.close();
