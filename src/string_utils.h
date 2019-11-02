@@ -14,8 +14,23 @@ private:
 public:
     ArgValue(){raw_value="";}
     ArgValue(const std::string& value){raw_value = value;}
+    /**
+     * returns if raw_value is "t", 
+     * this result is not cached.
+     * 
+     * @return raw_value == "t"
+     */ 
     bool as_bool();
+    /**
+     * Converts raw_value to a double, and returns that.
+     * This value is not cached.
+     * 
+     * @return atof(raw_value.c_str())
+     */ 
     double as_double();
+    /**
+     * @return raw_value
+     */ 
     std::string as_string();
     int as_int();
     /**
