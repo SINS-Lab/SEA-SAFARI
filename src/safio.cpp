@@ -15,7 +15,7 @@ void Safio::load(std::map<std::string, ArgValue>& args)
 
     //check if we have alternate output file name
     //All other streams after this will use the output file name instead.
-    if(args["-o"].as_string() != "")
+    if(args["-o"])
     {
         safio_file = args["-o"].as_string();
         std::cout << "Output files: " << safio_file << std::endl;
@@ -344,12 +344,12 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             NUMCHA = 1;
             SCAT_FLAG = 666;
             //Set x-start
-            if(args["-x"].as_string()!="")
+            if(args["-x"])
             {
                 XSTART = args["-x"].as_double();
             }
             //Set y-start
-            if(args["-y"].as_string()!="")
+            if(args["-y"])
             {
                 YSTART = args["-y"].as_double();
             }

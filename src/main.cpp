@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
     std::map<std::string, ArgValue> args = get_arguments(argc, argv);
     std::string safio_file = args["-i"].as_string();
     
-    //We had no input file.
-    if (safio_file == "")
+    //We had no input file specified via command line
+    if (!args["-i"])
     {
         std::ifstream input;
         input.open("safari.input");

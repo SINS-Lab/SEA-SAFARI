@@ -211,6 +211,6 @@ void Site::write_info()
     debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
     debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
     debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
-    debug_file << "F: " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
+    debug_file << "F  : " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
     debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
 }

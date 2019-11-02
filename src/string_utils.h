@@ -18,6 +18,12 @@ public:
     double as_double();
     std::string as_string();
     int as_int();
+    /**
+     * This returns whether there is a raw value,
+     * use as_bool() for checking if the value is
+     * valid for true.
+     */ 
+    operator bool() { return raw_value != "";}
 };
 
 /**
