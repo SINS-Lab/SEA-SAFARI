@@ -13,6 +13,14 @@ void Safio::load(std::map<std::string, ArgValue>& args)
     std::string filename = safio_file + ".input";
     safio_input.open(filename);
 
+    //check if we have alternate output file name
+    //All other streams after this will use the output file name instead.
+    if(args["-o"].as_string() != "")
+    {
+        safio_file = args["-o"].as_string();
+        std::cout << "Output files: " << safio_file << std::endl;
+    }
+
     filename = safio_file + ".data";
     out_file.open(filename);
 
@@ -21,7 +29,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
 
     filename = safio_file + ".dbug";
     debug_file.open(filename);
-    debug_file << "Loading Info From: " << safio_file << "\n\n";
+    //This one needs to specify the old file name.
+    debug_file << "Loading Info From: " << args["-i"].as_string() << "\n\n";
 
     //Number of parameters for potentials.
     //This is used to know how many values to look for in a line
@@ -346,6 +355,13 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             }
             //If this is true, it will output only nearish to xyz
             SCAT_TYPE = args["-r"].as_bool();
+
+            debug_file << "After commandline args: " << '\n';
+            debug_file << "NUMCHA: " << NUMCHA << '\n';
+            debug_file << "SCAT_FLAG: " << SCAT_FLAG << '\n';
+            debug_file << "XSTART: " << XSTART << '\n';
+            debug_file << "YSTART: " << YSTART << '\n';
+            debug_file << "SCAT_TYPE: " << SCAT_TYPE << '\n';
         }
 
         safio_input.close();

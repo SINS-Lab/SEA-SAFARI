@@ -192,7 +192,8 @@ struct Safio
      * 
      * Valid args:
      *      
-     *      -i [inputfile] - same format that goes in safari.input
+     *      -i [inputfile] - same format that goes in safari.input, required
+     *      -o [outputfile] - optional, uses input file value if not found.
      *      -s - Enables single shot mode (NUMCHA=1, SCAT_FLAG=666)
      *         -x [value] - sets x-start (if -s is present)
      *         -y [value] - sets y-start (if -s is present)
