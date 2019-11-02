@@ -20,12 +20,7 @@
  */ 
 void fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
 {
-    ion.E0 = settings.E0;
-    if(settings.ESIZE > 0)
-    {
-        thermaize_ion(ion);
-    }
-    ion.set_KE(settings.THETA0, settings.PHI0, x, y);
+    ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
     ion.index = index;
     traj(ion, lattice, log, xyz);
 }

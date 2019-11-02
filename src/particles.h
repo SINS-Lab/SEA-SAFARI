@@ -39,7 +39,8 @@ public:
 
     //Used to track the last ion which has interacted with us.
     int last_ion = -1;
-    //This is a unique identifier for this particle, the ion would be 0.
+    //This is a unique identifier for this particle,
+    //The lattice and the ions use different counters.
     int index = -1;
     //this is used for xyz output of nearest.
     bool near_check = 0;

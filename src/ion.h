@@ -13,8 +13,6 @@ class Ion : public Site
 public:
     //Charge of the ion
     int q = 1;
-    //Index of the ion, each one fired should be different.
-    int index = 0;
     //The initial energy of this ion
     double E0 = 0;
 
@@ -36,8 +34,6 @@ public:
     //This is the last place the near things were updated.
     //Setting this back to -1 will force a re-check of near.
     int last_index = -1;
-    //Last distance checked for nearby atoms.
-    int last_radius = 1;
 
     //All of the sites nearby, only guarenteed to be filled
     //with site up to near
@@ -47,8 +43,6 @@ public:
 
     //potential energy the particle is in.
     double V = 0;
-    //potential energy the particle is in.
-    double V_t = 0;
 
     bool compare_sites(const Site* a, const Site* b)
     {
@@ -58,15 +52,21 @@ public:
     }
 
     /**
+     * Overrides the reset for Site, this is more specific
+     * for the ion
+     */ 
+    void reset();
+
+    /**
      * Sets the initial conditions for the ion.
      *
-     *
+     * @param E0 - The initial energy of the ion.
      * @param theta0 - Theta angle for incoming beam
      * @param phi0 - Phi angle for the incoming beam
      * @param x - x impact parameter
      * @param y - y impact parameter
      */
-    void set_KE(double theta0, double phi0,double x, double y);
+    void set_KE(double E0, double theta0, double phi0,double x, double y);
 
     /**
      * This updates the value of near for this ion. it will search for

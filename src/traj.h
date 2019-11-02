@@ -18,7 +18,7 @@
  * 
  */ 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
-                        bool *froze, bool *left, double E);
+                        bool *froze, bool *left, double& E);
 
 /**
  * Computes the trajectory of the ion, if log, it prints extra
@@ -32,4 +32,4 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
  * @param log - log the trajectory to .traj file
  * @param xyz - log the xyz trajectory
  */ 
-void traj(Ion &ion, Lattice &lattice, bool log, bool xyz);
+void traj(Ion &ion, Lattice &lattice, bool& log, bool& xyz);

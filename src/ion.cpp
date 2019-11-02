@@ -126,8 +126,18 @@ end:
 
 double zeros[3] = { 0,0,0 };
 
-void Ion::set_KE(double theta0, double phi0,double x, double y)
+void Ion::set_KE(double E0,  double theta0, double phi0, double x, double y)
 {
+    //Start by resetting the ion to its initial state.
+    reset();
+    //Set the energy of the ion
+    this->E0 = E0;
+    //Attempt to thermalize the ion
+    if(settings.ESIZE > 0)
+    {
+        thermaize_ion(*this);
+    }
+
     atom = &settings.ion;
     //TODO lookup table for atomic symbols...
     //TODO charge config somewhere.
@@ -169,6 +179,20 @@ void Ion::set_KE(double theta0, double phi0,double x, double y)
     p[0] = p_x0;
     p[1] = p_y0;
     p[2] = p_z0;
+}
+
+void Ion::reset()
+{
+    E0 = 0;
+    steps = 0;
+    time = 0;
+    max_n = 0;
+    near = 0;
+    r_min = 1e3;
+    rr_min_find = 1e3;
+    last_index = -1;
+    total_near = 0;
+    V = 0;
 }
 
 void Site::reset()

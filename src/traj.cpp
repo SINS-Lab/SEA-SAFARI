@@ -8,7 +8,7 @@
 #include <cmath>
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
-                        bool *froze, bool *left, double E)
+                        bool *froze, bool *left, double& E)
 {
     //left crystal
     if(ion.r[2] > settings.Z1)
@@ -49,7 +49,63 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
     return true;
 }
 
-void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
+void log_xyz(Ion &ion, Lattice &lattice, int& lattice_num, char* buffer)
+{
+        //Update the lattice site momenta...
+        for(int i = 0; i<ion.near; i++)
+        {
+            Site &s = *ion.near_sites[i];
+            lattice.sites[s.index] = &s;
+            //Flag as nearby
+            s.near_check = true;
+        }
+
+        //First line for xyz file is number involved.
+        xyz_file << lattice_num << "\n";
+
+        //Next line is a "comment", we will stuff the time here.
+        xyz_file << ion.time << "\n";
+
+        //Next stuff the symbol, position, momentum and mass for the ion itself
+        //The ion is given index 0
+        sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
+                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2], // Sym, x, y, z,
+                                         ion.p[0],ion.p[1],ion.p[2], //     px,py,pz,
+                                         ion.atom->mass,0,1);        //mass, index, near
+        xyz_file << buffer;
+
+        int num = lattice.sites.size();
+        //Then stuff in the entire lattice, why not...
+        for(int i = 0; i<num; i++)
+        {
+            Site &s = *lattice.sites[i];
+
+            //Check if we want to ignore the lattice site
+            if(settings.SCAT_TYPE)
+            {
+                //check out of bounds, from r_0
+                if(s.r_0[0] < lattice.xyz_bounds[0] //x
+                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
+                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
+                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
+                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
+                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
+                 continue;
+            }
+
+            //Note that this is same format as the ion, index has 1 added to it, as ion is 0
+            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
+                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],     // Sym, x, y, z,
+                                           s.p[0],s.p[1],s.p[2],     //     px,py,pz,
+                                           s.atom->mass,s.index + 1, //mass, index,
+                                           s.near_check);            //Near
+            xyz_file << buffer;
+            //Reset this flag for next run
+            s.near_check = false;
+        }
+}
+
+void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 {
     //Get some constants for the loop
     
@@ -101,7 +157,7 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     //difference in forces between here and destination
     double dpx, dpy, dpz;
     //Maximum error on displacment for the ion.
-    double dr_max;
+    double dr_max = 0;
 
     //Energy now and up to 2 steps previously
     double E1, E2, E3;
@@ -126,12 +182,6 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
     T = psq * 0.5 / mass;
     E1 = E2 = E3 = T;
 
-    //Initialize these to 0
-    ion.steps = 0;
-    ion.time = 0;
-    ion.V = 0;
-    ion.V_t = 0;
-
     if(log)
     {
         debug_file << "\n\nStarting Ion Trajectory Output\n\n";
@@ -139,6 +189,11 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
         debug_file << "\nIon:\n";
         ion.write_info();
         traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\n";
+        //Log initial state
+        sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
+                ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
+                ion.time,ion.steps,T,ion.V,(T+ion.V),ion.near,dt,dr_max);
+        traj_file << buffer;
     }
 
     if(xyz)
@@ -163,6 +218,8 @@ void traj(Ion &ion, Lattice &lattice, bool log, bool xyz)
             }
             lattice_num++;
         }
+        //Log initial state
+        log_xyz(ion, lattice, lattice_num, buffer);
     }
 
     r.set(ion.r);
@@ -305,60 +362,7 @@ start:
     }
     if(xyz)
     {
-        //Update the lattice site momenta...
-        for(int i = 0; i<ion.near; i++)
-        {
-            Site &s = *ion.near_sites[i];
-            lattice.sites[s.index] = &s;
-            //Flag as nearby
-            s.near_check = true;
-        }
-
-        //First line for xyz file is number involved.
-        xyz_file << lattice_num << "\n";
-
-        //Next line is a "comment", we will stuff the time here.
-        sprintf(buffer, "%f\t%d\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
-                ion.time,ion.steps,T,ion.V,ion.near,dt,dr_max);
-        xyz_file << buffer;
-
-        //Next stuff the symbol, position, momentum and mass for the ion itself
-        //The ion is given index 0
-        sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2], // Sym, x, y, z,
-                                         ion.p[0],ion.p[1],ion.p[2], //     px,py,pz,
-                                         ion.atom->mass,0,1);        //mass, index, near
-        xyz_file << buffer;
-
-        int num = lattice.sites.size();
-        //Then stuff in the entire lattice, why not...
-        for(int i = 0; i<num; i++)
-        {
-            Site &s = *lattice.sites[i];
-
-            //Check if we want to ignore the lattice site
-            if(settings.SCAT_TYPE)
-            {
-                //check out of bounds, from r_0
-                if(s.r_0[0] < lattice.xyz_bounds[0] //x
-                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
-                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
-                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
-                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
-                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
-                 continue;
-            }
-
-            //Note that this is same format as the ion, index has 1 added to it, as ion is 0
-            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],     // Sym, x, y, z,
-                                           s.p[0],s.p[1],s.p[2],     //     px,py,pz,
-                                           s.atom->mass,s.index + 1, //mass, index,
-                                           s.near_check);            //Near
-            xyz_file << buffer;
-            //Reset this flag for next run
-            s.near_check = false;
-        }
+        log_xyz(ion, lattice, lattice_num, buffer);
     }
 
     //Apply differences to timestep for the next loop
