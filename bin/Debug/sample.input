@@ -7,59 +7,86 @@
 #   t : true
 #   f : false (or anything not t)
 
+# Units used:
+#
+# Distances are in Angstroms, unless specified otherwise.
+# Masses are in AMU
+# Energies are in eV
+# Angles are in Degrees
+# Times are in Angstrom * sqrt(AMU / eV)
+
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
+#
 250.0 45.0 0.00 22.989 Na
 
 # Detector Limits:
 # EMIN,EMAX,ERES,ARES
+#
 0.5 250 2.5 0.5
 
 # Detector type and parameters
+#
 1
 45.0 0.00 3.0 0.0
 
 # Integration Parameters
 # time steps
+#
 1e-08 10.0
+#
 # Error parameters
+#
 0.3 0.0 1e-06
 
 # max number of atoms to interact with
+#
 12
 
 # this one should always be true.
 # This is whether the surface recoils on impact.
+#
 t
 
 #Initial Z for the ions, this is also when it leaves
+#
 5.0
 
 # Number of allowed integration steps before failing.
+#
 4000
 
 # These are search related, max distances and table steps
+#
 # for r:
+#
 10.0 0.002
+#
 # for z: (not yet implemented)
+#
 0.0 0.0003
 
 # These are more search and failure conditions.
 # max distance to search, threshold for failing due to energy change
 # Max distance is in "cells", each of which is roughly 5 angstroms across
+#
 2 5
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
+#
 10000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
 # will run from xmin, ymin to xmax, ymax, with the above
 # number of trajectories.
+#
 # x:(min, step, max)
+#
 -10 0.005 10
 # y:(min, step, max)
+#
 -10 0.005 10
 
 # These flags control the mode of operation (unless single shot mode)
@@ -79,6 +106,7 @@ t
 #   888 - Chainscat - N shots in a line from min to max
 
 # SCAT_FLAG, SCAT_TYPE
+#
 666 666
 
 # These are the number of unit cells to generate for the crystal.
@@ -86,6 +114,7 @@ t
 # The bounds of the crystal are these values multiplied by AX and AY
 #
 # RAX, RAY
+#
 15.0 15.0
 
 # These parameters are for the radial ion-atom potentials
@@ -95,9 +124,16 @@ t
 #   1 - double exponential function - has 4 parameters per lattice atom type.
 #       this is of form: a * exp(-b * r) + c * exp(-d * r)
 #       where a, b, c, d are the 4 parameters per lattice atom
+#
+#   [a] = eV
+#   [b] = 1/Angstrom
+#   [c] = eV
+#   [d] = 1/Angstrom
+#
 4 1
 
 # The parameters for the potentials
+#
 4153.6 3.625 27017.57 7.286
 
 # These parameters are for the image charge.
@@ -107,19 +143,22 @@ t
 #   1 - Flat image potential, only has 2 parameters:
 #       1: z_min, potential is constant v_min below this.
 #       2: v_min, this is the minimum value for the potential
+#
 2 1
 
 # The parameters for the image potential
+#
 1.26 2.0
 
 # These are parameters for temperature and randomization.
 # They are: Temperature, Seed, initial ion_index
 # Seed is used for both temperature and Montecarlo mode.
 # Initial Ion Index allows repeating runs done on thermalized surfaces.
-
+#
 300.0 0.9436337324 1
 
 # This is a flag that controls whether image charge effects are included
+#
 f
 
 # These control failure conditions for the code
@@ -128,12 +167,14 @@ f
 # Stuck energy is the amount of total energy for the ion to be considered
 # bound to the surface, and not leaving.
 # Buried Distance is the minimum distance below Z=0 before failing
+#
 -1.5 8.1
 
 # This section controls the lattice to scatter off.
 # First is the basis to generate the lattice from.
 #
 # These 3 values are AX, AY, AZ, the lattice constants for the basis.
+#
 4.0786 4.0786 4.0786
 
 # This line is how many sites are in the basis
@@ -142,6 +183,8 @@ f
 # These are in the format: X, Y, Z, Type.
 # Type corresponds to one of the atoms defined below, and X,Y,Z are
 # the coordinates of this site, to be scaled by AX,AY,AZ.
+# these distances are unitless
+#
 1.0 1.0 1.0 1
 1.0 0.5 0.5 1
 0.5 1.0 0.5 1
@@ -149,11 +192,13 @@ f
 
 # Here we define the atoms in the lattice.
 # First we start with how many atoms there are.
+#
 1
 
 # Next we have pairs of lines, containing the following information:
 # Atomic Mass, Atomic Number, Atomic Symbol
 # Spring Constants (kx, ky, kz)
+#
 196.967 79 Au
 5.0 5.0 5.0
 
@@ -161,6 +206,7 @@ f
 # The first parameter is a flag which controls whether the inter-atomic
 # forces are even applied. The second and third are currently unused,
 # They should enable correlations other than basic einstien springs.
+#
 t 0 8.36405
 
 # This line defines the surface face of the crystal to generate.
@@ -172,10 +218,17 @@ t 0 8.36405
 # the crystal loading is enabled, then 3 more parameters are also needed.
 # These are to define the surface face of the loaded crystal, to be used
 # to rotate the crystal to the requested surface face.
+#
 1 1 1 f 1 1 1
 
 # The next line is frictional force coefficients.
 # Friction is modelled as |F| = av + bv^2,
 # where v is the velocity of the ion, and the direction of F
 # is opposite to the direction of the velocity
+# 
+# [a] = sqrt(eV * AMU) * Angstrom^2
+# [b] =  AMU * Angstrom^2
+#
+# These are only checked if they are not both 0
+# 
 0 0

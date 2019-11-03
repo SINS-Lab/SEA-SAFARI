@@ -169,15 +169,11 @@ double electron_density(Lattice &lattice, Ion &ion)
 {
     //TODO see https://github.com/SINS-Lab/SAFARI/blob/10305e6f9ee597e89a6df7acfede3554371f42bc/src/hameqinel.f
     // it has calculations for electron density.
-    return 1;
+    return 0;
 }
 
 double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt)
 {
-    double z = ion.r[2];
-    //TODO some better "above surfaceness"
-    if(z > 0) return 0;
-
     double vx = ion.p[0]/ion.atom->mass;
     double vy = ion.p[1]/ion.atom->mass;
     double vz = ion.p[2]/ion.atom->mass;
@@ -193,6 +189,8 @@ double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt)
     vz/=v;
 
     double density = electron_density(lattice, ion);
+    //No electron density, no friction
+    if(density == 0) return 0;
 
     //assume magnitude of friction is:
     //Av + Bv^2, where v is magnitude of velocity.

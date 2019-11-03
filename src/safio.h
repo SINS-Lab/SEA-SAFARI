@@ -14,13 +14,15 @@
  * 
  * Units used:
  *   
- *   Energy - eV
- *   Distance - Angstroms
- *   Mass - AMU
- *   Angles - Degrees
+ *   Energy    - eV
+ *   Distance  - Angstroms
+ *   Mass      - AMU
+ *   Angles    - Degrees
  * 
- * Note that this results in times in Angstrom * sqrt(AMU/eV).
- * 
+ *   Momentum  - sqrt(eV * AMU)
+ *   Velocity  - sqrt(eV / AMU)
+ *   Time      - Angstrom * sqrt(AMU / eV)
+ *   Force     - eV / Angstrom
  */
 
 struct Safio
@@ -167,8 +169,11 @@ struct Safio
     //Parameters for electronic frictional forces.
 
     //Linear Coefficient
+    //Units: sqrt(eV * AMU) * Angstrom^2
     double F_a = 0;
+
     //Quadratic Coefficient
+    //Units: AMU * Angstrom^2
     double F_b = 0;
     
     //These were used for corregated image potentials
