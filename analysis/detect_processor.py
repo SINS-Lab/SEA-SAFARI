@@ -243,10 +243,10 @@ class Detector:
         self.safio.genInputFile(fileIn=self.safio.fileIn)
         imp_x = round(close[0],3)
         imp_y = round(close[1],3)
-        input_file = self.safio.fileIn
+        input_file = self.safio.fileIn.replace('.input', '')
         output_file = self.safio.fileIn.replace('.input', '') + \
-                        '{},{}.xyz'.format(imp_x, imp_y)
-        cmd = [args.format(input_file, output_file)]
+                        '{}_{}'.format(imp_x, imp_y)
+        cmd = [args.format(input_file, output_file, close[0], close[1])]
         if platform.system() != 'Linux':
             cmd = cmd[0] #Not sure why this was needed on windows...
         subprocess.Popen(cmd, shell=True)
@@ -322,19 +322,19 @@ class Detector:
                 print("Setting up a safari run for a single shot")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {}')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r')
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
                 print("Setting up a safari run for a nearness colored dataset")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -c nearby')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r -c nearby')
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
                 print("Setting up a safari run for a velocity colored dataset")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -c velocity')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r -c velocity')
             
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)

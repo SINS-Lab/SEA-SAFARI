@@ -8,19 +8,31 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="SAFIO input file")
 parser.add_argument("-o", "--output", help="Output file names")
+parser.add_argument("-x", "--x_coord", help="x - impact coordinate")
+parser.add_argument("-y", "--y_coord", help="y - impact coordinate")
+parser.add_argument("-r", "--restricted", help="whether the xyz is only nearish particles", action='store_true')
 parser.add_argument("-c", "--colour", help="Colour parameter for xyz")
 args = parser.parse_args()
 
 # Run a single shot safari for this run,
 # assuming the input file 
 # was already configured properly.
-command = 'Sea-Safari.exe'
+command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {}'
+
+if args.restricted:
+    command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {} -r'
+
+#Change command accordingly for linux
 if platform.system() == 'Linux':
-    command = './Sea-Safari'
+    command = command.replace('Sea-Safari.exe', './Sea-Safari')
+
+#Format the command
+command = command.format(args.input, args.output, args.x_coord, args.y_coord)
+
 subprocess.run(command, shell=True)
 
-xyz_in = args.input.replace('.input', '.xyz')
-fileOut = args.output
+xyz_in = args.output + '.xyz'
+fileOut = xyz_in
 
 command = ''
 
