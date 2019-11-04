@@ -12,7 +12,6 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import safari_input
 import subprocess
-import xyz_postprocess as xyz_p
 import detect_processor as detect
 
 def frange(start, end, step):
