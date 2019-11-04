@@ -21,12 +21,18 @@ void Safio::load(std::map<std::string, ArgValue>& args)
         std::cout << "Output files: " << safio_file << std::endl;
     }
 
-    filename = safio_file + ".data";
-    out_file.open(filename);
+    //Only open these if flagged, 
+    //this allows modules to use safio, but not open the files
+    if(args["-f"])
+    {
+        filename = safio_file + ".data";
+        out_file.open(filename);
 
-    filename = safio_file + ".crys";
-    crystal_file.open(filename);
+        filename = safio_file + ".crys";
+        crystal_file.open(filename);
+    }
 
+    //Open the debug file, this is alway used.
     filename = safio_file + ".dbug";
     debug_file.open(filename);
     //This one needs to specify the old file name.

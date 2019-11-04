@@ -199,6 +199,7 @@ struct Safio
      *      
      *      -i [inputfile] - same format that goes in safari.input, required
      *      -o [outputfile] - optional, uses input file value if not found.
+     *      -f - if present, will open crys and data files
      *      -s - Enables single shot mode (NUMCHA=1, SCAT_FLAG=666)
      *         -x [value] - sets x-start (if -s is present)
      *         -y [value] - sets y-start (if -s is present)

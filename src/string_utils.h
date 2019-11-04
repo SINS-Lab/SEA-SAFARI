@@ -14,6 +14,7 @@ private:
 public:
     ArgValue(){raw_value="";}
     ArgValue(const std::string& value){raw_value = value;}
+    ArgValue(const char* value){raw_value = value;}
     /**
      * returns if raw_value is "t", 
      * this result is not cached.
@@ -35,8 +36,6 @@ public:
     int as_int();
     /**
      * This returns whether there is a raw value,
-     * use as_bool() for checking if the value is
-     * valid for true.
      */ 
     operator bool() { return raw_value != "";}
 };
