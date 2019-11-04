@@ -122,31 +122,18 @@ void apply_colour(std::vector<Particle>& pset, std::string& colour)
     int num = pset.size();
     if(colour == "velocity")
     {
-        //We need to compute an average velocity, and then determine if
-        //The particle is significantly above it.
-        double avgvsq = 0;
-        int n = 0;
+        //TODO make this instead by some multiple of KT from a safio file.
+        double min_E = 0.05;
         for(int i = 0; i<num; i++)
         {
             Particle&p = pset[i];
             //Ignore the ion
             if(p.id==0) continue;
-            n++;
-            avgvsq += p.velocity[0]*p.velocity[0]
-                    + p.velocity[1]*p.velocity[1]
-                    + p.velocity[2]*p.velocity[2];
-        }
-        avgvsq /= n;
-        for(int i = 0; i<num; i++)
-        {
-            Particle&p = pset[i];
-            //Ignore the ion
-            if(p.id==0) continue;
-            double vsq = p.velocity[0]*p.velocity[0]
-                       + p.velocity[1]*p.velocity[1]
-                       + p.velocity[2]*p.velocity[2];
-            //TODO better way to decide this.
-            if(vsq > 0.125 + 2*avgvsq) p.atom = "X";
+            double E = (p.momentum[0]*p.momentum[0]
+                       +p.momentum[1]*p.momentum[1]
+                       +p.momentum[2]*p.momentum[2])
+                       /(2*p.mass);
+            if(E > min_E) p.atom = "X";
         }
     }
     else if(colour == "nearby")

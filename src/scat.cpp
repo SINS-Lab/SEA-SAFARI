@@ -69,13 +69,13 @@ void gridscat(Lattice &lattice, int *num)
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
 
             //Set min bounds from ion positions
-            lattice.xyz_bounds[0] = std::min(ion.r_0[0],ion.r[0]);
-            lattice.xyz_bounds[1] = std::min(ion.r_0[1],ion.r[1]);
-            lattice.xyz_bounds[2] = std::min(ion.r_0[2],ion.r[2]) - 5;//Subtract 5 for some padding
+            lattice.xyz_bounds[0] = std::min(ion.r_0[0],ion.r[0]) - settings.AX;
+            lattice.xyz_bounds[1] = std::min(ion.r_0[1],ion.r[1]) - settings.AY;
+            lattice.xyz_bounds[2] = std::min(ion.r_0[2],ion.r[2]) - settings.AZ;
 
             //Set max bounds from ion positions
-            lattice.xyz_bounds[3] = std::max(ion.r_0[0],ion.r[0]);
-            lattice.xyz_bounds[4] = std::max(ion.r_0[1],ion.r[1]);
+            lattice.xyz_bounds[3] = std::max(ion.r_0[0],ion.r[0]) + settings.AX;
+            lattice.xyz_bounds[4] = std::max(ion.r_0[1],ion.r[1]) + settings.AY;
             lattice.xyz_bounds[5] = std::max(ion.r_0[2],ion.r[2]);
 
             //Lets make this a square slab, so find midpoint of x,y
