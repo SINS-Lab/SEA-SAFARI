@@ -27,6 +27,12 @@
 
 struct Safio
 {
+    //Name of the safio input file (minus the extension)
+    std::string input_name;
+
+    //Name of the files to output to (minus the extension)
+    std::string output_name;
+
     //Parameters for the beam
     //Initial Energy
     double E0;

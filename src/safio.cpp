@@ -6,34 +6,35 @@
 void Safio::load(std::map<std::string, ArgValue>& args)
 {
     //This should have been included to args if not originally present.
-    std::string safio_file = args["-i"].as_string();
+    input_name = args["-i"].as_string();
+    output_name = input_name;
 
     settings = *this;
     std::ifstream safio_input;
-    std::string filename = safio_file + ".input";
+    std::string filename = output_name + ".input";
     safio_input.open(filename);
 
     //check if we have alternate output file name
     //All other streams after this will use the output file name instead.
     if(args["-o"])
     {
-        safio_file = args["-o"].as_string();
-        std::cout << "Output files: " << safio_file << std::endl;
+        output_name = args["-o"].as_string();
     }
+    std::cout << "Output files: " << output_name << std::endl;
 
     //Only open these if flagged, 
     //this allows modules to use safio, but not open the files
     if(args["-f"])
     {
-        filename = safio_file + ".data";
+        filename = output_name + ".data";
         out_file.open(filename);
 
-        filename = safio_file + ".crys";
+        filename = output_name + ".crys";
         crystal_file.open(filename);
     }
 
     //Open the debug file, this is alway used.
-    filename = safio_file + ".dbug";
+    filename = output_name + ".dbug";
     debug_file.open(filename);
     //This one needs to specify the old file name.
     debug_file << "Loading Info From: " << args["-i"].as_string() << "\n\n";
@@ -377,8 +378,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
         //Then we need these files.
         if (NUMCHA == 1)
         {
-            traj_file.open(safio_file + ".traj");
-            xyz_file.open(safio_file + ".xyz");
+            traj_file.open(output_name + ".traj");
+            xyz_file.open(output_name + ".xyz");
             debug_file << "Initializing for single shot mode." << '\n';
         }
     }

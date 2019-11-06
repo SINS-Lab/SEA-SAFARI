@@ -25,7 +25,7 @@ double space_mask[3375][3];
 int main(int argc, char* argv[])
 {
     //Starts total runtime timer.
-    clock_t load = clock();
+    double load = clock();
 
     std::map<std::string, ArgValue> args = get_arguments(argc, argv);
     std::string safio_file = args["-i"].as_string();
@@ -87,9 +87,12 @@ int main(int argc, char* argv[])
         lattice.build_lattice();
     }
     
+    std::ofstream crys_xyz_file;
+    crys_xyz_file.open(settings.output_name+".crys.xyz");
     debug_file << "Printing Lattice" << '\n';
     std::cout << "Printing Lattice" << '\n';
     int num = lattice.sites.size();
+    crys_xyz_file << num << "\n\n";
     for (int i = 0; i < num; i++)
     {
         Site &s = *lattice.sites[i];
@@ -97,15 +100,18 @@ int main(int argc, char* argv[])
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",
                          s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass);
         crystal_file << buffer;
+        sprintf(buffer, "%s\t%f\t%f\t%f\n",
+                         a->symbol.c_str(), s.r_0[0], s.r_0[1], s.r_0[2]);
+        crys_xyz_file << buffer;
     }
-
+    crys_xyz_file.close();
     crystal_file.close();
 
     //Initialize the space_math's lookup table
     init_lookup();
 
     //Starts trajectory timer.
-    clock_t start = clock();
+    double start = clock();
     int n = 0;
 
     if (settings.SCAT_FLAG == 666)
@@ -136,7 +142,7 @@ int main(int argc, char* argv[])
             chainscat(lattice, &n);
         }
         //Compute time per trajectory.
-        double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
+        double dt = (clock() - start) / CLOCKS_PER_SEC;
         dt /= n;
         //Convert to ms;
         dt *= 1000;
@@ -146,7 +152,7 @@ int main(int argc, char* argv[])
         debug_file << "\nTotal number particles: " << n << std::endl;
         debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
         //End final timer.
-        dt = ((double)clock() - load) / CLOCKS_PER_SEC;
+        dt = (clock() - load) / CLOCKS_PER_SEC;
         std::cout << "Total Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
         debug_file << "\nTotal Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
     }
@@ -170,7 +176,7 @@ int main(int argc, char* argv[])
             test_mask();
         }
         //Compute time per trajectory.
-        double dt = ((double)clock() - start) / CLOCKS_PER_SEC;
+        double dt = (clock() - start) / CLOCKS_PER_SEC;
         std::cout << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
         debug_file << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
     }
