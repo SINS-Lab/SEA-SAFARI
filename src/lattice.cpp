@@ -328,11 +328,19 @@ Cell* Lattice::make_cell(double x, double y, double z)
 
 Lattice::Lattice(const Lattice& other)
 {
-    //This is not a deep copy, we don't care though.
-    //sites = other.sites; so we don't even bother copying it.
-
-    //This should be a deep copy, so long as cells copy correctly.
-    cell_map = other.cell_map;
+    for (auto x : other.cell_map)
+    {
+        Cell cell = *x.second;
+        //Find un-filled cells
+        if (cell.num == 0) continue;
+        int key = x.first;
+        Cell* ours = new Cell(cell);
+        for(int i = 0; i<cell.num; i++)
+        {
+            sites.push_back(&(ours->sites[i]));
+        }
+        cell_map[key] = ours;
+    }
 }
 
 Cell::Cell(const Cell& other)
@@ -345,13 +353,6 @@ Cell::Cell(const Cell& other)
         Site &original = other.sites[i];
         //Copy it over
         Site site = original;
-        site.atom = original.atom;
-        //Deallocate these two
-        delete []site.r_0;
-        delete []site.p_0;
-        site.r_0 = original.r_0;
-        site.p_0 = original.p_0;
-        site.index = original.index;
         sites[i] = site;
     }
 }

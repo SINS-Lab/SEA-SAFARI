@@ -20,7 +20,7 @@ void test_cache()
 	int n = 0;
 	//Testing stuff goes here.
 
-	clock_t timer = clock();
+	double timer = clock();
 	//Testing Vr_r calls.
 	for (int i = 1; i <= 1e8; i++)
 	{
@@ -29,7 +29,7 @@ void test_cache()
 		v_r_tot += dVr_dr(r, 1);
 		n++;
 	}
-	dt_cache = ((double)clock() - timer) / CLOCKS_PER_SEC;
+	dt_cache = (clock() - timer) / CLOCKS_PER_SEC;
 	dt_cache /= n;
 	//Convert to ms;
 	dt_cache *= 1000;
@@ -48,7 +48,7 @@ void test_cache()
 		v_r_tot += dVr_dr_init(r, 1);
 		n++;
 	}
-	dt_compu = ((double)clock() - timer) / CLOCKS_PER_SEC;
+	dt_compu = (clock() - timer) / CLOCKS_PER_SEC;
 	dt_compu /= n;
 	//Convert to ms;
 	dt_compu *= 1000;
@@ -64,28 +64,29 @@ void test_lattice_copy(Lattice &lattice)
     //Result in a new lattice, with the same initial conditions.
     double counter = 0;
     Lattice new_lat = lattice;
-    for (auto x : lattice.cell_map)
+    for (auto x : new_lat.cell_map)
     {
-        Cell cell = *x.second;
+        Cell* cell = x.second;
         //Find first un-filled cell.
-        if (cell.num == 0) continue;
+        if (cell->num == 0) continue;
 
         //Could use the second, but lets just pull from map to be sure.
-        Site &a = lattice.cell_map[x.first]->sites[0];
-        Site &b = new_lat.cell_map[x.first]->sites[0];
-        std::cout << &a << " " << &b << std::endl;
+        Site *a = &(lattice.cell_map[x.first]->sites[0]);
+        Site *b = &(new_lat.cell_map[x.first]->sites[0]);
+        std::cout << lattice.cell_map[x.first] << " " << new_lat.cell_map[x.first] << std::endl;
+        std::cout << a << " " << b << std::endl;
 
         //r_0 is not copied, so we need to test r.
-        a.r[0] = 5;
-        b.r[0] = 0;
+        a->r[0] = 5;
+        b->r[0] = 0;
         //If the copy is actually a full copy, this will not be the same.
-        counter += a.r[0] - b.r[0];
+        counter += a->r[0] - b->r[0];
         break;
     }
     std::cout << "Did it copy?: " << (counter!=0) << std::endl;
 
     std::cout << "Testing lattice copying speeds" << std::endl;
-    clock_t timer = clock();
+    double timer = clock();
     int n = 1e4;
 	int x = 0;
     //This seems to work, but leaks memory like crazy...
@@ -95,11 +96,20 @@ void test_lattice_copy(Lattice &lattice)
 		x += new_lattice->id;
 		delete new_lattice;
     }
-    double dt = ((double)clock() - timer) / CLOCKS_PER_SEC;
+    double dt = (clock() - timer) / CLOCKS_PER_SEC;
     dt /= n;
     //Convert to ms;
     dt *= 1000;
-    std::cout << " execution time: " << dt << "ms " << x << std::endl;
+    std::cout << " execution time: " << dt << "ms per, for " << x << std::endl;
+
+	timer = clock();
+	double end = timer + CLOCKS_PER_SEC * 10;
+	x = 0;
+	while(clock() < end)
+	{
+		x++;
+	}
+    std::cout << "waited: " << x << std::endl;
 }
 
 void test_mask()
