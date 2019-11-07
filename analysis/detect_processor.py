@@ -1,3 +1,5 @@
+
+
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
@@ -222,7 +224,7 @@ class Detector:
             ax2.set_xlabel('Energy (eV)')
 
             ax.set_ylabel('Intensity')
-            plt.legend(handles=[kplot])
+            ax.legend(handles=[kplot], loc='upper left')
             if self.plots:
                 fig.show()
             #The following saves the plot as a png file
