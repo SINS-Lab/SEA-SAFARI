@@ -61,8 +61,15 @@ if args.colour:
 else:
     command = "mol new {}\n".format(fileOut)
 
-commands = [command]
-commands.append("mol modstyle 0 0 \"VDW\"")
+commands = []
+
+commands.append("color Display Background white\n")
+commands.append("display depthcue off\n") # This fixes washed out colours on white background
+commands.append("mol default style {VDW 1.0 10.0}\n")
+commands.append(command)
+commands.append("display rendermode GLSL\n")
+commands.append("display update\n")
+commands.append("display update ui\n")
 try:
     with open("commands.vmd", "w") as file:
         file.writelines(commands)
