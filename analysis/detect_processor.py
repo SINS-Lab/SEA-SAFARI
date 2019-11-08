@@ -24,6 +24,9 @@ import subprocess
 # Used for shift-click functionality
 shift_is_held = False
 
+#Used to toggle tooltips on and off
+tooltips = True
+
 def loadCrystal(name):
     f = open(name+'.crys', 'r')
     data = []
@@ -291,18 +294,22 @@ class Detector:
         scat = ax.scatter(x, y, c=c, cmap=plt.get_cmap('plasma'))
         fig.colorbar(scat, ax=ax)
 
+
+        tool_text = "Left Click: View Point\nDouble Left Click: Open Normal-Colored VMD\nDouble Right Click: Open Nearest-Colored VMD\nShift + Left Click: Open Velocity-Colored VMD"
+        select_text = 'None Selected'
         #Add selected point label
-        text = fig.text(0.1, 0.95, 'None Selected',fontsize=9)
+        text_selected = fig.text(0.1, 0.95, select_text,fontsize=9)
         
         ax.set_title("Detections: "+str(len(x)))
         ax.set_xlabel('X Target (Angstroms)')
         ax.set_ylabel('Y Target (Angstroms)')
-        fig.text(0.6, 0.9, "Left Click: View Point\nDouble Left Click: Open Normal-Colored VMD\nDouble Right Click: Open Nearest-Colored VMD\nShift + Left Click: Open Velocity-Colored VMD", fontsize=9)
+
+        text_tooltip = fig.text(0.6, 0.9, tool_text, fontsize=9)
 
         self.p, = ax.plot(0,0,'r+')
 
         def onclick(event):
-            if event.xdata is None:
+            if event.xdata is None or not tooltips:
                 return
 
             close = [1e20, 1e20]
@@ -341,8 +348,8 @@ class Detector:
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
             energy = round(self.detections[index][3], 2)
-            value = '{}, {}eV ({})'.format(close, energy, round(energy/self.safio.E0,3))
-            text.set_text(value)
+            select_text = '{}, {}eV ({})'.format(close, energy, round(energy/self.safio.E0,3))
+            text_selected.set_text(select_text)
             self.p.set_xdata([close[0]])
             self.p.set_ydata([close[1]])
             fig.canvas.draw()
@@ -351,6 +358,18 @@ class Detector:
             if event.key == 'shift':
                 global shift_is_held
                 shift_is_held = True
+            if event.key == 'alt':
+                global tooltips
+                tooltips = not tooltips
+                if not tooltips:
+                    text_selected.set_text('')
+                    text_tooltip.set_text('')
+                    fig.canvas.draw()
+                else:
+                    text_selected.set_text(select_text)
+                    text_tooltip.set_text(tool_text)
+                    fig.canvas.draw()
+
 
         def on_key_release(event):
             if event.key == 'shift':
