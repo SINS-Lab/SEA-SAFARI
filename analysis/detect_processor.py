@@ -306,7 +306,9 @@ class Detector:
 
         text_tooltip = fig.text(0.6, 0.9, tool_text, fontsize=9)
 
-        self.p, = ax.plot(0,0,'r+')
+        px = 0
+        py = 0
+        self.p, = ax.plot(px,py,'r+')
 
         def onclick(event):
             if event.xdata is None or not tooltips:
@@ -350,8 +352,10 @@ class Detector:
             energy = round(self.detections[index][3], 2)
             select_text = '{}, {}eV ({})'.format(close, energy, round(energy/self.safio.E0,3))
             text_selected.set_text(select_text)
-            self.p.set_xdata([close[0]])
-            self.p.set_ydata([close[1]])
+            px = close[0]
+            py = close[1]
+            self.p.set_xdata([px])
+            self.p.set_ydata([py])
             fig.canvas.draw()
 
         def on_key_press(event):
@@ -364,10 +368,14 @@ class Detector:
                 if not tooltips:
                     text_selected.set_text('')
                     text_tooltip.set_text('')
+                    self.p.set_xdata([-1e20])
+                    self.p.set_ydata([0])
                     fig.canvas.draw()
                 else:
                     text_selected.set_text(select_text)
                     text_tooltip.set_text(tool_text)
+                    self.p.set_xdata([px])
+                    self.p.set_ydata([py])
                     fig.canvas.draw()
 
 
