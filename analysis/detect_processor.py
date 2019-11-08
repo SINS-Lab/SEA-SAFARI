@@ -306,10 +306,34 @@ class Detector:
 
         text_tooltip = fig.text(0.6, 0.9, tool_text, fontsize=9)
 
+        #Make the selected item indicator
         px = 0
         py = 0
         self.p, = ax.plot(px,py,'r+')
 
+        #Add an arrow indicating the beam direction
+        dir = [1,0]
+        lx = (self.safio.XSTOP - self.safio.XSTART) / 10
+        ly = (self.safio.YSTOP - self.safio.YSTART) / 10
+        #Adds some padding to start location
+        start = [self.safio.XSTART + lx/2,self.safio.YSTART + ly/2]
+        dir[0] = math.cos(math.radians(self.safio.PHI0))
+        dir[1] = math.sin(math.radians(self.safio.PHI0))
+
+        if dir[0] < 0:
+            #Also padd ends
+            start[0] = self.safio.XSTOP - lx/2
+        if dir[1] < 0:
+            #Also padd ends
+            start[1] = self.safio.YSTOP - ly/2
+        d_arrow = [0,0]
+        d_arrow[0] = dir[0] * lx
+        d_arrow[1] = dir[1] * ly
+        w =  max(lx, ly)/10
+        hw = max(lx, ly)/5
+        hl = max(lx, ly)/5
+        ax.arrow(start[0], start[1], d_arrow[0], d_arrow[1], width=w, head_width=hw, head_length=hl, color='c')
+        
         def onclick(event):
             if event.xdata is None or not tooltips:
                 return
