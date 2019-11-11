@@ -332,7 +332,8 @@ class Detector:
         w =  max(lx, ly)/10
         hw = max(lx, ly)/5
         hl = max(lx, ly)/5
-        ax.arrow(start[0], start[1], d_arrow[0], d_arrow[1], width=w, head_width=hw, head_length=hl, color='c')
+
+        self.arrow = ax.arrow(start[0], start[1], d_arrow[0], d_arrow[1], width=w, head_width=hw, head_length=hl, color='c', visible=len(x)>0)
         
         def onclick(event):
             if event.xdata is None or not tooltips:
