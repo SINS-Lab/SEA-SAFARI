@@ -53,10 +53,12 @@ def updateplot(*args):
             if result != '':
                 x = result[0]
                 y = result[1]
+                #TODO make this lookup from colour map or something?
                 data[y][x][0] = 1
                 data[y][x][1] = 0
                 data[y][x][2] = 0
-                data[y][x][3] = 1
+                #The main reason we use this instead is for default transparency
+                data[y][x][3] = 0.75
                 changed = True
         if changed:
             img.set_array(data)
@@ -90,8 +92,7 @@ def plot(crystal, q):
     #Add a heightmap
     fig.colorbar(p, ax=ax)
 
-    norm = matplotlib.colors.Normalize(vmax=10, vmin=0, clip=True)
-    img = plt.imshow(data, norm=norm, cmap=plt.get_cmap('plasma'), animated=True, zorder = 10)
+    img = plt.imshow(data, animated=True, zorder = 10)
 
     ani = anim.FuncAnimation(fig, updateplot, fargs=(q,), interval=50)
     plt.show()
