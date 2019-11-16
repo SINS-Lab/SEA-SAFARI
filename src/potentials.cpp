@@ -118,10 +118,15 @@ double dVr_dr(double r, int n)
 
 double Vi_z(double z, int q)
 {
-    double z_min = settings.image_parameters[0];
-    double v_min = settings.image_parameters[1];
-    if(settings.image_potential_type == 1)
+    if(settings.image_potential_type == 0)
     {
+        //This shouldn't be used for below the surface.
+        if(z < settings.Z1) return 0;
+        
+        //Type 0: Only apply to the entry and exit trajectories.
+        //Does not actually do anything during the numerical integration
+        double z_min = settings.image_parameters[0];
+        double v_min = settings.image_parameters[1];
         if(z > z_min)
         {
             double dz = z - z_min;
@@ -131,7 +136,25 @@ double Vi_z(double z, int q)
         }
         else 
         {
-            return -v_min;
+            return -q * v_min;
+        }
+    }
+    else if(settings.image_potential_type == 1)
+    {
+        //Type 1: Saturated image potential
+        //Saturates based on the given z_min and v_min
+        double z_min = settings.image_parameters[0];
+        double v_min = settings.image_parameters[1];
+        if(z > z_min)
+        {
+            double dz = z - z_min;
+            double eq = 0.25*eqsr*q;
+            double eq_v = eq/v_min;
+            return -eq/sqrt(dz*dz + eq_v*eq_v);
+        }
+        else 
+        {
+            return -q * v_min;
         }
     }
     else
@@ -139,15 +162,21 @@ double Vi_z(double z, int q)
         debug_file << "ERROR WITH Vi_z" << std::endl;
         exit(EXIT_FAILURE);
     }
-    return -v_min;
+    return 0;
 }
 
 double dVi_dz(double z, int q)
 {
-    double z_min = settings.image_parameters[0];
-    double v_min = settings.image_parameters[1];
+    if(settings.image_potential_type == 0)
+    {
+        //Type 0: Only apply to the entry and exit trajectories.
+        //Does not actually do anything during the numerical integration
+        return 0;
+    }
     if(settings.image_potential_type == 1)
     {
+        double z_min = settings.image_parameters[0];
+        double v_min = settings.image_parameters[1];
         if(z > z_min)
         {
             double dz = z - z_min;

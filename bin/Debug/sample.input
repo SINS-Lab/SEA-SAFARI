@@ -138,7 +138,11 @@ t
 
 # These parameters are for the image charge.
 # The first is how many parameters, the second is the type.
-# Only image potential type 1 is implemented
+# Only image potential types 0 and 1 are implemented
+#
+#   0 - Entry/Exit only image, only has 2 parameters:
+#       1: z_min, potential is constant v_min below this.
+#       2: v_min, this is the minimum value for the potential
 #
 #   1 - Flat image potential, only has 2 parameters:
 #       1: z_min, potential is constant v_min below this.
