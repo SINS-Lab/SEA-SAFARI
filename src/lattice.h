@@ -51,6 +51,17 @@ struct Lattice
     //This is relevant if settings.SCAT_TYPE
     double xyz_bounds[6];
 
+
+    //Here we have some values which are recored as the run occurs.
+    //These are recorded to the debug file after the run is completed.
+    int undetectable_num = 0; //Code -5
+    int trapped_num = 0;      //Code -10
+    int stuck_num = 0;        //Code -100
+    int buried_num = 0;       //Code -200
+    int froze_num = 0;        //Code -300
+    int left_num = 0;         //Code -400
+    int err_num = 0;          //Code -500
+
     //Default constructor
     Lattice(){}
     //Copy constructor

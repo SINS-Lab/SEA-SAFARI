@@ -105,6 +105,11 @@ void log_xyz(Ion &ion, Lattice &lattice, int& lattice_num, char* buffer)
         }
 }
 
+bool should_save(Lattice &lattice, double E, double theta, double phi)
+{
+    return settings.save_errored || E > 0;
+}
+
 void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 {
     //Get some constants for the loop
@@ -390,42 +395,50 @@ end:
      * 
      * Energy failure flags as follows:
      * 
+     * -5   : Ion exited at phi out of absolute max detector bounds
      * -10  : ion got stuck due to image charge.
      * -100 : got stuck, ie E too low
      * -200 : got buried, ie z below -BDIST
      * -300 : froze, ie took too many steps
      * -400 : off edge, ie left crystal via x or y
      * -500 : discont, had a discontinuity in E, so was dropped.
+     * 
+     * Note that -5 condition is only applied if settings.detector_type is greater than 0
      */ 
     if(stuck)
     {
         theta = 0;
         phi = 90;
         E = -100;
+        lattice.stuck_num++;
     }
     else if(buried)
     {
         theta = 0;
         phi = 90;
         E = -200;
+        lattice.buried_num++;
     }
     else if(froze)
     {
         theta = 0;
         phi = 90;
         E = -300;
+        lattice.froze_num++;
     }
     else if(off_edge)
     {
         theta = 0;
         phi = 90;
         E = -400;
+        lattice.left_num++;
     }
     else if(discont)
     {
         theta = 0;
         phi = 90;
         E = -500;
+        lattice.err_num++;
     }
     else
     {
@@ -456,6 +469,7 @@ end:
             theta = 0;
             phi = 90;
             E = -10;
+            lattice.trapped_num++;
         }
         else
         {
@@ -468,24 +482,47 @@ end:
             if(px == 0 && py==0)
             {
                 //phi isn't well defined here,
-                //so just set it as 90
-                phi = 90;
+                //so just set it as same as incoming
+                phi = settings.PHI0;
             }
             else
             {
                 //Calculate phi, depends on px, py
                 phi = atan2(py, px) * 180 / M_PI;
             }
+
+            //Check if in bounds of absolute maximum for detector.
+            if(settings.detector_type > 0)
+            {
+                //These are originally in -180 to 180 range,
+                //+360 shift allows easier comparisons without edge cases.
+                double phi_test = phi + 360;
+                double phi_ref = settings.PHI0 + 360;
+                double diff = fabs(phi_test - phi_ref);
+                //Detectors should generally be 1 degree resolution,
+                //A difference of 10 is far outside the allowed range.
+                if(diff > 10) 
+                {
+                    theta = 0;
+                    phi = 90;
+                    E = -5;
+                    lattice.undetectable_num++;
+                }
+            }
         }
     }
 
-    //Output data, first stuff it in the buffer
-    sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
-            ion.r_0[0],ion.r_0[1],ion.r_0[2],
-            E,theta,phi,
-            ion.index,1.0, //TODO make the second 1 be an area based on gridscat depth?
-            ion.max_n, ion.r_min, ion.steps, ion.time);
-    //Then save it
-    out_file << buffer;
+    //Output data
+    if(should_save(lattice, E, theta, phi))
+    {
+        //first stuff it in the buffer
+        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
+                ion.r_0[0],ion.r_0[1],ion.r_0[2],
+                E,theta,phi,
+                ion.index,1.0, //TODO make the second 1 be an area based on gridscat depth?
+                ion.max_n, ion.r_min, ion.steps, ion.time);
+        //Then save it
+        out_file << buffer;
+    }
     return;
 }

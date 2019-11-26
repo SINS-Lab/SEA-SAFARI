@@ -59,6 +59,10 @@ struct Safio
     //Parameters for detector    
     double* detect_parameters;
 
+    //Whether to save the errored trajectories,
+    //Otherwise only the total counts of each error is saved.
+    bool save_errored = true;
+
     //Integration parameters
     //Minimum time step
     double DELLOW;

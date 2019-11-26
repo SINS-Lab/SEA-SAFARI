@@ -98,6 +98,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             if (n == 3)
             {
                 detector_type = atoi(args[0].c_str());
+                if(args.size() > 1 && args[1] == "f")
+                    save_errored = false;
             }
             if (n == 4)
             {
