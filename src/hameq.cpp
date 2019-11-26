@@ -199,10 +199,17 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 //Use einstein springs.
                 if(atomk <= 1e-30)
                 {   
+                    double dx_sq = (s.r[0] - s.r_0[0]) * (s.r[0] - s.r_0[0]);
+                    double dy_sq = (s.r[1] - s.r_0[1]) * (s.r[1] - s.r_0[1]);
+                    double dz_sq = (s.r[2] - s.r_0[2]) * (s.r[2] - s.r_0[2]);
                     //F = -kx
-                    F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
-                    F_at[1] -= s.atom->spring[1] * (s.r[1] - s.r_0[1]);
-                    F_at[2] -= s.atom->spring[2] * (s.r[2] - s.r_0[2]);
+                    if(dx_sq < settings.AX*settings.AX/4)
+                        F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
+                    if(dy_sq < settings.AY*settings.AY/4)
+                        F_at[1] -= s.atom->spring[1] * (s.r[1] - s.r_0[1]);
+                    if(dz_sq < settings.AZ*settings.AZ/4)
+                        F_at[2] -= s.atom->spring[2] * (s.r[2] - s.r_0[2]);
+                    //These springs are only applied if the site is still "near" the original location.
                 }
                 else
                 {
