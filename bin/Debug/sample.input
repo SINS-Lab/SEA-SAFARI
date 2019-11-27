@@ -25,9 +25,22 @@
 #
 0.5 250 2.5 0.5
 
-# Detector type and parameters
+# Detector Type and optional cull flag
+#  <type> <cull flag|optional>
 #
-1
+#   If <type> is not 0, then only trajectories within phi of 10
+#   if PHI0 will be added to the data file, this trims out
+#   the trajectories which are out of bounds of the detector.
+#
+#   if <cull flag> is f, then trajectories which fail will not
+#   be included in the data file, they will only be included
+#   in the final error counts in the debug output file.
+#
+1 f
+
+# Detector parameters, the number of these depends on Detector Type
+#
+#  Currently these are not implemented, but 4 are required
 45.0 0.00 3.0 0.0
 
 # Integration Parameters
