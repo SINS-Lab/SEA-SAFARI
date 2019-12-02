@@ -45,6 +45,10 @@ public:
     int index = -1;
     //this is used for xyz output of nearest.
     bool near_check = 0;
+    //This is last integration step performed, this
+    //allows for faster checks of whether force needs
+    //to be reset.
+    int last_step = -1;
 
     //Start of block of values related to nearby sites
 

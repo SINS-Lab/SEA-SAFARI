@@ -341,6 +341,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
     }
 
     r.set(ion.r);
+    ion.last_step = 0;
 
 start:
     //Find nearby lattice atoms

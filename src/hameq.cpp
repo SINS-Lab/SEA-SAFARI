@@ -108,6 +108,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         r = ion.r_t;
     }
 
+    //Update "last integration step" for ion
+    ion.last_step++;
+
     //Reset V
     ion.V = 0;
 
@@ -149,6 +152,15 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 az = s.r_t[2];
             }
 
+            //Reset the sites forces
+            if(s.last_step!=ion.last_step)
+            {
+                F_at[0] = 0;
+                F_at[1] = 0;
+                F_at[2] = 0;
+                s.last_step = ion.last_step;
+            }
+
             //Distances from site to atom
             dx = ax - r[0];
             dy = ay - r[1];
@@ -182,12 +194,10 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             fy = -dV_dr * dy;
             fz = -dV_dr * dz;
 
-            //Set the initial momentum changes for the sites here.
-            //Later other things might adjust them, but this is where
-            //they are initialized.
-            F_at[0] = fx;
-            F_at[1] = fy;
-            F_at[2] = fz;
+            //Apply momentum change to the site
+            F_at[0] += fx;
+            F_at[1] += fy;
+            F_at[2] += fz;
 
             //Add force components to net force.
             ftx += fx;
@@ -214,9 +224,58 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                 }
                 else
                 {
-                    //Need to loop over all and do some calculation.
+                    //Force on target.
+                    double *F_at2;
+                    double *r2;
+
+                    //Use atomk as k for springs between nearest sites.
+                    for(int j = 0; j<s.near; j++)
+                    {
+                        Site &s2 = *s.near_sites[j];
+
+                        if(predicted)
+                        {
+                            //Set predicted force instead.
+                            F_at2 = s2.dp_dt_t;
+                            //Get predicted loctations instead.
+                            r2 = s2.r_t;
+                        }
+                        else
+                        {
+                            F_at2 = s2.dp_dt;
+                            r2 = s2.r;
+                        }
+                        //Reset the sites forces
+                        if(s2.last_step!=s.last_step)
+                        {
+                            F_at2[0] = 0;
+                            F_at2[1] = 0;
+                            F_at2[2] = 0;
+                            s2.last_step = s.last_step;
+                        }
+                        
+                        double l_eq = sqrt(diff_sqr(s.r_0, s2.r_0));
+                        double ll_now = diff_sqr(s.r, r2);
+                        double l_now = sqrt(ll_now);
+
+                        //Break the spring if too far.
+                        if(fabs(l_now - l_eq) > settings.AX/2) continue;
+
+                        double f_mag = atomk * (l_eq/ll_now - 1.0);
+                        double dx = s.r[0] - r2[0];
+                        double dy = s.r[1] - r2[1];
+                        double dz = s.r[2] - r2[2];
+                        //Apply to us
+                        F_at[0] += dx * f_mag;
+                        F_at[1] += dy * f_mag;
+                        F_at[2] += dz * f_mag;
+                        //Apply to other
+                        F_at2[0] -= dx * f_mag;
+                        F_at2[1] -= dy * f_mag;
+                        F_at2[2] -= dz * f_mag;
+
+                    }
                 }
-                
             }
 
 
