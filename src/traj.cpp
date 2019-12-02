@@ -6,6 +6,116 @@
 #include "potentials.h"
 #include "safio.h"
 #include <cmath>
+#include <algorithm> // std::sort 
+
+int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int target_num, bool re_sort)
+{
+    //Initial locations are where ion is.
+    double cell_x = site.r[0];
+    double cell_y = site.r[1];
+    double cell_z = site.r[2];
+
+    int pos_hash = to_hash(cell_x, cell_y, cell_z);
+    //New site, so we need to re-calculate things
+    if(pos_hash != site.last_index)
+    {
+        //We need to resort this if we find new index.
+        re_sort = true;
+
+        //Update last index checked.
+        site.last_index = pos_hash;
+
+        //Number in current cell being checked.
+        int num;
+
+        //Reset total nearby, as we are now looking for them.
+        site.total_near = 0;
+
+        //Initialize this big.
+        site.rr_min_find = 1e6;
+
+        //Location of mask
+        Vec3d loc;
+
+        //Only particles closer than this are considered.
+        double near_distance_sq = settings.rr_max;
+        //Initialize this to max allowed distance.
+        double rr_min = near_distance_sq;
+
+        //volume of the mask to check.
+        int nmax = pow(2*radius+1, 3);
+
+        int last_check = -1;
+
+        int check_index = ion_ptr==NULL?-site.index:site.index;
+        int check_step = ion_ptr==NULL?-2:ion_ptr->steps;
+
+        //Loop over the mask, this is a radial loop.
+        for(int n = 0; n < nmax; n++)
+        {
+            //Gets x,y,z for the centered cube.
+            index_to_loc(n, loc);
+            //Translates to ion coordinate
+            double x = loc[0] * CELL_SIZE + cell_x;
+            double y = loc[1] * CELL_SIZE + cell_y;
+            double z = loc[2] * CELL_SIZE + cell_z;
+
+            pos_hash = to_hash(x,y,z);
+            //Due to mask and cell sizes differing, this
+            //can happen easily, so lets skip if it did.
+            if(last_check == pos_hash) continue;
+            last_check = pos_hash;
+
+            Cell* cell = lattice.get_cell(x,y,z);
+            //No cell here? skip.
+            if(cell == NULL) continue;
+            //Reset check stamp if new ion.
+            if(cell->ion_stamp != check_index) cell->check_stamp = -1;
+            //Already seen this cell this tick? skip.
+            if(cell->check_stamp == check_step) continue;
+            //Stamp cell so it gets skipped if seen again.
+            cell->check_stamp = check_step;
+            cell->ion_stamp = check_index;
+            //Get number of sites from the cell
+            num = cell->num;
+            //Check each site in this cell.
+            for(int i = 0; i<num; i++)
+            {
+                Site *s = &cell->sites[i];
+                //If some other ion has seen the site, reset it here.
+                //This reset puts it back to where it should be.
+                if(ion_ptr!=NULL && s->last_ion!=ion_ptr->index)
+                {
+                    s->last_ion = ion_ptr->index;
+                    s->reset();
+                }
+                //Check if site is close enough
+                double rr = diff_sqr(site.r, s->r);
+                if(rr > near_distance_sq) continue;
+                rr_min = std::min(rr_min, rr);
+                site.rr_min_find = std::min(rr, site.rr_min_find);
+                //Add the site to our tracked sites.
+                site.near_sites[site.total_near] = s;
+                site.total_near++;
+                //If we have enough, goto end.
+                if(site.total_near > 255) goto end;
+            }
+        }
+    }
+end:
+    if(re_sort)
+    {
+        //Reset number nearby.
+        site.near = 0;
+        //Sort the sites, and update near to min of near or target_num
+        std::sort(site.near_sites, site.near_sites + site.total_near, [&site](Site* a, Site* b){return site.compare_sites(a, b);});
+        //Update nearby number, taking min of these two.
+        site.near = std::min(site.total_near, target_num);
+    }
+    //Sets this to 0, so that the max check later is fine.
+    if(site.rr_min_find == 1e6) site.rr_min_find = 0;
+    return site.near;
+}
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
                         bool *froze, bool *left, double& E)
@@ -231,7 +341,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 
 start:
     //Find nearby lattice atoms
-    ion.fill_nearest(lattice, d_search, n_parts, sort);
+    fill_nearest(&ion, ion, lattice, d_search, n_parts, sort);
     //This is set back true later if needed.
     sort = false;
     //Increment counter for how many steps we have taken

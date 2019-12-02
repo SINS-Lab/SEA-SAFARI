@@ -3,6 +3,22 @@
 #include <iostream>
 #include "ion.h"
 
+
+
+/**
+ * This updates the value of near for this ion. it will search for
+ * atoms within radius of the ion, it will only find up to the 
+ * first target_number of ions found.
+ * 
+ * @param ion_ptr - pointer to the involved ion, this is null for inter-lattice checks
+ * @param site - site to look for near to.
+ * @param lattice - the lattice containing atoms to look for
+ * @param radius - max search distance for atoms
+ * @param target_number - max value of near to allow
+ * @param re_sort - whether the list needs to be re-sorted by nearest
+ */ 
+int fill_nearest(Ion* ion_ptr, Site &site, Lattice &lattice, int radius, int target_number, bool re_sort);
+
 /**
  * Sets the flags indicated by the various pointers, by checking
  * conditions such as z-position, energy, and x/y.

@@ -1,4 +1,5 @@
 #pragma once
+#include "vec_math.h"
 #include <string>
 
 struct Atom
@@ -45,6 +46,25 @@ public:
     //this is used for xyz output of nearest.
     bool near_check = 0;
 
+    //Start of block of values related to nearby sites
+
+    //All of the sites nearby, only guarenteed to be filled
+    //with site up to near
+    Site *near_sites[256];
+    //Maximum number of nearby atoms for this ion
+    int max_n = 0;
+    //Nearest distance ever
+    double r_min = 1e3;
+    //Nearest distance when finding nearby, squared
+    double rr_min_find = 1e3;
+    //This is the total number of Site*s stored in near_sites
+    int total_near = 0;
+    //Current number of nearby atoms.
+    int near = 0;
+    //This is the last place the near things were updated.
+    //Setting this back to -1 will force a re-check of near.
+    int last_index = -1;
+
     Site()
     {
         r_0 = new double[6];
@@ -57,6 +77,13 @@ public:
         p_0 = other.p_0;
         atom = other.atom;
         index = other.index;
+    }
+
+    bool compare_sites(const Site* a, const Site* b)
+    {
+        double dist_a = diff_sqr(a->r, this->r);
+        double dist_b = diff_sqr(b->r, this->r);
+        return dist_a < dist_b;
     }
 
     /**
