@@ -1,10 +1,10 @@
-#include "safio.h"
-#include "traj.h"
-#include "hameq.h"
-#include "potentials.h"
-#include "vec_math.h"
-#include <iostream>
-#include <cmath>
+#include "hameq.h" 
+
+#include "safio.h"       //For settings
+#include "traj.h"        //For nearest check method      
+#include "potentials.h"  //For forces/potentials
+#include "vec_math.h"    //General maths help
+#include <cmath>         //sqrt
 
 /**
  * This updates the current location/momentum of

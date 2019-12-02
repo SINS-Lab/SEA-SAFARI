@@ -1,20 +1,12 @@
 #include "ion.h"
-#include "potentials.h"
-#include "safio.h"
-#include "hameq.h"
-#include "lattice.h"
-#include "temps.h"
-#include "space_math.h"
 
-#include <functional> // std::minus 
+#include "potentials.h" //needed for image effect on initial KE
+#include "safio.h"      //settings
+#include "temps.h"      //thermalize_ion, thermalize
+
 #include <algorithm> // std::transform 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <stdlib.h>
-#include <cstdio>
-#include <cmath>
+#include <cmath>    //sqrt, cos, sin, tan, etc
+#include <functional> // std::minus 
 
 double zeros[3] = { 0,0,0 };
 

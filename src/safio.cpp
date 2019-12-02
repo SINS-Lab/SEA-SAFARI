@@ -1,7 +1,6 @@
 #include "safio.h"
-#include "string_utils.h"
-#include "temps.h"
-#include <vector>
+
+#include "string_utils.h"  //ArgValue, to_double_array, etc
 
 void Safio::load(std::map<std::string, ArgValue>& args)
 {

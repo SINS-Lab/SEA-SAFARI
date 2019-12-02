@@ -1,12 +1,13 @@
 #include "lattice.h"
-#include <vector>
-#include <cmath>
-#include <cstdio>
-#include <algorithm>     //std::sort
+
 #include "safio.h"       //settings
 #include "space_math.h"  //to_hash, includes the vec_math.h
 #include "string_utils.h"//to_double_array
 #include "traj.h"        //nearest neighbour lookup
+
+#include <algorithm>     //std::sort
+#include <cmath>         //fabs
+#include <vector>        //essentially dynamic lists
 
 void Lattice::rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
                 Vec3d* ex, Vec3d* ey, Vec3d* ez, bool scale_basis,

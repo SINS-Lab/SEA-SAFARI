@@ -1,7 +1,8 @@
 #include "potentials.h"
-#include "safio.h"
-#include <math.h>
-#include <iostream>
+
+#include "safio.h"   //settings
+
+#include <math.h>    //exp, sqrt, etc
 
 double ** Vr_r_cache;
 double ** dVr_dr_cache;
