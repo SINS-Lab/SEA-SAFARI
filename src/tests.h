@@ -15,6 +15,12 @@ void test_cache();
 void test_lattice_copy(Lattice &lattice);
 
 /**
+ * This tests initialization and performance
+ * of the inter-lattice forces.
+ */ 
+void test_lattice_springs(Lattice &lattice);
+
+/**
  * Tests some RNG related things
  * 
  */ 

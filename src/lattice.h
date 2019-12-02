@@ -86,6 +86,15 @@ struct Lattice
     Cell* make_cell(double x, double y, double z);
 
     /**
+     * This initializes the nearby neighbours for the sites.
+     * It should call traj.h's fill_nearest for the sites, and
+     * then do some cleanup.
+     * 
+     * @param nearest - Number of nearest neighbours to find.
+     */ 
+    void init_springs(int nearest);
+
+    /**
      * This function populates the contents of the given vector of sites, with
      * the rotated equivalent of the sites given.
      * 

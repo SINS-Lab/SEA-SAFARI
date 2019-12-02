@@ -112,6 +112,27 @@ void test_lattice_copy(Lattice &lattice)
     std::cout << "waited: " << x << std::endl;
 }
 
+void test_lattice_springs(Lattice &lattice)
+{	
+	double timer = clock();
+	lattice.init_springs(1);
+    double dt = (clock() - timer) / CLOCKS_PER_SEC;
+    //Convert to ms;
+    dt *= 1000;
+    std::cout << "Execution time: " << dt << "ms" << std::endl;
+
+	int min = 1e3;
+	int max = -1e3;
+	for (auto x : lattice.cell_map)
+	{
+		Cell* cell = x.second;
+		if(cell->num<=0) continue;
+		min = std::min(cell->sites[0].near, min);
+		max = std::max(cell->sites[0].near, max);
+	}
+    std::cout << "Min: " << min << ", Max: " << max << std::endl;
+}
+
 void test_mask()
 {
 	Vec3d loc;

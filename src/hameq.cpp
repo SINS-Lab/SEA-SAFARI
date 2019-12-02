@@ -1,4 +1,5 @@
 #include "safio.h"
+#include "traj.h"
 #include "hameq.h"
 #include "potentials.h"
 #include "vec_math.h"

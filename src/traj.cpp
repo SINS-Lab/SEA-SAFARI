@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm> // std::sort 
 
-int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int target_num, bool re_sort)
+int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort)
 {
     //Initial locations are where ion is.
     double cell_x = site.r[0];
@@ -37,10 +37,8 @@ int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int tar
         //Location of mask
         Vec3d loc;
 
-        //Only particles closer than this are considered.
-        double near_distance_sq = settings.rr_max;
         //Initialize this to max allowed distance.
-        double rr_min = near_distance_sq;
+        double rr_min = max_rr;
 
         //volume of the mask to check.
         int nmax = pow(2*radius+1, 3);
@@ -89,9 +87,14 @@ int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int tar
                     s->last_ion = ion_ptr->index;
                     s->reset();
                 }
+                //In this case, we want to make sure we are not including self.
+                if(ion_ptr == NULL)
+                {
+                    if(s->index == site.index) continue;
+                }
                 //Check if site is close enough
                 double rr = diff_sqr(site.r, s->r);
-                if(rr > near_distance_sq) continue;
+                if(rr > max_rr) continue;
                 rr_min = std::min(rr_min, rr);
                 site.rr_min_find = std::min(rr, site.rr_min_find);
                 //Add the site to our tracked sites.
@@ -341,7 +344,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 
 start:
     //Find nearby lattice atoms
-    fill_nearest(&ion, ion, lattice, d_search, n_parts, sort);
+    fill_nearest(&ion, ion, lattice, d_search, n_parts, settings.rr_max, sort);
     //This is set back true later if needed.
     sort = false;
     //Increment counter for how many steps we have taken

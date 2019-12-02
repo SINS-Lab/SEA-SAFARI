@@ -15,9 +15,10 @@
  * @param lattice - the lattice containing atoms to look for
  * @param radius - max search distance for atoms
  * @param target_number - max value of near to allow
+ * @param max_rr - maximum distance squared to include (checked after radius)
  * @param re_sort - whether the list needs to be re-sorted by nearest
  */ 
-int fill_nearest(Ion* ion_ptr, Site &site, Lattice &lattice, int radius, int target_number, bool re_sort);
+int fill_nearest(Ion* ion_ptr, Site &site, Lattice &lattice, int radius, int target_number, double max_rr, bool re_sort);
 
 /**
  * Sets the flags indicated by the various pointers, by checking

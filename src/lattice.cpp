@@ -1,11 +1,12 @@
 #include "lattice.h"
+#include <vector>
 #include <cmath>
 #include <cstdio>
-#include <algorithm>    //std::sort
-#include <vector>
-#include "safio.h"
-#include "space_math.h"
-#include "string_utils.h"
+#include <algorithm>     //std::sort
+#include "safio.h"       //settings
+#include "space_math.h"  //to_hash, includes the vec_math.h
+#include "string_utils.h"//to_double_array
+#include "traj.h"        //nearest neighbour lookup
 
 void Lattice::rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
                 Vec3d* ex, Vec3d* ey, Vec3d* ez, bool scale_basis,
@@ -297,6 +298,64 @@ void Lattice::load_lattice(std::ifstream& input)
                  site.r_0[0], site.r_0[1], site.r_0[2]);
     }
     debug_file<< "Loaded " << sites.size() << " sites from file" << std::endl;
+}
+
+void Lattice::init_springs(int nearest)
+{
+    double max_rr = std::max(settings.AX, 
+                    std::max(settings.AY, settings.AZ)) * 2;
+
+    //Initial loop pass to reset all sites to initial locations
+    for (auto x : cell_map)
+	{
+		Cell* cell = x.second;
+		if(cell->num<=0) continue;
+        //Loop over the sites in the cell.
+        for(int i = 0; i<cell->num; i++)
+        {
+            Site &site = cell->sites[i];
+            std::copy(site.r_0, site.r_0 + 3, site.r);
+        }
+    }
+
+    //Error for square differences for nearest neighbours
+    double err = 0.25;
+
+    max_rr *= max_rr;
+    
+    //Loop over the cell map for the sites to use.
+    for (auto x : cell_map)
+	{
+		Cell* cell = x.second;
+		if(cell->num<=0) continue;
+        //Loop over the sites in the cell.
+        for(int i = 0; i<cell->num; i++)
+        {
+            Site &site = cell->sites[i];
+            fill_nearest(NULL, site, *this, 2, 24, max_rr, true);
+            if(site.near==0) continue;
+            //The +err is to allow some error from rounding, etc in loaded lattices.
+            double dist_near = diff_sqr(site.r_0, site.near_sites[0]->r_0) + err;
+            int current = nearest;
+            int n = 0;
+            for(int j = 0; j<site.near; j++)
+            {
+                Site *s = site.near_sites[j];
+                double distsq = diff_sqr(site.r_0, s->r_0);
+
+                //This is next level of neighbour.
+                if(distsq > dist_near)
+                {
+                    current--;
+                    //Again, +err for fp errors.
+                    dist_near = distsq + err;
+                }
+                if(current <= 0) break;
+                n++;
+            }
+            site.near = n;
+        }
+    }
 }
 
 Cell* Lattice::get_cell(double x, double y, double z)

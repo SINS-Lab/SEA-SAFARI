@@ -175,7 +175,18 @@ int main(int argc, char* argv[])
         }
         else if (settings.SCAT_FLAG == 777)
         {
-            test_lattice_copy(lattice);
+            switch (settings.SCAT_TYPE)
+            {
+            case 666:
+                test_lattice_copy(lattice);
+                break;
+            case 777:
+                test_lattice_springs(lattice);
+                break;
+            default:
+                break;
+            }
+
         }
         else if (settings.SCAT_FLAG == 888)
         {
