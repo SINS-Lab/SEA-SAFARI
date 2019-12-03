@@ -56,7 +56,7 @@ void Ion::set_KE(double E0,  double theta0, double phi0, double x, double y)
     //If we have image effect, account for that here.
     if(settings.use_image)
     {
-        p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom->mass * Vi_z(settings.Z1, q)));
+        p_z0 = -sqrt((p_z0 * p_z0) + (2 * atom->mass * Vi_z(settings.Z1, q)));
     }
 
     //Set the initial momentum of the ion

@@ -565,7 +565,7 @@ end:
         {
             //Image charge would pull it towards surface, this accounts
             //for that effect.
-            pzz = (pz*pz) - (2*mass*Vi_z(settings.Z1, ion.q));
+            pzz = (pz*pz) + (2*mass*Vi_z(settings.Z1, ion.q));
             pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
             //Recalulate this, as pz has changed
             //We are fine with pzz being -ve, as that case
