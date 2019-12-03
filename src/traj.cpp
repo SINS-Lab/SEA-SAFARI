@@ -570,15 +570,16 @@ end:
             //Recalulate this, as pz has changed
             //We are fine with pzz being -ve, as that case
             //will be dropped due to ion not escaping.
-            psq = pzz + px*px + py*py;
+            psq = pzz * pzz + px*px + py*py;
         }
         else
         {
             //No image, so this is the same as it was.
             pzz = pz;
         }
+        double p = sqrt(psq);
         //Ion is not escaping.
-        if(pzz <= 0 || psq <= 0)
+        if(pzz <= 0 || p <= 0)
         {
             theta = 0;
             phi = 90;
@@ -591,7 +592,7 @@ end:
             E = 0.5 * psq / mass;
 
             //calculate theta, depends on pz
-            theta = acos(pzz/sqrt(psq)) * 180 / M_PI;
+            theta = acos(pzz/p) * 180 / M_PI;
 
             if(px == 0 && py==0)
             {
