@@ -161,7 +161,7 @@ struct Safio
 
     //These two are currently not used
     double ATOMK;  //unused - spring constant between neighbours
-    double RNEIGH; //unused - max distance squared between neighbours
+    double max_spring_V; //Springs break if the potential is above this.
 
     //Number of trajectories to run.
     //If this is 1, it will run a single gridscat,

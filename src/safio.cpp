@@ -308,7 +308,7 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             {
                 CORR = args[0] == "t";
                 ATOMK = atof(args[1].c_str());
-                RNEIGH = atof(args[2].c_str());
+                max_spring_V = atof(args[2].c_str());
             }
             if (n == 27)
             {

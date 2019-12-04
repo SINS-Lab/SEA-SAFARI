@@ -74,6 +74,9 @@ void thermaize(Site &site)
             //Adjusted position
             site.r[i] = site.r_0[i] + site.atom->dev_r[i]*r1*cos(2*M_PI*r2);
             site.p[i] = site.p_0[i] + site.atom->dev_p[i]*r1*sin(2*M_PI*r2);
+
+            //TODO for cases where atomk !=0, this should instead factor
+            //the springs due to neighbours, rather than this simple case.
         }
     }
 }

@@ -213,13 +213,20 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                     double dx_sq = (s.r[0] - s.r_0[0]) * (s.r[0] - s.r_0[0]);
                     double dy_sq = (s.r[1] - s.r_0[1]) * (s.r[1] - s.r_0[1]);
                     double dz_sq = (s.r[2] - s.r_0[2]) * (s.r[2] - s.r_0[2]);
-                    //F = -kx
-                    if(dx_sq < settings.AX*settings.AX/4)
+                    //V = 0.5kx^2
+                    double V_s_x = 0.5 * s.atom->spring[0] * dx_sq;
+                    double V_s_y = 0.5 * s.atom->spring[1] * dy_sq;
+                    double V_s_z = 0.5 * s.atom->spring[2] * dz_sq;
+
+                    double V_s = V_s_x + V_s_y + V_s_z;
+                    //Check if too much spring energy
+                    if(V_s_x < V_s)
+                    {
+                        //F = -kx
                         F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
-                    if(dy_sq < settings.AY*settings.AY/4)
                         F_at[1] -= s.atom->spring[1] * (s.r[1] - s.r_0[1]);
-                    if(dz_sq < settings.AZ*settings.AZ/4)
                         F_at[2] -= s.atom->spring[2] * (s.r[2] - s.r_0[2]);
+                    }
                     //These springs are only applied if the site is still "near" the original location.
                 }
                 else
@@ -256,23 +263,28 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                         
                         double l_eq = sqrt(diff_sqr(s.r_0, s2.r_0));
                         double ll_now = diff_sqr(s.r, r2);
-                        double l_now = sqrt(ll_now);
+                        double dl = sqrt(ll_now) - l_eq;
+
+                        //V = 0.5*k*x^2
+                        double V_s = 0.5 * atomk * dl * dl;
 
                         //Break the spring if too far.
-                        if(fabs(l_now - l_eq) > settings.AX/2) continue;
-
-                        double f_mag = atomk * (l_eq/ll_now - 1.0);
-                        double dx = s.r[0] - r2[0];
-                        double dy = s.r[1] - r2[1];
-                        double dz = s.r[2] - r2[2];
+                        if(V_s > settings.max_spring_V) continue;
+                        //F = -kx
+                        double f_mag = -atomk * dl;
+                        //These are scaled by 1/r^2 for conversion to
+                        //the same coordinate system as the fmag was caluclated for
+                        double dx_hat = (r2[0] - s.r[0]) / ll_now;
+                        double dy_hat = (r2[1] - s.r[1]) / ll_now;
+                        double dz_hat = (r2[2] - s.r[2]) / ll_now;
                         //Apply to us
-                        F_at[0] += dx * f_mag;
-                        F_at[1] += dy * f_mag;
-                        F_at[2] += dz * f_mag;
+                        F_at[0] += dx_hat * f_mag;
+                        F_at[1] += dy_hat * f_mag;
+                        F_at[2] += dz_hat * f_mag;
                         //Apply to other
-                        F_at2[0] -= dx * f_mag;
-                        F_at2[1] -= dy * f_mag;
-                        F_at2[2] -= dz * f_mag;
+                        F_at2[0] -= dx_hat * f_mag;
+                        F_at2[1] -= dy_hat * f_mag;
+                        F_at2[2] -= dz_hat * f_mag;
 
                     }
                 }

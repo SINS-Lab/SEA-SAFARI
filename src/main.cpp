@@ -86,6 +86,13 @@ int main(int argc, char* argv[])
     {
         lattice.build_lattice();
     }
+
+    //Initialize springs if atomk > 0
+    if(settings.ATOMK > 1e-30)
+    {
+        //Only consider first nearest neighbours
+        lattice.init_springs(1);
+    }
     
     std::ofstream crys_xyz_file;
     crys_xyz_file.open(settings.output_name+".crys.xyz");
