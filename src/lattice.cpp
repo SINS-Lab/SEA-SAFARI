@@ -333,6 +333,12 @@ void Lattice::init_springs(int nearest)
         for(int i = 0; i<cell->num; i++)
         {
             Site &site = cell->sites[i];
+            //This is initialized null
+            if(site.near_sites == NULL)
+            {
+                //Initialize large for initial search
+                site.near_sites = new Site*[256];
+            }
             fill_nearest(NULL, site, *this, 2, 24, max_rr, true);
             if(site.near==0) continue;
             //The +err is to allow some error from rounding, etc in loaded lattices.
@@ -355,6 +361,8 @@ void Lattice::init_springs(int nearest)
                 n++;
             }
             site.near = n;
+            //Cull the nearest array down to the size of n
+            //TODO ^
         }
     }
 }

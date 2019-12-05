@@ -25,6 +25,14 @@ public:
     //potential energy the particle is in.
     double V = 0;
 
+    Ion()
+    {
+        // In the parent class, this is left null, unless
+        // lattice springs are used.
+        // So for Ion, we initialize it at this size.
+        near_sites = new Site*[256];
+    }
+
     /**
      * Overrides the reset for Site, this is more specific
      * for the ion

@@ -54,7 +54,7 @@ public:
 
     //All of the sites nearby, only guarenteed to be filled
     //with site up to near
-    Site *near_sites[256];
+    Site **near_sites = NULL;
     //Maximum number of nearby atoms for this ion
     int max_n = 0;
     //Nearest distance ever
