@@ -178,12 +178,15 @@ XYZ smooth(const XYZ& original, std::string colour)
     
     //Now we construct a new xyz in even time steps
     XYZ new_xyz;
-    new_xyz.xyzs.resize(1000);
+
+    int SIZE = std::max(1000, (int)(original.xyzs.size() + 5));
+
+    new_xyz.xyzs.resize(SIZE);
     //Note that we are doing this with a fixed 1000 frames.
     #pragma omp parallel for num_threads(THREADCOUNT)
-    for(int i = 0; i<1000; i++)
+    for(int i = 0; i<SIZE; i++)
     {
-        double time = i * end_time/1000;
+        double time = i * end_time/SIZE;
         std::vector<Particle> pset = interpolate_states(time, times, particles);
         apply_colour(pset, colour);
         XYZ_Single single = from_Particles(time, pset);
