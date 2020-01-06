@@ -168,8 +168,7 @@ class Detector:
             ax.set_title("Intensity vs Theta, Detections: "+str(len(aArr)))
             ax.set_xlabel('Angle (Degrees)')
             ax.set_ylabel('Intensity')
-            ax.tick_params(axis="y", direction="in")
-            ax.tick_params(axis="x", direction="in")
+            ax.tick_params(direction="in", which='both')
             if self.plots:
                 fig.show()
         #The following saves the plot as a png file
@@ -226,8 +225,7 @@ class Detector:
             print("I_E, Detections: "+str(len(aArr)))
             
             ax.set_xlabel('Energy (E/E0)')
-            ax.tick_params(axis="y", direction="in")
-            ax.tick_params(axis="x", direction="in")
+            ax.tick_params(direction="in", which='both')
             ax2.set_xlabel('Energy (eV)')
             ax2.tick_params(axis="x", direction="in")
 
