@@ -90,8 +90,7 @@ int main(int argc, char* argv[])
     //Initialize springs if atomk > 0
     if(settings.ATOMK > 1e-30)
     {
-        //Only consider first nearest neighbours
-        lattice.init_springs(1);
+        lattice.init_springs(settings.neighbour_count);
     }
     
     std::ofstream crys_xyz_file;

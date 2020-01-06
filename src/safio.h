@@ -159,9 +159,10 @@ struct Safio
     //Whether the lattice sites are springy
     bool CORR;
 
-    //These two are currently not used
-    double ATOMK;  //unused - spring constant between neighbours
+    //Values for non-einstein springs
+    double ATOMK;        //spring constant between neighbours
     double max_spring_V; //Springs break if the potential is above this.
+    int neighbour_count; //Number of nearest neighbours to consider
 
     //Number of trajectories to run.
     //If this is 1, it will run a single gridscat,

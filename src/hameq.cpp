@@ -220,7 +220,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
                     double V_s = V_s_x + V_s_y + V_s_z;
                     //Check if too much spring energy
-                    if(V_s_x < V_s)
+                    if(settings.max_spring_V > V_s)
                     {
                         //F = -kx
                         F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
@@ -265,11 +265,21 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                         double ll_now = diff_sqr(s.r, r2);
                         double dl = sqrt(ll_now) - l_eq;
 
-                        //V = 0.5*k*x^2
-                        double V_s = 0.5 * atomk * dl * dl;
+                        //Check for spring breaking if dl > 0
+                        if(dl > 0)
+                        {
+                            //V = 0.5*k*x^2
+                            double V_s = 0.5 * atomk * dl * dl;
 
-                        //Break the spring if too far.
-                        if(V_s > settings.max_spring_V) continue;
+                            //Scale by 1/r^2, this accounts for
+                            //differences in bond breaking by distance
+                            V_s /= l_eq * l_eq;
+
+                            //Break the spring if too far.
+                            if(V_s > settings.max_spring_V) continue;
+                        }
+
+
                         //F = -kx
                         double f_mag = -atomk * dl;
                         //These are scaled by 1/r^2 for conversion to

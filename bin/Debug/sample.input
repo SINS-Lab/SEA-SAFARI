@@ -220,9 +220,21 @@ f
 5.0 5.0 5.0
 
 # These control inter-atomic forces
-# The first parameter is a flag which controls whether the inter-atomic
-# forces are even applied. The second and third are currently unused,
-# They should enable correlations other than basic einstien springs.
+# 
+# Parameters:
+# 
+# 1. Whether interatomic forces occur at all.
+#
+# 2. if 0, will use einstien springs, otherwise is k factor
+#    for interatomic springs.
+#
+# 3. this is breaking condition for interatomic springs,
+#    if using einstien, this is value in eV for where they break
+#    for interatomic springs, this is scaled by 1/r^2 for the initial
+#    seperation of the lattice sites
+#
+# 4. Number of nearest neighbours to consider for interaction,
+#    This defaults to 1 if the argument is not present.
 #
 t 0 8.36405
 
