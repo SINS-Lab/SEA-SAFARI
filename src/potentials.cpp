@@ -32,6 +32,7 @@ double dVr_dr_init(double r, int n)
     {
         exit_fail("ERROR WITH dVr_dr");
     }
+    return 0;
 }
 
 double Vr_r_init(double r, int n)
@@ -53,6 +54,7 @@ double Vr_r_init(double r, int n)
     {
         exit_fail("ERROR WITH Vr_r");
     }
+    return 0;
 }
 
 void init_potentials()

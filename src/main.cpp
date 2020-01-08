@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void exit_fail(char* reason)
+void exit_fail(std::string reason)
 {
     std::cout << "Exiting Early, for reason:" << std::endl;
     std::cout << reason << std::endl;

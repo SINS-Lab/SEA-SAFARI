@@ -9,4 +9,4 @@
  * after finishing the debug file, and printing
  * the reason to it.
  */ 
-void exit_fail(char* reason);
+void exit_fail(std::string reason);
