@@ -11,6 +11,7 @@
 #include "potentials.h"  /* We initialize these here */
 #include "tests.h"       /* Debugging stuff */
 #include "temps.h"       /* These are also initialized */
+#include "safari.h"      /* This includes the exit_fail function*/
 
 //Initialize the global variables.
 Safio settings;
@@ -213,4 +214,20 @@ int main(int argc, char* argv[])
     debug_file.close();
     traj_file.close();
     return 0;
+}
+
+void exit_fail(char* reason)
+{
+    std::cout << "Exiting Early, for reason:" << std::endl;
+    std::cout << reason << std::endl;
+    debug_file << "Exiting Early, for reason:" << std::endl;
+    debug_file << reason << std::endl;
+
+    //Close files.
+    out_file.close();
+    debug_file.close();
+    traj_file.close();
+
+    //Exit
+    exit(EXIT_FAILURE);
 }

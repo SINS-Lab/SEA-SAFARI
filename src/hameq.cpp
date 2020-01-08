@@ -4,7 +4,12 @@
 #include "traj.h"        //For nearest check method      
 #include "potentials.h"  //For forces/potentials
 #include "vec_math.h"    //General maths help
+#include "safari.h"      //for exit_fail
 #include <cmath>         //sqrt
+
+int num_intersect_max = 1000000;
+//This is a counter for number of intersections, if this exceeds max, it terminates safari.
+int num_intersect = 0;
 
 /**
  * This updates the current location/momentum of
@@ -173,6 +178,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             if(r==0)
             {
                 debug_file << "Ion intersected with atom?: " << ion.index << " " << s.index << std::endl;
+                if(num_intersect++>num_intersect_max) exit_fail("Too many ion-site intersections");
                 continue;
             }
 

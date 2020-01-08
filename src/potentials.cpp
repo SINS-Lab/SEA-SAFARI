@@ -1,6 +1,7 @@
 #include "potentials.h"
 
 #include "safio.h"   //settings
+#include "safari.h"  //exit_fail
 
 #include <math.h>    //exp, sqrt, etc
 
@@ -29,8 +30,7 @@ double dVr_dr_init(double r, int n)
     }
     else
     {
-        debug_file << "ERROR WITH dVr_dr" << std::endl;
-        exit(EXIT_FAILURE);
+        exit_fail("ERROR WITH dVr_dr");
     }
 }
 
@@ -51,8 +51,7 @@ double Vr_r_init(double r, int n)
     }
     else
     {
-        debug_file << "ERROR WITH Vr_r" << std::endl;
-        exit(EXIT_FAILURE);
+        exit_fail("ERROR WITH Vr_r");
     }
 }
 
@@ -160,8 +159,7 @@ double Vi_z(double z, int q)
     }
     else
     {
-        debug_file << "ERROR WITH Vi_z" << std::endl;
-        exit(EXIT_FAILURE);
+        exit_fail("ERROR WITH Vi_z");
     }
     return 0;
 }
@@ -189,8 +187,7 @@ double dVi_dz(double z, int q)
     }
     else
     {
-        debug_file << "ERROR WITH dVi_dz" << std::endl;
-        exit(EXIT_FAILURE);
+        exit_fail("ERROR WITH dVi_dz");
     }
     return 0;
 }
