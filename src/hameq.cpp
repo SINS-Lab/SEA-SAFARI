@@ -339,7 +339,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
     if(settings.F_a > 0)
     {
-        ion.V += apply_friction(lattice, ion, F, dt);
+        ion.V += apply_friction(lattice, ion, F, dt, predicted);
     }
 
     if(!predicted)

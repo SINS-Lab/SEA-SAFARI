@@ -55,15 +55,25 @@ double dVi_dz(double z, int q);
 /**
  * Applies a frictional force to F.
  * 
+ * @param lattice - The lattice being scattered off
+ * @param ion - the ion being scattered
+ * @param F - the ion's force term to use
+ * @param dt - the current time step
+ * @param predicted - if true, F is ion.dp_dt_t, otherwise it is ion.dp_dt
+ * 
  * @return the energy change which would result from this interaction.
  */ 
-double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt);
+double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt, bool predicted);
 
 /**
  * Returns the electron density at the site of the ion.
  * 
  * Units of this are electrons / Angstrom^3
  * 
+ * @param lattice - The lattice being scattered off
+ * @param ion - the ion being scattered
+ * @param predicted - if true, F is ion.dp_dt_t, otherwise it is ion.dp_dt
+ * 
  * @return the density of electrons at this location.
  */ 
-double electron_density(Lattice &lattice, Ion &ion);
+double electron_density(Lattice &lattice, Ion &ion, bool predicted);
