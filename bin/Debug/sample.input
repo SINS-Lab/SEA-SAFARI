@@ -88,7 +88,7 @@ t
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
-10000
+1000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
@@ -120,7 +120,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-777 666
+666 666
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
@@ -236,7 +236,7 @@ f
 # 4. Number of nearest neighbours to consider for interaction,
 #    This defaults to 1 if the argument is not present.
 #
-t 0 8.36405
+t 1.5 10 2
 
 # This line defines the surface face of the crystal to generate.
 # The first three parameters are nessisary, they are the 

@@ -87,7 +87,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     //Some useful variables.
     double dx = 0, dy = 0, dz = 0, 
            fx = 0, fy = 0, fz = 0, 
-           ftx = 0, fty = 0, ftz = 0;
+           ftx = 0, fty = 0, ftz = 0,
+           rr = 0;
 
     //Lattice atom coordintates.
     double ax = 0, ay = 0, az = 0;
@@ -171,7 +172,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             dy = ay - r[1];
             dz = az - r[2];
 
-            //Lattice/Ion distance
+            //Lattice/Ion distance no longer need ion's r
+            //so we can shadow it here.
             double r = sqrt(dx*dx + dy*dy + dz*dz);
 
             //No force if ion is on an atom.
@@ -266,9 +268,16 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                             F_at2[2] = 0;
                             s2.last_step = s.last_step;
                         }
-                        
-                        double l_eq = sqrt(diff_sqr(s.r_0, s2.r_0));
-                        double ll_now = diff_sqr(s.r, r2);
+                        dx = s.r_0[0] - s2.r_0[0];
+                        dy = s.r_0[1] - s2.r_0[1];
+                        dz = s.r_0[2] - s2.r_0[2];
+                        rr = dx*dx + dy*dy + dz*dz;
+                        double l_eq = sqrt(rr);
+                        dx = ax - r2[0];
+                        dy = ay - r2[1];
+                        dz = az - r2[2];
+                        rr = dx*dx + dy*dy + dz*dz;
+                        double ll_now = rr;
                         double dl = sqrt(ll_now) - l_eq;
 
                         //Check for spring breaking if dl > 0
@@ -290,9 +299,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                         double f_mag = -atomk * dl;
                         //These are scaled by 1/r^2 for conversion to
                         //the same coordinate system as the fmag was caluclated for
-                        double dx_hat = (r2[0] - s.r[0]) / ll_now;
-                        double dy_hat = (r2[1] - s.r[1]) / ll_now;
-                        double dz_hat = (r2[2] - s.r[2]) / ll_now;
+                        double dx_hat = (r2[0] - ax) / ll_now;
+                        double dy_hat = (r2[1] - ay) / ll_now;
+                        double dz_hat = (r2[2] - az) / ll_now;
                         //Apply to us
                         F_at[0] += dx_hat * f_mag;
                         F_at[1] += dy_hat * f_mag;
