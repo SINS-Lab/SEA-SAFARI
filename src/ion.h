@@ -33,6 +33,11 @@ public:
         near_sites = new Site*[256];
     }
 
+    ~Ion()
+    {
+        delete near_sites;
+    }
+
     /**
      * Overrides the reset for Site, this is more specific
      * for the ion
