@@ -148,6 +148,13 @@ class Detector:
         tArr = self.detections[...,4]
         aArr = self.detections[...,7]
 
+        # Weight the trajectories based on outoging velocity
+        eArr = self.detections[...,3]
+        # eArr = np.sqrt(eArr)
+        tfArr = np.multiply(tArr, math.pi/180)
+        tfArr = np.sin(tfArr)
+        aArr = np.multiply(eArr, tfArr)
+
         intensity = integrate(numpoints, winv, tArr, aArr, angles)
 
         file_name = self.outputprefix\
@@ -185,6 +192,14 @@ class Detector:
         
         eArr = self.detections[...,3]/self.safio.E0
         aArr = self.detections[...,7]
+
+
+        tArr = self.detections[...,4]
+        efArr = np.sqrt(self.detections[...,3])
+        efArr = self.detections[...,3]
+        tfArr = np.multiply(tArr, math.pi/180)
+        tfArr = np.sin(tfArr)
+        aArr = np.multiply(efArr, tfArr)
         
         #Convert the points into gaussians
         intensity = integrate(numpoints, winv, eArr, aArr, energy)
