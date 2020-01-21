@@ -1,7 +1,7 @@
-import os
-import subprocess
-import time
-import platform
+import os           # path/file searching, etc
+import subprocess   # Subprocesses for each run
+import time         # Delay between spawning of runs
+import platform     # Linux vs Windows checks
 
 def run(threads, processes, directory='.', recursive=True):
     

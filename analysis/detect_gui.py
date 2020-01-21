@@ -1,24 +1,20 @@
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
-from functools import cmp_to_key
-import os
-import math
-import time
-import numpy as np
-import argparse
+# ^^ Gui components
+from functools import cmp_to_key        # Used to sort files in the dropdown box
+import os                               # Path related stuff
+import time                             # sleep for delays
+import argparse                         # Parsing command line arguments
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
-import matplotlib
+import matplotlib                       # Plotting
 #Qt5Agg is the backend
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-from matplotlib.collections import PatchCollection
-import safari_input
-import subprocess
-import detect_processor as detect
+import matplotlib.pyplot as plt         # Plotting
+import safari_input                     # Loading input files
+import detect_processor as detect       # Main detect code
 
 class Spectrum(detect.Spectrum):
 

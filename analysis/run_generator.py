@@ -1,11 +1,10 @@
 
-import safari_input
-import os
-import numpy
+import safari_input   # Makes the input files
+import os             # Makes directories, etc
+import numpy          # Used for frange
 
 def frange(start, end, step):
     return numpy.arange(start, end, step)
-    
 
 def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025,\
              estep=1, pstep=1, tstep=1):

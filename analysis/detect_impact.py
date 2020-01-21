@@ -1,9 +1,8 @@
-import safari_input
-import subprocess
-import argparse
-import platform
-import os
-import time
+import subprocess   # used to run safari and vmd
+import argparse     # parses command line arguments
+import platform     # Linux vs Windows check
+import os           # os.remove is used for .vmd file
+import time         # sleeps before removing file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="SAFIO input file")

@@ -1,18 +1,15 @@
-import os
-import math
-import time
-import numpy as np
-import argparse
+import os                          # Path related things
+import numpy as np                 # used to make the frange
+import argparse                    # Parsing arguments
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
-import matplotlib
+import matplotlib                  # Plotting
 #Qt5Agg is the backend
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-import safari_input
-import subprocess
-import detect_processor as detect
+import matplotlib.pyplot as plt    # Plotting
+import safari_input                # parsing the input files
+import detect_processor as detect  # Main detector code
 
 def frange(start, end, step):
     return np.arange(start, end, step)

@@ -1,25 +1,16 @@
-
-
-from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox
-from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton
-from scipy.io import FortranFile
-import os
-import math
-import time
-import numpy as np
-import platform
+import math                                          # Used for sin/cos/etc
+import numpy as np                                   # General array stuff.
+import platform                                      # Linux vs Windows Checks
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
-import matplotlib
+import matplotlib                                    # Main plotting
 #Qt5Agg is the backend
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-from matplotlib.collections import PatchCollection
-import safari_input
-import subprocess
+import matplotlib.pyplot as plt                      # More plotting stuff
+from matplotlib.patches import Circle                # Cirlces on impact plot
+from matplotlib.collections import PatchCollection   # Also for the circles
+import subprocess                                    # For calling XYZ processor
 
 # Used for shift-click functionality
 shift_is_held = False
