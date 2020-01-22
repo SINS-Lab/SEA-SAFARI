@@ -1,25 +1,20 @@
-import os
-import math
-import time
-import numpy as np
-import platform
-import argparse
+import numpy as np  # Array manipulation
+import argparse     # Argument parsing
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
-import matplotlib
+import matplotlib   # Plotting
 #Qt5Agg is the backend
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import matplotlib.animation as anim
-from matplotlib.patches import Circle
-from matplotlib.collections import PatchCollection
-import safari_input
-import subprocess
-import detect_processor as detect
-import tailer
-import multiprocessing
+import matplotlib.pyplot as plt                    # Plotting
+import matplotlib.image as mpimg                   # Plotting as image
+import matplotlib.animation as anim                # Updating said image
+from matplotlib.patches import Circle              # Circles on plot
+from matplotlib.collections import PatchCollection # Also for said circles
+import safari_input                                # Reading input files
+import detect_processor as detect                  # Processing detections
+import tailer                                      # Reading data file
+import multiprocessing                             # Reading async from plotting
 
 #Some global variables
 img = None

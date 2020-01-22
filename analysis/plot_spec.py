@@ -1,12 +1,9 @@
-import argparse
-import numpy as np
-import os
-import math
-import matplotlib
+import argparse                     # Parsing command line arguments
+import numpy as np                  # Array manipulation/maths
+import matplotlib                   # Plotting
 #Qt5Agg is the backend
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-import scipy.constants as consts
+import matplotlib.pyplot as plt     # Plotting
 
 class Spec:
     def load(self, filename, compare_file, e0):

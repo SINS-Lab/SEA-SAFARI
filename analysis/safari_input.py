@@ -1,6 +1,6 @@
-import os
-import shutil
-import time
+import os         # Used to check if a path exists
+import shutil     # Used to copy files.
+import time       # Used to generate a timestamp.
 
 # A bunch of functions for fortran IO
 def parseVar(input):
