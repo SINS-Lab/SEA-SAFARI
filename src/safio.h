@@ -109,6 +109,11 @@ struct Safio
     //Site Potential Values
     int binary_potential_type;
     double* binary_potential_parameters;
+    //Extra stuff needed for lennard jones things
+    //If this is 0, we don't use L_J, we use springs
+    int lattice_potential_type = 0;
+    //This tells us what index starts the L_J parameters
+    int lattice_potential_start;
 
     //Image Potential Values
     int image_potential_type;

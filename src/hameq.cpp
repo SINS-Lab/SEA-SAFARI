@@ -268,35 +268,52 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                             F_at2[2] = 0;
                             s2.last_step = s.last_step;
                         }
-                        dx = s.r_0[0] - s2.r_0[0];
-                        dy = s.r_0[1] - s2.r_0[1];
-                        dz = s.r_0[2] - s2.r_0[2];
-                        rr = dx*dx + dy*dy + dz*dz;
-                        double l_eq = sqrt(rr);
+                        //This will be the magnitude of the force.
+                        double f_mag = 0;
+
+                        //Compute lattice site separation here.
                         dx = ax - r2[0];
                         dy = ay - r2[1];
                         dz = az - r2[2];
                         rr = dx*dx + dy*dy + dz*dz;
                         double ll_now = rr;
-                        double dl = sqrt(ll_now) - l_eq;
 
-                        //Check for spring breaking if dl > 0
-                        if(dl > 0)
+                        if(settings.lattice_potential_type)
                         {
-                            //V = 0.5*k*x^2
-                            double V_s = 0.5 * atomk * dl * dl;
-
-                            //Scale by 1/r^2, this accounts for
-                            //differences in bond breaking by distance
-                            V_s /= l_eq * l_eq;
-
-                            //Break the spring if too far.
-                            if(V_s > settings.max_spring_V) continue;
+                            //In here we use Lennard Jones forces
+                            f_mag = -L_J_dV_dr(sqrt(ll_now), s2.atom->index, s.atom->index);
                         }
+                        else
+                        {
+                            //In here we use lattice springs.
 
+                            //Compute lattice site separation at rest
+                            dx = s.r_0[0] - s2.r_0[0];
+                            dy = s.r_0[1] - s2.r_0[1];
+                            dz = s.r_0[2] - s2.r_0[2];
+                            rr = dx*dx + dy*dy + dz*dz;
+                            double l_eq = sqrt(rr);
 
-                        //F = -kx
-                        double f_mag = -atomk * dl;
+                            double dl = sqrt(ll_now) - l_eq;
+
+                            //Check for spring breaking if dl > 0
+                            if(dl > 0)
+                            {
+                                //V = 0.5*k*x^2
+                                double V_s = 0.5 * atomk * dl * dl;
+
+                                //Scale by 1/r^2, this accounts for
+                                //differences in bond breaking by distance
+                                V_s /= l_eq * l_eq;
+
+                                //Break the spring if too far.
+                                if(V_s > settings.max_spring_V) continue;
+                            }
+                            //F = -kx
+                            f_mag = -atomk * dl;
+                        }
+                        
+
                         //These are scaled by 1/r^2 for conversion to
                         //the same coordinate system as the fmag was caluclated for
                         double dx_hat = (r2[0] - ax) / ll_now;

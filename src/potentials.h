@@ -53,6 +53,21 @@ double Vi_z(double z, int q);
 double dVi_dz(double z, int q);
 
 /**
+ * Returns the magnitude of the force between the given atoms, 
+ * assuming that they are computed from a lennard-jones potetnal, 
+ * these parameters need to be given in the input file.
+ * 
+ * @param r - Radial separation between the atoms
+ * @param a - index of one of the atoms
+ * @param b - index of the other atom
+ * 
+ * @return - magnitude of the force between a and b, positive is repulsive
+ */
+double L_J_dV_dr(double r, int a, int b);
+//version of ^ that doesn't use table
+double L_J_dV_dr_init(double r, int a, int b);
+
+/**
  * Applies a frictional force to F.
  * 
  * @param lattice - The lattice being scattered off
@@ -62,8 +77,8 @@ double dVi_dz(double z, int q);
  * @param predicted - if true, F is ion.dp_dt_t, otherwise it is ion.dp_dt
  * 
  * @return the energy change which would result from this interaction.
- */ 
-double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt, bool predicted);
+ */
+double apply_friction(Lattice &lattice, Ion &ion, double *F, double dt, bool predicted);
 
 /**
  * Returns the electron density at the site of the ion.
@@ -75,5 +90,5 @@ double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt, bool pre
  * @param predicted - if true, F is ion.dp_dt_t, otherwise it is ion.dp_dt
  * 
  * @return the density of electrons at this location.
- */ 
+ */
 double electron_density(Lattice &lattice, Ion &ion, bool predicted);

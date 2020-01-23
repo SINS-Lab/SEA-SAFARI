@@ -5,6 +5,12 @@
 
 #include <math.h>    //exp, sqrt, etc
 
+/**
+ * This contains sets of 
+ * 24εσ^6 and 48εσ^12
+ */ 
+double ** L_J_params;
+double ** L_J_dV_dr_cache;
 double ** Vr_r_cache;
 double ** dVr_dr_cache;
 double r_max;
@@ -18,6 +24,7 @@ double dVr_dr_init(double r, int n)
     if(settings.binary_potential_type==1)
     {
         double a,b,c,d;
+
         //The potpars are in groups of 4,
         //in order of the listed basis atoms
         //The first atom is listed as 1.
@@ -57,6 +64,14 @@ double Vr_r_init(double r, int n)
     return 0;
 }
 
+double L_J_dV_dr_init(double r, int a, int b)
+{
+    //For now we just have a, not b
+    double A = L_J_params[a-1][0];
+    double B = L_J_params[a-1][1];
+    return A/pow(r,7) - B/pow(r,13);
+}
+
 void init_potentials()
 {
     double r;
@@ -64,6 +79,32 @@ void init_potentials()
     r_max = settings.R_MAX;
     if(dr_min == 0) return;
     n_rmax = r_max / dr_min;
+
+    //Initialize Lennard Jones potentials here
+    if(settings.lattice_potential_type)
+    {
+        //We should have been given 2 parameters for each lattice atom.
+        //TODO later swap this to in the atoms, so we have all pairs
+        settings.lattice_potential_start -= 2*settings.NTYPES;
+        int start = settings.lattice_potential_start;
+        L_J_dV_dr_cache = new double*[settings.NTYPES];
+        L_J_params = new double*[settings.NTYPES];
+        //TODO later, account for 2 params for all pairs of atoms somehow.
+        for(int n = 0; n<settings.NTYPES; n++)
+        {
+            L_J_dV_dr_cache[n] = new double[n_rmax];
+            L_J_dV_dr_cache[n][0] = 0;
+            L_J_params[n] = new double[2];
+            L_J_params[n][0] = settings.binary_potential_parameters
+                               [start + 2*n + 0];
+            L_J_params[n][1] = settings.binary_potential_parameters
+                               [start + 2*n + 1];
+            double sigma_6 = pow(L_J_params[n][1], 6);
+            double epsilon_sigma_6 = sigma_6 * L_J_params[n][0];
+            L_J_params[n][0] = 24*epsilon_sigma_6;
+            L_J_params[n][1] = 48*epsilon_sigma_6*sigma_6;
+        }
+    }
 
     Vr_r_cache = new double*[settings.NTYPES];
     dVr_dr_cache = new double*[settings.NTYPES];
@@ -84,6 +125,10 @@ void init_potentials()
         {
             dVr_dr_cache[n][i] = dVr_dr_init(r, n+1);
             Vr_r_cache[n][i] = Vr_r_init(r, n+1);
+            if(settings.lattice_potential_type)
+            {
+                L_J_dV_dr_cache[n][i] = L_J_dV_dr_init(r,n+1,n+1);
+            }
         }
     }
 }
@@ -116,6 +161,13 @@ double dVr_dr(double r, int n)
 {
     if(dr_min == 0) return dVr_dr_init(r, n);
     return interp_r(r, dVr_dr_cache[n-1]);
+}
+
+double L_J_dV_dr(double r, int a, int b)
+{
+    if(dr_min == 0) return L_J_dV_dr(r, a, b);
+    //TODO accound for b.
+    return interp_r(r, L_J_dV_dr_cache[a-1]);
 }
 
 double Vi_z(double z, int q)

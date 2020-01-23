@@ -76,6 +76,7 @@ class SafariInput:
         self.ASIZE = 5.0
 
         self.NDTECT = 1
+        self.save_errored = False
         self.DTECTPAR = [55.0, 45.0, 3.0, 0.0]
         
         self.DELLOW = 1e-8
@@ -217,6 +218,8 @@ class SafariInput:
             # Detector type
             if n == 3:
                 self.NDTECT = args[0]
+                if len(args) > 1:
+                    self.save_errored = args[1]
             # Detector Params, 4 of them
             if n == 4:
                 self.DTECTPAR = [args[0], args[1], args[2], args[3]]
@@ -458,7 +461,7 @@ class SafariInput:
 
         file = serialize(self.E0, self.THETA0, self.PHI0, self.MASS, self.SYMION) + '\n' \
             +  serialize(self.EMIN, self.EMAX, self.ESIZE, self.ASIZE)  + '\n' \
-            +  serialize(self.NDTECT)  + '\n' \
+            +  serialize(self.NDTECT, self.save_errored)  + '\n' \
             +  serializeArr(self.DTECTPAR)  + '\n' \
             +  serialize(self.DELLOW, self.DELT0)  + '\n' \
             +  serialize(self.DEMAX, self.DEMIN, self.ABSERR)  + '\n' \

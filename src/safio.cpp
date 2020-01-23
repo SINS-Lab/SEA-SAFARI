@@ -187,6 +187,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             {
                 npar = atoi(args[0].c_str());
                 binary_potential_type = atoi(args[1].c_str());
+                lattice_potential_start = npar;
+                lattice_potential_type = args.size() > 2 ? atoi(args[2].c_str()) : 0;
             }
             if (n == 17)
             {
