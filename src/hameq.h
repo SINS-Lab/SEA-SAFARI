@@ -12,7 +12,7 @@
  *                    after time dt has passed, otherwise is
  *                    done for the current location
  */
-void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted);
+void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double* dr_max);
 
 /**
  * @param ion - the ion to interact with the lattice

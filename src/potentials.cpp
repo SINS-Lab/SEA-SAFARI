@@ -83,9 +83,9 @@ void init_potentials()
     //Initialize Lennard Jones potentials here
     if(settings.lattice_potential_type)
     {
+        debug_file << "Initializing Lennard Jones Potentials" << std::endl;
         //We should have been given 2 parameters for each lattice atom.
         //TODO later swap this to in the atoms, so we have all pairs
-        settings.lattice_potential_start -= 2*settings.NTYPES;
         int start = settings.lattice_potential_start;
         L_J_dV_dr_cache = new double*[settings.NTYPES];
         L_J_params = new double*[settings.NTYPES];
@@ -95,15 +95,19 @@ void init_potentials()
             L_J_dV_dr_cache[n] = new double[n_rmax];
             L_J_dV_dr_cache[n][0] = 0;
             L_J_params[n] = new double[2];
-            L_J_params[n][0] = settings.binary_potential_parameters
+            // Epsilon
+            double epsilon = settings.binary_potential_parameters
                                [start + 2*n + 0];
-            L_J_params[n][1] = settings.binary_potential_parameters
+            // Sigma
+            double sigma = settings.binary_potential_parameters
                                [start + 2*n + 1];
-            double sigma_6 = pow(L_J_params[n][1], 6);
-            double epsilon_sigma_6 = sigma_6 * L_J_params[n][0];
-            L_J_params[n][0] = 24*epsilon_sigma_6;
-            L_J_params[n][1] = 48*epsilon_sigma_6*sigma_6;
+
+            L_J_params[n][0] = -24 *epsilon * pow(sigma,6);
+            L_J_params[n][1] = -48 * epsilon * pow(sigma,12);
+            debug_file << "A: " << L_J_params[n][0];
+            debug_file << ", B: " << L_J_params[n][1] << std::endl;
         }
+        debug_file << "Initialized Lennard Jones Potentials" << std::endl;
     }
 
     Vr_r_cache = new double*[settings.NTYPES];

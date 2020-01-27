@@ -270,11 +270,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
     Vec3d dr;
     //Distancesq we travelled since last nearby update
     double diff = 0;
-    //Error in the associated coordinate.
-    double dxp, dyp, dzp;
-    //difference in forces between here and destination
-    double dpx, dpy, dpz;
-    //Maximum error on displacment for the ion.
+    //Maximum error on displacment during integration.
     double dr_max = 0;
 
     //Energy now and up to 2 steps previously
@@ -344,6 +340,8 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
     ion.last_step = 0;
 
 start:
+    //Reset this to 0.
+    dr_max = 0;
     //Find nearby lattice atoms
     fill_nearest(&ion, ion, lattice, d_search, n_parts, settings.rr_max, sort);
     //This is set back true later if needed.
@@ -381,23 +379,9 @@ start:
     }
 
     //Find the forces at the current location
-    run_hameq(ion, lattice, dt, false);
+    run_hameq(ion, lattice, dt, false, &dr_max);
     //Find the forces at the next location
-    run_hameq(ion, lattice, dt, true);
-    
-    //Find difference in the forces.
-    dpx = ion.dp_dt[0] - ion.dp_dt_t[0];
-    dpy = ion.dp_dt[1] - ion.dp_dt_t[1];
-    dpz = ion.dp_dt[2] - ion.dp_dt_t[2];
-
-    //Error in positions between the two forces.
-    dxp = 0.25 * dt * dt * dpx / mass;
-    dyp = 0.25 * dt * dt * dpy / mass;
-    dzp = 0.25 * dt * dt * dpz / mass;
-
-    //TODO decide on whether to include lattice here.
-
-    dr_max = std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
+    run_hameq(ion, lattice, dt, true, &dr_max);
 
     //Now we do some checks to see if the timestep needs to be adjusted
     if(dr_max != 0)

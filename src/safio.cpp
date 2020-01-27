@@ -192,7 +192,7 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             }
             if (n == 17)
             {
-                binary_potential_parameters = to_double_array(args, 0, npar - 1);
+                binary_potential_parameters = to_double_array(args, 0, args.size()-1);
             }
             if (n == 18)
             {

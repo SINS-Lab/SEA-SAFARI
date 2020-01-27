@@ -1,11 +1,11 @@
-#include "hameq.h" 
+#include "hameq.h"
 
-#include "safio.h"       //For settings
-#include "traj.h"        //For nearest check method      
-#include "potentials.h"  //For forces/potentials
-#include "vec_math.h"    //General maths help
-#include "safari.h"      //for exit_fail
-#include <cmath>         //sqrt
+#include "safio.h"      //For settings
+#include "traj.h"       //For nearest check method
+#include "potentials.h" //For forces/potentials
+#include "vec_math.h"   //General maths help
+#include "safari.h"     //for exit_fail
+#include <cmath>        //sqrt
 
 int num_intersect_max = 1000000;
 //This is a counter for number of intersections, if this exceeds max, it terminates safari.
@@ -22,11 +22,11 @@ int num_intersect = 0;
  * 
  * @param s - the particle to update
  * @param dt - time step for this update.
- */ 
+ */
 void update_site(Site &s, double dt)
 {
     //Site near us.
-    Atom* atom = s.atom;
+    Atom *atom = s.atom;
     double mass = atom->mass;
 
     //We use averaged forces everywhere, so just cut
@@ -51,30 +51,30 @@ void update_site(Site &s, double dt)
  * 
  * @param s - the particle to predict.
  * @param dt - the time step for the prediction
- */ 
+ */
 void predict_site_location(Site &s, double dt)
 {
     //Site near us.
-    Atom* atom = s.atom;
+    Atom *atom = s.atom;
     double mass = atom->mass;
 
     //v = p/m
     //a = F/m, F = dp/dt
-    //r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m 
-    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5*s.dp_dt[0]*dt) / mass;
-    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5*s.dp_dt[1]*dt) / mass;
-    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5*s.dp_dt[2]*dt) / mass;
+    //r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m
+    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5 * s.dp_dt[0] * dt) / mass;
+    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5 * s.dp_dt[1] * dt) / mass;
+    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
 }
 
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
     //Update the ion's location
     update_site(ion, dt);
-    if(settings.RECOIL)
+    if (settings.RECOIL)
     {
         int nearby = ion.near;
         //Update each site.
-        for(int i = 0; i<nearby; i++)
+        for (int i = 0; i < nearby; i++)
         {
             Site &s = *ion.near_sites[i];
             update_site(s, dt);
@@ -82,11 +82,30 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
     }
 }
 
-void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
+double compute_error(Site &ion, double dt)
+{
+    //Error in the associated coordinate.
+    double dxp, dyp, dzp;
+    //difference in forces between here and destination
+    double dpx, dpy, dpz;
+    // //Find difference in the forces.
+    dpx = ion.dp_dt[0] - ion.dp_dt_t[0];
+    dpy = ion.dp_dt[1] - ion.dp_dt_t[1];
+    dpz = ion.dp_dt[2] - ion.dp_dt_t[2];
+
+    //Error in positions between the two forces.
+    dxp = 0.25 * dt * dt * dpx / ion.atom->mass;
+    dyp = 0.25 * dt * dt * dpy / ion.atom->mass;
+    dzp = 0.25 * dt * dt * dpz / ion.atom->mass;
+
+    return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
+}
+
+void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr_max)
 {
     //Some useful variables.
-    double dx = 0, dy = 0, dz = 0, 
-           fx = 0, fy = 0, fz = 0, 
+    double dx = 0, dy = 0, dz = 0,
+           fx = 0, fy = 0, fz = 0,
            ftx = 0, fty = 0, ftz = 0,
            rr = 0;
 
@@ -95,7 +114,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
     bool recoil = settings.RECOIL;
     bool springs = settings.CORR;
-    double atomk = settings.ATOMK; 
+    double atomk = settings.ATOMK;
 
     //Coordinate of the Ion
     double *r;
@@ -104,9 +123,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     //Relevant force for this run
     double *F;
     F = ion.dp_dt;
-    
+
     //if not 0, we are computing for the predicted location.
-    if(predicted)
+    if (predicted)
     {
         //Use the one for next time step
         F = ion.dp_dt_t;
@@ -126,20 +145,20 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
     F[2] = 0;
 
     //This was set earlier when looking for nearby sites.
-    if(ion.near)
+    if (ion.near)
     {
         //Check this counter, used for statistics later.
-        if(ion.near > ion.max_n)
+        if (ion.near > ion.max_n)
             ion.max_n = ion.near;
 
         //Force on the target.
         double *F_at;
 
-        for(int i = 0; i<ion.near; i++)
+        for (int i = 0; i < ion.near; i++)
         {
             //Site near us.
             Site &s = *ion.near_sites[i];
-            
+
             //Select the force array to populate.
             F_at = s.dp_dt;
 
@@ -148,7 +167,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             ay = s.r[1];
             az = s.r[2];
 
-            if(predicted)
+            if (predicted)
             {
                 //Set predicted force instead.
                 F_at = s.dp_dt_t;
@@ -159,7 +178,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             }
 
             //Reset the sites forces
-            if(s.last_step!=ion.last_step)
+            if (s.last_step != ion.last_step)
             {
                 F_at[0] = 0;
                 F_at[1] = 0;
@@ -174,13 +193,14 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
             //Lattice/Ion distance no longer need ion's r
             //so we can shadow it here.
-            double r = sqrt(dx*dx + dy*dy + dz*dz);
+            double r = sqrt(dx * dx + dy * dy + dz * dz);
 
             //No force if ion is on an atom.
-            if(r==0)
+            if (r == 0)
             {
                 debug_file << "Ion intersected with atom?: " << ion.index << " " << s.index << std::endl;
-                if(num_intersect++>num_intersect_max) exit_fail("Too many ion-site intersections");
+                if (num_intersect++ > num_intersect_max)
+                    exit_fail("Too many ion-site intersections");
                 continue;
             }
 
@@ -190,7 +210,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             double dV_dr = dVr_dr(r, s.atom->index);
 
             //Potential for this location.
-            if(predicted) ion.V += Vr_r(r, s.atom->index);
+            if (predicted)
+                ion.V += Vr_r(r, s.atom->index);
 
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
@@ -213,11 +234,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
             ftz += fz;
 
             //Apply spring forces.
-            if(springs)
+            if (springs)
             {
                 //Use einstein springs.
-                if(atomk <= 1e-30)
-                {   
+                if (atomk <= 1e-30)
+                {
                     double dx_sq = (s.r[0] - s.r_0[0]) * (s.r[0] - s.r_0[0]);
                     double dy_sq = (s.r[1] - s.r_0[1]) * (s.r[1] - s.r_0[1]);
                     double dz_sq = (s.r[2] - s.r_0[2]) * (s.r[2] - s.r_0[2]);
@@ -228,7 +249,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
 
                     double V_s = V_s_x + V_s_y + V_s_z;
                     //Check if too much spring energy
-                    if(settings.max_spring_V > V_s)
+                    if (settings.max_spring_V > V_s)
                     {
                         //F = -kx
                         F_at[0] -= s.atom->spring[0] * (s.r[0] - s.r_0[0]);
@@ -244,11 +265,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                     double *r2;
 
                     //Use atomk as k for springs between nearest sites.
-                    for(int j = 0; j<s.near; j++)
+                    for (int j = 0; j < s.near; j++)
                     {
                         Site &s2 = *s.near_sites[j];
 
-                        if(predicted)
+                        if (predicted)
                         {
                             //Set predicted force instead.
                             F_at2 = s2.dp_dt_t;
@@ -261,7 +282,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                             r2 = s2.r;
                         }
                         //Reset the sites forces
-                        if(s2.last_step!=s.last_step)
+                        if (s2.last_step != s.last_step)
                         {
                             F_at2[0] = 0;
                             F_at2[1] = 0;
@@ -275,13 +296,20 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                         dx = ax - r2[0];
                         dy = ay - r2[1];
                         dz = az - r2[2];
-                        rr = dx*dx + dy*dy + dz*dz;
+                        rr = dx * dx + dy * dy + dz * dz;
                         double ll_now = rr;
 
-                        if(settings.lattice_potential_type)
+                        if (settings.lattice_potential_type)
                         {
                             //In here we use Lennard Jones forces
-                            f_mag = -L_J_dV_dr(sqrt(ll_now), s2.atom->index, s.atom->index);
+                            r = sqrt(ll_now);
+                            f_mag = L_J_dV_dr(r, s2.atom->index, s.atom->index);
+                            if (fabs(f_mag) > 1000)
+                            {
+                                // debug_file << "Somehow large lattice force: "
+                                //            << f_mag << ", sep: " << r << std::endl;
+                                f_mag = 0;
+                            }
                         }
                         else
                         {
@@ -291,13 +319,13 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                             dx = s.r_0[0] - s2.r_0[0];
                             dy = s.r_0[1] - s2.r_0[1];
                             dz = s.r_0[2] - s2.r_0[2];
-                            rr = dx*dx + dy*dy + dz*dz;
+                            rr = dx * dx + dy * dy + dz * dz;
                             double l_eq = sqrt(rr);
 
                             double dl = sqrt(ll_now) - l_eq;
 
                             //Check for spring breaking if dl > 0
-                            if(dl > 0)
+                            if (dl > 0)
                             {
                                 //V = 0.5*k*x^2
                                 double V_s = 0.5 * atomk * dl * dl;
@@ -307,12 +335,12 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                                 V_s /= l_eq * l_eq;
 
                                 //Break the spring if too far.
-                                if(V_s > settings.max_spring_V) continue;
+                                if (V_s > settings.max_spring_V)
+                                    continue;
                             }
                             //F = -kx
                             f_mag = -atomk * dl;
                         }
-                        
 
                         //These are scaled by 1/r^2 for conversion to
                         //the same coordinate system as the fmag was caluclated for
@@ -327,16 +355,18 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
                         F_at2[0] -= dx_hat * f_mag;
                         F_at2[1] -= dy_hat * f_mag;
                         F_at2[2] -= dz_hat * f_mag;
-
                     }
                 }
             }
 
-
-            if(recoil && !predicted)
+            if (recoil)
             {
-                //set the predictions
-                predict_site_location(s, dt);
+                if (!predicted)
+                    //set the predictions
+                    predict_site_location(s, dt);
+                else
+                    //set account for site errors
+                    *dr_max = std::max(compute_error(s, dt), *dr_max);
             }
         }
 
@@ -348,20 +378,26 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted)
         //TODO add atom-atom interactions here.
     }
 
-    if(settings.use_image)
+    if (settings.use_image)
     {
         F[2] -= dVi_dz(r[2], ion.q);
-        if(predicted) ion.V += ion.q * Vi_z(r[2], ion.q);
+        if (predicted)
+            ion.V += ion.q * Vi_z(r[2], ion.q);
     }
 
-    if(settings.F_a > 0)
+    if (settings.F_a > 0)
     {
         ion.V += apply_friction(lattice, ion, F, dt, predicted);
     }
 
-    if(!predicted)
+    if (!predicted)
     {
         //set the predictions
         predict_site_location(ion, dt);
+    }
+    else
+    {
+        //Compute error
+        *dr_max = std::max(compute_error(ion, dt), *dr_max);
     }
 }
