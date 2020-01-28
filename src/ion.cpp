@@ -87,6 +87,12 @@ void Site::reset()
     std::copy(r_0, r_0 + 3, r);
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
+
+    //Reset our tracked sites last steps too.
+    for(int i = 0; i<near; i++) 
+    {
+        near_sites[i]->last_step = -1;
+    }
     
     //Thermalize the site
     thermaize(*this);

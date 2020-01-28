@@ -116,15 +116,15 @@ end:
         site.near = std::min(site.total_near, target_num);
     }
 
-    if(ion_ptr != NULL && settings.lattice_potential_type)
-    {
-        //Update each nearby site as well
-        for (int i = 0; i < site.near; i++)
-        {
-            Site &s2 = *site.near_sites[i];
-            fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true);
-        }
-    }
+    // if(ion_ptr != NULL && settings.useLennardJones)
+    // {
+    //     //Update each nearby site as well
+    //     for (int i = 0; i < site.near; i++)
+    //     {
+    //         Site &s2 = *site.near_sites[i];
+    //         fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true);
+    //     }
+    // }
     //Sets this to 0, so that the max check later is fine.
     if(site.rr_min_find == 1e6) site.rr_min_find = 0;
     return site.near;
