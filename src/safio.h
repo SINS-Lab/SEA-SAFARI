@@ -115,6 +115,12 @@ struct Safio
     //This tells us what index starts the L_J parameters
     int lattice_potential_start;
 
+    //The following indicate as are named, and are set based
+    //on the value of lattice_potential_type
+    bool useEinsteinSprings = true; //0
+    bool useAtomSpings = false;     //1
+    bool useLennardJones = false;   //2
+
     //Image Potential Values
     int image_potential_type;
     double* image_parameters;

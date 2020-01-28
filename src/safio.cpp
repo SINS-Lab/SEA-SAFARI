@@ -1,8 +1,8 @@
 #include "safio.h"
 
-#include "string_utils.h"  //ArgValue, to_double_array, etc
+#include "string_utils.h" //ArgValue, to_double_array, etc
 
-void Safio::load(std::map<std::string, ArgValue>& args)
+void Safio::load(std::map<std::string, ArgValue> &args)
 {
     //This should have been included to args if not originally present.
     input_name = args["-i"].as_string();
@@ -15,15 +15,15 @@ void Safio::load(std::map<std::string, ArgValue>& args)
 
     //check if we have alternate output file name
     //All other streams after this will use the output file name instead.
-    if(args["-o"])
+    if (args["-o"])
     {
         output_name = args["-o"].as_string();
     }
     std::cout << "Output files: " << output_name << std::endl;
 
-    //Only open these if flagged, 
+    //Only open these if flagged,
     //this allows modules to use safio, but not open the files
-    if(args["-f"])
+    if (args["-f"])
     {
         filename = output_name + ".data";
         out_file.open(filename);
@@ -59,7 +59,8 @@ void Safio::load(std::map<std::string, ArgValue>& args)
                 continue;
             //Allow having comment lines in the file
             //Comment lines start with a #
-            if(starts_with(line, "#")) continue;
+            if (starts_with(line, "#"))
+                continue;
 
             //Print the input line to debug file.
             debug_file << line << '\n';
@@ -97,7 +98,7 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             if (n == 3)
             {
                 detector_type = atoi(args[0].c_str());
-                if(args.size() > 1 && args[1] == "f")
+                if (args.size() > 1 && args[1] == "f")
                     save_errored = false;
             }
             if (n == 4)
@@ -189,10 +190,14 @@ void Safio::load(std::map<std::string, ArgValue>& args)
                 binary_potential_type = atoi(args[1].c_str());
                 lattice_potential_start = npar;
                 lattice_potential_type = args.size() > 2 ? atoi(args[2].c_str()) : 0;
+
+                useEinsteinSprings = lattice_potential_type == 0;
+                useAtomSpings = lattice_potential_type == 1;
+                useLennardJones = lattice_potential_type == 2;
             }
             if (n == 17)
             {
-                binary_potential_parameters = to_double_array(args, 0, args.size()-1);
+                binary_potential_parameters = to_double_array(args, 0, args.size() - 1);
             }
             if (n == 18)
             {
@@ -316,10 +321,10 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             if (n == 27)
             {
                 face = to_double_array(args, 0, 2);
-                load_crystal = args.size() > 3 and args[3] == "t"; 
-                if(load_crystal)
+                load_crystal = args.size() > 3 and args[3] == "t";
+                if (load_crystal)
                 {
-                    loaded_face = to_double_array(args, 4,6);
+                    loaded_face = to_double_array(args, 4, 6);
                 }
                 else
                 {
@@ -330,7 +335,7 @@ void Safio::load(std::map<std::string, ArgValue>& args)
                     loaded_face[2] = 1;
                 }
             }
-            if(n == 28)
+            if (n == 28)
             {
                 F_a = atof(args[0].c_str());
                 F_b = atof(args[1].c_str());
@@ -340,27 +345,26 @@ void Safio::load(std::map<std::string, ArgValue>& args)
             // Only increment this if not in a sub-line section.
             if (o <= 0)
                 n++;
-
         }
 
         //Populate basis atoms indecies
-        for(int i = 0; i<NBASIS; i++)
+        for (int i = 0; i < NBASIS; i++)
         {
-            BASIS[i].atom = &ATOMS[BASIS[i].index-1];
+            BASIS[i].atom = &ATOMS[BASIS[i].index - 1];
         }
 
         //check arguments for specifically enabling single-shot mode
-        if(args["-s"].as_bool())
+        if (args["-s"].as_bool())
         {
             NUMCHA = 1;
             SCAT_FLAG = 666;
             //Set x-start
-            if(args["-x"])
+            if (args["-x"])
             {
                 XSTART = args["-x"].as_double();
             }
             //Set y-start
-            if(args["-y"])
+            if (args["-y"])
             {
                 YSTART = args["-y"].as_double();
             }

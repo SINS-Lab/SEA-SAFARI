@@ -130,6 +130,10 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
     bool springs = settings.CORR;
     double atomk = settings.ATOMK;
 
+    bool useEinsteinSprings = settings.useEinsteinSprings;
+    bool useAtomSpings = settings.useAtomSpings;
+    bool useLennardJones = settings.useLennardJones;
+
     //Coordinate of the Ion
     double *r;
     r = ion.r;
@@ -253,7 +257,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
             if (springs)
             {
                 //Use einstein springs.
-                if (atomk <= 1e-30)
+                if (useEinsteinSprings)
                 {
                     double dx_sq = (s.r[0] - s.r_0[0]) * (s.r[0] - s.r_0[0]);
                     double dy_sq = (s.r[1] - s.r_0[1]) * (s.r[1] - s.r_0[1]);
@@ -315,7 +319,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                         rr = dx * dx + dy * dy + dz * dz;
                         double ll_now = rr;
 
-                        if (settings.lattice_potential_type)
+                        if (useLennardJones)
                         {
                             //In here we use Lennard Jones forces
                             r = sqrt(ll_now);

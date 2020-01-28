@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
         lattice.build_lattice();
     }
 
-    //Initialize springs if atomk > 0
-    if(settings.ATOMK > 1e-30)
+    //Initialize springs if not using einstein
+    if(!settings.useEinsteinSprings)
     {
         lattice.init_springs(settings.neighbour_count);
     }
