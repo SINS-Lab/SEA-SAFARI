@@ -11,6 +11,9 @@ int num_intersect_max = 1000000;
 //This is a counter for number of intersections, if this exceeds max, it terminates safari.
 int num_intersect = 0;
 
+uint64_t update_tick = 0;
+uint64_t hameq_tick = 0;
+
 /**
  * This updates the current location/momentum of
  * the particle, to the corrected values based on the
@@ -25,6 +28,11 @@ int num_intersect = 0;
  */
 void update_site(Site &s, double dt)
 {
+    //We have already been updated!
+    if (s.update_tick == update_tick)
+        return;
+    //Flag us as updated, so we don't get this done again.
+    s.update_tick = update_tick;
     //Site near us.
     Atom *atom = s.atom;
     double mass = atom->mass;
@@ -43,6 +51,13 @@ void update_site(Site &s, double dt)
     s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
     s.p[1] += dt * (s.dp_dt_t[1] + s.dp_dt[1]);
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
+
+    //Update each nearby site as well
+    for (int i = 0; i < s.near; i++)
+    {
+        Site &s2 = *s.near_sites[i];
+        update_site(s2, dt);
+    }
 }
 
 /**
@@ -68,18 +83,16 @@ void predict_site_location(Site &s, double dt)
 
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
+    update_tick++;
     //Update the ion's location
     update_site(ion, dt);
-    if (settings.RECOIL)
-    {
-        int nearby = ion.near;
-        //Update each site.
-        for (int i = 0; i < nearby; i++)
-        {
-            Site &s = *ion.near_sites[i];
-            update_site(s, dt);
-        }
-    }
+    // Commented below is the old way of doing this.
+    // Update each nearby site as well
+    // for (int i = 0; i < ion.near; i++)
+    // {
+    //     Site &s = *ion.near_sites[i];
+    //     update_site(s, dt);
+    // }
 }
 
 double compute_error(Site &ion, double dt)
@@ -103,6 +116,7 @@ double compute_error(Site &ion, double dt)
 
 void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr_max)
 {
+    hameq_tick++;
     //Some useful variables.
     double dx = 0, dy = 0, dz = 0,
            fx = 0, fy = 0, fz = 0,
@@ -211,8 +225,10 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
 
             //Potential for this location.
             if (predicted)
+            {
                 ion.V += Vr_r(r, s.atom->index);
-
+                // debug_file << ion.V << " " << r << " " << ax << " " << ay << " " << az << std::endl;
+            }
             //Scaled by 1/r for converting to cartesian
             dV_dr /= r;
 
@@ -303,7 +319,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                         {
                             //In here we use Lennard Jones forces
                             r = sqrt(ll_now);
-                            f_mag = L_J_dV_dr(r, s2.atom->index, s.atom->index);
+                            // * 0.5 to split the forces
+                            f_mag = L_J_dV_dr(r, s2.atom->index, s.atom->index) * 0.5;
                             if (fabs(f_mag) > 1000)
                             {
                                 // debug_file << "Somehow large lattice force: "

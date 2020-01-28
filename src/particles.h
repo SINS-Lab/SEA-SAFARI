@@ -83,6 +83,9 @@ public:
     //Setting this back to -1 will force a re-check of near.
     int last_index = -1;
 
+    uint64_t hameq_tick = 0;
+    uint64_t update_tick = 0;
+
     Site()
     {
         r_0 = new double[6];
