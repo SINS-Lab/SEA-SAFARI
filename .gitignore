@@ -18,7 +18,6 @@ analysis/safari.input
 *.traj
 *.xyz
 *.crys
-*.crys_in
 *.exe
 
 #profiling output stuff not needed.
