@@ -23,14 +23,8 @@ int num_intersect = 0;
  * @param s - the particle to update
  * @param dt - time step for this update.
  */
-void update_site(Site &s, int last_step, double dt)
+void update_site(Site &s, double dt)
 {
-    //We have already been updated!
-    if (s.last_step == last_step)
-        return;
-    //Flag us as updated, so we don't get this done again.
-    s.last_step = last_step;
-    //Site near us.
     Atom *atom = s.atom;
     double mass = atom->mass;
 
@@ -48,12 +42,40 @@ void update_site(Site &s, int last_step, double dt)
     s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
     s.p[1] += dt * (s.dp_dt_t[1] + s.dp_dt[1]);
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
+}
 
+/**
+ * This updates the current location/momentum of
+ * the particle, to the corrected values based on the
+ * forces at the current and predicted locations.
+ * 
+ * Positions are corrected by the error in the
+ * values from the two forces, but momenta are
+ * updated with just the average of the two forces.
+ * 
+ * This also then updates all of the subsites for this site,
+ * note that this function does not get optimized as well as
+ * the one that only does a single site.
+ * 
+ * @param s - the particle to update
+ * @param 
+ * @param dt - time step for this update.
+ */
+void update_sites(Site &s, int last_step, double dt)
+{
+    //We have already been updated!
+    if (s.last_step != last_step)
+    {
+        //Flag us as updated, so we don't get this done again.
+        s.last_step = last_step;
+        //Site near us.
+        update_site(s, dt);
+    }
     //Update each nearby site as well
     for (int i = 0; i < s.near; i++)
     {
         Site &s2 = *s.near_sites[i];
-        update_site(s2, last_step, dt);
+        update_sites(s2, last_step, dt);
     }
 }
 
@@ -80,15 +102,23 @@ void predict_site_location(Site &s, double dt)
 
 void apply_hameq(Ion &ion, Lattice &lattice, double dt)
 {
-    //Update the ion's location
-    update_site(ion, ion.last_step, dt);
-    // Commented below is the old way of doing this.
-    // Update each nearby site as well
-    // for (int i = 0; i < ion.near; i++)
-    // {
-    //     Site &s = *ion.near_sites[i];
-    //     update_site(s, dt);
-    // }
+    if (!settings.useEinsteinSprings)
+    {
+        //If we are using better correlations,
+        //then we need to update more than just
+        //the immediate neighbours, so we need to
+        //use the slower version of this.
+        update_sites(ion, ion.last_step, dt);
+    }
+    else
+    {
+        update_site(ion, dt);
+        for (int i = 0; i < ion.near; i++)
+        {
+            Site &s = *ion.near_sites[i];
+            update_site(s, dt);
+        }
+    }
 }
 
 double compute_error(Site &site, double dt)
@@ -122,11 +152,34 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
     //Lattice/Ion distance
     double r = sqrt(dx * dx + dy * dy + dz * dz);
 
-    if (r > settings.R_MAX)
+    if (r < settings.R_MAX && r > 0)
     {
-        return;
-    }
+        ion.r_min = std::min(r, ion.r_min);
 
+        //Magnitude of force for this location.
+        double dV_dr = dVr_dr(r, s.atom->index);
+
+        //Potential for this location.
+        if (predicted)
+        {
+            ion.V += Vr_r(r, s.atom->index);
+            // debug_file << ion.V << " " << r << " " << ax << " " << ay << " " << az << std::endl;
+        }
+        //Scaled by 1/r for converting to cartesian
+        dV_dr /= r;
+
+        //Convert from magnitude to components of vector
+        //Note, fx = -dV_dr * 2dx, however,
+        //we set the force to half of this.
+        F_at[0] = -dV_dr * dx;
+        F_at[1] = -dV_dr * dy;
+        F_at[2] = -dV_dr * dz;
+
+        //Add force components to net force.
+        F_ion[0] += F_at[0];
+        F_ion[1] += F_at[1];
+        F_ion[2] += F_at[2];
+    }
     //No force if ion is on an atom.
     if (r == 0)
     {
@@ -136,34 +189,7 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
                    << " " << ion.steps << std::endl;
         if (num_intersect++ > num_intersect_max)
             exit_fail("Too many ion-site intersections");
-        return;
     }
-
-    ion.r_min = std::min(r, ion.r_min);
-
-    //Magnitude of force for this location.
-    double dV_dr = dVr_dr(r, s.atom->index);
-
-    //Potential for this location.
-    if (predicted)
-    {
-        ion.V += Vr_r(r, s.atom->index);
-        // debug_file << ion.V << " " << r << " " << ax << " " << ay << " " << az << std::endl;
-    }
-    //Scaled by 1/r for converting to cartesian
-    dV_dr /= r;
-
-    //Convert from magnitude to components of vector
-    //Note, fx = -dV_dr * 2dx, however,
-    //we set the force to half of this.
-    F_at[0] = -dV_dr * dx;
-    F_at[1] = -dV_dr * dy;
-    F_at[2] = -dV_dr * dz;
-
-    //Add force components to net force.
-    F_ion[0] += F_at[0];
-    F_ion[1] += F_at[1];
-    F_ion[2] += F_at[2];
 }
 
 void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr_max)
@@ -214,7 +240,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
     //This was set earlier when looking for nearby sites.
     if (ion.near)
     {
-        double *F_ion = new double[3];
+        double F_ion[3];
         F_ion[0] = 0;
         F_ion[1] = 0;
         F_ion[2] = 0;
@@ -433,7 +459,6 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
         F[0] = -F_ion[0];
         F[1] = -F_ion[1];
         F[2] = -F_ion[2];
-        delete F_ion;
 
         // debug_file << *dr_max << " "
         //             << hameq_tick <<std::endl;

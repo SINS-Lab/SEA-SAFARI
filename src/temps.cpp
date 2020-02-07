@@ -77,6 +77,7 @@ void thermaize(Site &site)
 
             //TODO for cases where atomk !=0, this should instead factor
             //the springs due to neighbours, rather than this simple case.
+            //Also, we need to replace sin and cos with lookup tables.
         }
     }
 }

@@ -1,17 +1,17 @@
-#include <stdlib.h>     /* srand, rand */
+#include <stdlib.h> /* srand, rand */
 #include <cstdio>
-#include <time.h>       /* For runtime tracker */
+#include <time.h> /* For runtime tracker */
 #include <iomanip>
 
-#include "safio.h"       /* settings */
-#include "vec_math.h"    /* General math */
-#include "space_math.h"  /* fast lookup stuff */
-#include "string_utils.h"/* Used for argument parsing */
-#include "scat.h"        /* The actual scattering routines */
-#include "potentials.h"  /* We initialize these here */
-#include "tests.h"       /* Debugging stuff */
-#include "temps.h"       /* These are also initialized */
-#include "safari.h"      /* This includes the exit_fail function*/
+#include "safio.h"        /* settings */
+#include "vec_math.h"     /* General math */
+#include "space_math.h"   /* fast lookup stuff */
+#include "string_utils.h" /* Used for argument parsing */
+#include "scat.h"         /* The actual scattering routines */
+#include "potentials.h"   /* We initialize these here */
+#include "tests.h"        /* Debugging stuff */
+#include "temps.h"        /* These are also initialized */
+#include "safari.h"       /* This includes the exit_fail function*/
 
 //Initialize the global variables.
 Safio settings;
@@ -23,7 +23,7 @@ std::ofstream crystal_file;
 
 double space_mask[3375][3];
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     //Starts total runtime timer.
     double load = clock();
@@ -72,15 +72,15 @@ int main(int argc, char* argv[])
 
     Lattice lattice;
 
-    if(settings.load_crystal)
+    if (settings.load_crystal)
     {
         std::ifstream input;
-        std::string crys_in_file = safio_file +".crys_in";
-        debug_file << "Loading Lattice from "<< crys_in_file << '\n';
+        std::string crys_in_file = safio_file + ".crys_in";
+        debug_file << "Loading Lattice from " << crys_in_file << '\n';
         input.open(crys_in_file);
         lattice.load_lattice(input);
         input.close();
-        debug_file << "Lattice loaded"<<'\n';
+        debug_file << "Lattice loaded" << '\n';
         std::cout << "Lattice loaded" << '\n';
     }
     else
@@ -89,13 +89,13 @@ int main(int argc, char* argv[])
     }
 
     //Initialize springs if not using einstein
-    if(!settings.useEinsteinSprings)
+    if (!settings.useEinsteinSprings)
     {
         lattice.init_springs(settings.neighbour_count);
     }
-    
+
     std::ofstream crys_xyz_file;
-    crys_xyz_file.open(settings.output_name+".crys.xyz");
+    crys_xyz_file.open(settings.output_name + ".crys.xyz");
     debug_file << "Printing Lattice" << '\n';
     std::cout << "Printing Lattice" << '\n';
     int num = lattice.sites.size();
@@ -103,12 +103,12 @@ int main(int argc, char* argv[])
     for (int i = 0; i < num; i++)
     {
         Site &s = *lattice.sites[i];
-        Atom* a = s.atom;
+        Atom *a = s.atom;
         sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",
-                         s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass);
+                s.r_0[0], s.r_0[1], s.r_0[2], a->charge, a->mass);
         crystal_file << buffer;
         sprintf(buffer, "%s\t%f\t%f\t%f\n",
-                         a->symbol.c_str(), s.r_0[0], s.r_0[1], s.r_0[2]);
+                a->symbol.c_str(), s.r_0[0], s.r_0[1], s.r_0[2]);
         crys_xyz_file << buffer;
     }
     crys_xyz_file.close();
@@ -164,7 +164,8 @@ int main(int argc, char* argv[])
         //Convert to ms;
         dt *= 1000;
 
-        std::cout << "\nFinished Running\n" << std::endl;
+        std::cout << "\nFinished Running " << safio_file << "\n"
+                  << std::endl;
         std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
         debug_file << "\nTotal number particles: " << n << std::endl;
         debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
@@ -193,7 +194,6 @@ int main(int argc, char* argv[])
             default:
                 break;
             }
-
         }
         else if (settings.SCAT_FLAG == 888)
         {
