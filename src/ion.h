@@ -22,6 +22,9 @@ public:
     //Total flight time of the ion
     double time = 0;
 
+    //This is a weighting factor for the ion's detectability.
+    double weight = 1;
+
     //potential energy the particle is in.
     double V = 0;
 

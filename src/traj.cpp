@@ -6,9 +6,9 @@
 #include "potentials.h"
 #include "safio.h"
 #include <cmath>
-#include <algorithm> // std::sort 
+#include <algorithm> // std::sort
 
-int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort)
+int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort)
 {
     //Initial locations are where ion is.
     double cell_x = site.r[0];
@@ -17,7 +17,7 @@ int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int tar
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
     //New site, so we need to re-calculate things
-    if(pos_hash != site.last_index)
+    if (pos_hash != site.last_index)
     {
         //We need to resort this if we find new index.
         re_sort = true;
@@ -41,15 +41,15 @@ int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int tar
         double rr_min = max_rr;
 
         //volume of the mask to check.
-        int nmax = pow(2*radius+1, 3);
+        int nmax = pow(2 * radius + 1, 3);
 
         int last_check = -1;
 
-        int check_index = ion_ptr==NULL?-site.index:site.index;
-        int check_step = ion_ptr==NULL?-2:ion_ptr->steps;
+        int check_index = ion_ptr == NULL ? -site.index : site.index;
+        int check_step = ion_ptr == NULL ? -2 : ion_ptr->steps;
 
         //Loop over the mask, this is a radial loop.
-        for(int n = 0; n < nmax; n++)
+        for (int n = 0; n < nmax; n++)
         {
             //Gets x,y,z for the centered cube.
             index_to_loc(n, loc);
@@ -58,60 +58,67 @@ int fill_nearest(Ion *ion_ptr, Site& site, Lattice &lattice, int radius, int tar
             double y = loc[1] * CELL_SIZE + cell_y;
             double z = loc[2] * CELL_SIZE + cell_z;
 
-            pos_hash = to_hash(x,y,z);
+            pos_hash = to_hash(x, y, z);
             //Due to mask and cell sizes differing, this
             //can happen easily, so lets skip if it did.
-            if(last_check == pos_hash) continue;
+            if (last_check == pos_hash)
+                continue;
             last_check = pos_hash;
 
-            Cell* cell = lattice.get_cell(x,y,z);
+            Cell *cell = lattice.get_cell(x, y, z);
             //No cell here? skip.
-            if(cell == NULL) continue;
+            if (cell == NULL)
+                continue;
             //Reset check stamp if new ion.
-            if(cell->ion_stamp != check_index) cell->check_stamp = -1;
+            if (cell->ion_stamp != check_index)
+                cell->check_stamp = -1;
             //Already seen this cell this tick? skip.
-            if(cell->check_stamp == check_step) continue;
+            if (cell->check_stamp == check_step)
+                continue;
             //Stamp cell so it gets skipped if seen again.
             cell->check_stamp = check_step;
             cell->ion_stamp = check_index;
             //Get number of sites from the cell
             num = cell->num;
             //Check each site in this cell.
-            for(int i = 0; i<num; i++)
+            for (int i = 0; i < num; i++)
             {
                 Site *s = &cell->sites[i];
                 //If some other ion has seen the site, reset it here.
                 //This reset puts it back to where it should be.
-                if(ion_ptr!=NULL && s->last_ion!=ion_ptr->index)
+                if (ion_ptr != NULL && s->last_ion != ion_ptr->index)
                 {
                     s->last_ion = ion_ptr->index;
                     s->reset();
                 }
                 //In this case, we want to make sure we are not including self.
-                if(ion_ptr == NULL)
+                if (ion_ptr == NULL)
                 {
-                    if(s->index == site.index) continue;
+                    if (s->index == site.index)
+                        continue;
                 }
                 //Check if site is close enough
                 double rr = diff_sqr(site.r, s->r);
-                if(rr > max_rr) continue;
+                if (rr > max_rr)
+                    continue;
                 rr_min = std::min(rr_min, rr);
                 site.rr_min_find = std::min(rr, site.rr_min_find);
                 //Add the site to our tracked sites.
                 site.near_sites[site.total_near] = s;
                 site.total_near++;
                 //If we have enough, goto end.
-                if(site.total_near > 255) goto end;
+                if (site.total_near > 255)
+                    goto end;
             }
         }
     }
 end:
-    if(re_sort)
+    if (re_sort)
     {
         //Reset number nearby.
         site.near = 0;
         //Sort the sites, and update near to min of near or target_num
-        std::sort(site.near_sites, site.near_sites + site.total_near, [&site](Site* a, Site* b){return site.compare_sites(a, b);});
+        std::sort(site.near_sites, site.near_sites + site.total_near, [&site](Site *a, Site *b) { return site.compare_sites(a, b); });
         //Update nearby number, taking min of these two.
         site.near = std::min(site.total_near, target_num);
     }
@@ -126,45 +133,46 @@ end:
     //     }
     // }
     //Sets this to 0, so that the max check later is fine.
-    if(site.rr_min_find == 1e6) site.rr_min_find = 0;
+    if (site.rr_min_find == 1e6)
+        site.rr_min_find = 0;
     return site.near;
 }
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
-                        bool *froze, bool *left, double& E)
+              bool *froze, bool *left, double &E)
 {
     //left crystal
-    if(ion.r[2] > settings.Z1)
+    if (ion.r[2] > settings.Z1)
     {
         *left = true;
         return false;
     }
-    
+
     //Ranges of the crystal
     double x_max = settings.AX * settings.RAX;
     double y_max = settings.AY * settings.RAY;
-    
+
     //Fell of the edge
-    if(ion.r[0] > x_max || ion.r[0] < -x_max ||
-       ion.r[1] > y_max || ion.r[1] < -y_max)
+    if (ion.r[0] > x_max || ion.r[0] < -x_max ||
+        ion.r[1] > y_max || ion.r[1] < -y_max)
     {
         *off_edge = true;
         return false;
     }
     //Buried
-    if(ion.r[2] < -settings.BDIST)
+    if (ion.r[2] < -settings.BDIST)
     {
         *buried = true;
         return false;
     }
     //Too many steps
-    if(ion.steps > settings.MAX_STEPS)
+    if (ion.steps > settings.MAX_STEPS)
     {
         *froze = true;
         return false;
     }
     //Stuck in surface
-    if(E < settings.SENRGY)
+    if (E < settings.SENRGY)
     {
         *stuck = true;
         return false;
@@ -172,71 +180,67 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
     return true;
 }
 
-void log_xyz(Ion &ion, Lattice &lattice, int& lattice_num, char* buffer)
+void log_xyz(Ion &ion, Lattice &lattice, int &lattice_num, char *buffer)
 {
-        //Update the lattice site momenta...
-        for(int i = 0; i<ion.near; i++)
+    //Update the lattice site momenta...
+    for (int i = 0; i < ion.near; i++)
+    {
+        Site &s = *ion.near_sites[i];
+        lattice.sites[s.index] = &s;
+        //Flag as nearby
+        s.near_check = true;
+    }
+
+    //First line for xyz file is number involved.
+    xyz_file << lattice_num << "\n";
+
+    //Next line is a "comment", we will stuff the time here.
+    xyz_file << ion.time << "\n";
+
+    //Next stuff the symbol, position, momentum and mass for the ion itself
+    //The ion is given index 0
+    sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
+            ion.atom->symbol.c_str(), ion.r[0], ion.r[1], ion.r[2], // Sym, x, y, z,
+            ion.p[0], ion.p[1], ion.p[2],                           //     px,py,pz,
+            ion.atom->mass, 0, 1);                                  //mass, index, near
+    xyz_file << buffer;
+
+    int num = lattice.sites.size();
+    //Then stuff in the entire lattice, why not...
+    for (int i = 0; i < num; i++)
+    {
+        Site &s = *lattice.sites[i];
+
+        //Check if we want to ignore the lattice site
+        if (settings.SCAT_TYPE)
         {
-            Site &s = *ion.near_sites[i];
-            lattice.sites[s.index] = &s;
-            //Flag as nearby
-            s.near_check = true;
+            //check out of bounds, from r_0
+            if (s.r_0[0] < lattice.xyz_bounds[0]     //x
+                || s.r_0[0] > lattice.xyz_bounds[3]  //x
+                || s.r_0[1] < lattice.xyz_bounds[1]  //y
+                || s.r_0[1] > lattice.xyz_bounds[4]  //y
+                || s.r_0[2] < lattice.xyz_bounds[2]  //z
+                || s.r_0[2] > lattice.xyz_bounds[5]) //z
+                continue;
         }
 
-        //First line for xyz file is number involved.
-        xyz_file << lattice_num << "\n";
-
-        //Next line is a "comment", we will stuff the time here.
-        xyz_file << ion.time << "\n";
-
-        //Next stuff the symbol, position, momentum and mass for the ion itself
-        //The ion is given index 0
+        //Note that this is same format as the ion, index has 1 added to it, as ion is 0
         sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                ion.atom->symbol.c_str(),ion.r[0],ion.r[1],ion.r[2], // Sym, x, y, z,
-                                         ion.p[0],ion.p[1],ion.p[2], //     px,py,pz,
-                                         ion.atom->mass,0,1);        //mass, index, near
+                s.atom->symbol.c_str(), s.r[0], s.r[1], s.r[2], // Sym, x, y, z,
+                s.p[0], s.p[1], s.p[2],                         //     px,py,pz,
+                s.atom->mass, s.index + 1,                      //mass, index,
+                s.near_check);                                  //Near
         xyz_file << buffer;
-
-        int num = lattice.sites.size();
-        //Then stuff in the entire lattice, why not...
-        for(int i = 0; i<num; i++)
-        {
-            Site &s = *lattice.sites[i];
-
-            //Check if we want to ignore the lattice site
-            if(settings.SCAT_TYPE)
-            {
-                //check out of bounds, from r_0
-                if(s.r_0[0] < lattice.xyz_bounds[0] //x
-                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
-                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
-                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
-                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
-                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
-                 continue;
-            }
-
-            //Note that this is same format as the ion, index has 1 added to it, as ion is 0
-            sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
-                    s.atom->symbol.c_str(),s.r[0],s.r[1],s.r[2],     // Sym, x, y, z,
-                                           s.p[0],s.p[1],s.p[2],     //     px,py,pz,
-                                           s.atom->mass,s.index + 1, //mass, index,
-                                           s.near_check);            //Near
-            xyz_file << buffer;
-            //Reset this flag for next run
-            s.near_check = false;
-        }
+        //Reset this flag for next run
+        s.near_check = false;
+    }
 }
 
-bool should_save(Lattice &lattice, double E, double theta, double phi)
-{
-    return settings.save_errored || E > 0;
-}
-
-void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
+void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz,
+          Detector &detector)
 {
     //Get some constants for the loop
-    
+
     //Radius of atom search
     const int d_search = settings.DIST_SEARCH;
     //Max atoms to find in the search
@@ -256,7 +260,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
     double psq;
 
     //exit conditions
-    
+
     //Below -BDIST
     bool buried = false;
     //Took longer than MAX_STEPS
@@ -272,7 +276,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 
     //Kinetic Energy
     double T;
-    
+
     //Parameters for checking if things need re-calculating
     //Location of last nearby update
     Vec3d r;
@@ -288,7 +292,7 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
 
     //Distance in angstroms to consider far enough moved.
     //After it moves this far, it will re-calculate nearest.
-    double r_reset = d_search/10.0;
+    double r_reset = d_search / 10.0;
     //This is set true whenever r_reset's condition is met
     bool sort = true;
 
@@ -306,39 +310,39 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz)
     T = psq * 0.5 / mass;
     E1 = E2 = E3 = T;
 
-    if(log)
+    if (log)
     {
         debug_file << "\n\nStarting Ion Trajectory Output\n\n";
-        debug_file << "Recoil: " << (settings.RECOIL?"T":"F") << "\n";
+        debug_file << "Recoil: " << (settings.RECOIL ? "T" : "F") << "\n";
         debug_file << "\nIon:\n";
         ion.write_info();
         traj_file << "x\ty\tz\tpx\tpy\tpz\tt\tn\tT\tV\tE\tnear\tdt\tdr_max\n";
         //Log initial state
         sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
-                ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
-                ion.time,ion.steps,T,ion.V,(T+ion.V),ion.near,dt,dr_max);
+                ion.r[0], ion.r[1], ion.r[2], ion.p[0], ion.p[1], ion.p[2],
+                ion.time, ion.steps, T, ion.V, (T + ion.V), ion.near, dt, dr_max);
         traj_file << buffer;
     }
 
-    if(xyz)
+    if (xyz)
     {
         int num = lattice.sites.size();
         //Here we initialize lattice_num, it was set to 1 earlier for the ion.
         //Now it gets incremented for each valid site
-        for(int i = 0; i<num; i++)
+        for (int i = 0; i < num; i++)
         {
             Site &s = *lattice.sites[i];
             //Check if we want to ignore the lattice site
-            if(settings.SCAT_TYPE)
+            if (settings.SCAT_TYPE)
             {
                 //check out of bounds, from r_0
-                if(s.r_0[0] < lattice.xyz_bounds[0] //x
-                 ||s.r_0[0] > lattice.xyz_bounds[3] //x
-                 ||s.r_0[1] < lattice.xyz_bounds[1] //y
-                 ||s.r_0[1] > lattice.xyz_bounds[4] //y
-                 ||s.r_0[2] < lattice.xyz_bounds[2] //z
-                 ||s.r_0[2] > lattice.xyz_bounds[5])//z
-                 continue;
+                if (s.r_0[0] < lattice.xyz_bounds[0]     //x
+                    || s.r_0[0] > lattice.xyz_bounds[3]  //x
+                    || s.r_0[1] < lattice.xyz_bounds[1]  //y
+                    || s.r_0[1] > lattice.xyz_bounds[4]  //y
+                    || s.r_0[2] < lattice.xyz_bounds[2]  //z
+                    || s.r_0[2] > lattice.xyz_bounds[5]) //z
+                    continue;
             }
             lattice_num++;
         }
@@ -358,7 +362,7 @@ start:
     sort = false;
     //Increment counter for how many steps we have taken
     ion.steps++;
-    
+
     //Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);
 
@@ -366,14 +370,15 @@ start:
     validate(ion, &buried, &off_edge, &stuck, &froze, &left, E1);
 
     //These are our standard exit conditions
-    if(froze || buried || stuck || left || off_edge)
+    if (froze || buried || stuck || left || off_edge)
     {
-        if(log) debug_file << "Exited " << froze
-                                 << " " << buried
-                                 << " " << stuck
-                                 << " " << left
-                                 << " " << off_edge
-                                 << std::endl;
+        if (log)
+            debug_file << "Exited " << froze
+                       << " " << buried
+                       << " " << stuck
+                       << " " << left
+                       << " " << off_edge
+                       << std::endl;
         goto end;
     }
 
@@ -382,7 +387,7 @@ start:
     //Showing any major jumps in energy of the particle.
     //This value should average around 0.01, so if larger than 50,
     //Then we have a major jump.
-    if(fabs(E3 - 2*E2 + E1) > de_fail)
+    if (fabs(E3 - 2 * E2 + E1) > de_fail)
     {
         discont = true;
         goto end;
@@ -394,31 +399,31 @@ start:
     run_hameq(ion, lattice, dt, true, &dr_max);
 
     //Now we do some checks to see if the timestep needs to be adjusted
-    if(dr_max != 0)
+    if (dr_max != 0)
     {
         //check if energy has changed too much.
-        change = pow(settings.error_scale/dr_max, settings.error_exponent);
+        change = pow(settings.error_scale / dr_max, settings.error_exponent);
         //don't allow speedups of more than 2x, as those can
         //cause major discontinuities later
-        if(change >= 2)
+        if (change >= 2)
             change = 2;
         //If timestep tries to speed up between 1 and 2 times,
         //just leave it where it is.
-        if(change > 1 && change < 2)
+        if (change > 1 && change < 2)
             change = 1;
 
         //Large change in energy, try to reduce timestep.
-        if(change < .2 && dt > dt_low)
+        if (change < .2 && dt > dt_low)
         {
             dt *= change;
             //Make sure it is still at least dt_low.
-            if(dt < dt_low)
+            if (dt < dt_low)
                 dt = dt_low;
-            if(log)
+            if (log)
             {
                 debug_file << "change_down: " << change << std::endl;
             }
-            //Reset the last index the ion saw, 
+            //Reset the last index the ion saw,
             //this forces a re-check of nearby atoms
             ion.last_index = -1;
             sort = true;
@@ -435,13 +440,13 @@ start:
 
     //Apply changes, this updates lattice loctations.
     apply_hameq(ion, lattice, dt);
-    
+
     //check if we have gone too far, and need to re-calculate nearby atoms
     dr = r - ion.r;
     diff = sqr(dr.v);
     //Reset at either 1/10 of the search distance, or 1/3 the distance to nearest, whichever is larger.
     r_reset = std::max(0.1 * d_search, ion.rr_min_find / 9.0);
-    if(diff > r_reset)
+    if (diff > r_reset)
     {
         //Update ion location for last check
         r.set(ion.r);
@@ -465,15 +470,15 @@ start:
     E1 = T + ion.V;
 
     //Log things if needed
-    if(log)
+    if (log)
     {
         //This log file is just the ion itself, not the full xyz including the lattice
         sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
-                ion.r[0],ion.r[1],ion.r[2],ion.p[0],ion.p[1],ion.p[2],
-                ion.time,ion.steps,T,ion.V,(T+ion.V),ion.near,dt,dr_max);
+                ion.r[0], ion.r[1], ion.r[2], ion.p[0], ion.p[1], ion.p[2],
+                ion.time, ion.steps, T, ion.V, (T + ion.V), ion.near, dt, dr_max);
         traj_file << buffer;
     }
-    if(xyz)
+    if (xyz)
     {
         log_xyz(ion, lattice, lattice_num, buffer);
     }
@@ -486,7 +491,7 @@ start:
 
 end:
 
-    if(log)
+    if (log)
     {
         debug_file << "\n\nFinished Traj Run\n\n";
         debug_file << "\nIon:\n";
@@ -512,36 +517,36 @@ end:
      * -500 : discont, had a discontinuity in E, so was dropped.
      * 
      * Note that -5 condition is only applied if settings.detector_type is greater than 0
-     */ 
-    if(stuck)
+     */
+    if (stuck)
     {
         theta = 0;
         phi = 90;
         E = -100;
         lattice.stuck_num++;
     }
-    else if(buried)
+    else if (buried)
     {
         theta = 0;
         phi = 90;
         E = -200;
         lattice.buried_num++;
     }
-    else if(froze)
+    else if (froze)
     {
         theta = 0;
         phi = 90;
         E = -300;
         lattice.froze_num++;
     }
-    else if(off_edge)
+    else if (off_edge)
     {
         theta = 0;
         phi = 90;
         E = -400;
         lattice.left_num++;
     }
-    else if(discont)
+    else if (discont)
     {
         theta = 0;
         phi = 90;
@@ -555,16 +560,16 @@ end:
         double pz = ion.p[2];
         psq = sqr(ion.p);
         //Find the momentum at infinity
-        if(settings.use_image)
+        if (settings.use_image)
         {
             //Image charge would pull it towards surface, this accounts
             //for that effect.
-            pzz = (pz*pz) + (2*mass*Vi_z(settings.Z1, ion.q));
+            pzz = (pz * pz) + (2 * mass * Vi_z(settings.Z1, ion.q));
             pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
             //Recalulate this, as pz has changed
             //We are fine with pzz being -ve, as that case
             //will be dropped due to ion not escaping.
-            psq = pzz * pzz + px*px + py*py;
+            psq = pzz * pzz + px * px + py * py;
         }
         else
         {
@@ -573,7 +578,7 @@ end:
         }
         double p = sqrt(psq);
         //Ion is not escaping.
-        if(pzz <= 0 || p <= 0)
+        if (pzz <= 0 || p <= 0)
         {
             theta = 0;
             phi = 90;
@@ -586,9 +591,9 @@ end:
             E = 0.5 * psq / mass;
 
             //calculate theta, depends on pz
-            theta = acos(pzz/p) * 180 / M_PI;
+            theta = acos(pzz / p) * 180 / M_PI;
 
-            if(px == 0 && py==0)
+            if (px == 0 && py == 0)
             {
                 //phi isn't well defined here,
                 //so just set it as same as incoming
@@ -599,39 +604,10 @@ end:
                 //Calculate phi, depends on px, py
                 phi = atan2(py, px) * 180 / M_PI;
             }
-
-            //Check if in bounds of absolute maximum for detector.
-            if(settings.detector_type > 0)
-            {
-                //These are originally in -180 to 180 range,
-                //+360 shift allows easier comparisons without edge cases.
-                double phi_test = phi + 360;
-                double phi_ref = settings.PHI0 + 360;
-                double diff = fabs(phi_test - phi_ref);
-                //Detectors should generally be 1 degree resolution,
-                //A difference of 10 is far outside the allowed range.
-                if(diff > 10) 
-                {
-                    theta = 0;
-                    phi = 90;
-                    E = -5;
-                    lattice.undetectable_num++;
-                }
-            }
         }
     }
 
     //Output data
-    if(should_save(lattice, E, theta, phi))
-    {
-        //first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
-                ion.r_0[0],ion.r_0[1],ion.r_0[2],
-                E,theta,phi,
-                ion.index,1.0, //TODO make the second 1 be an area based on gridscat depth?
-                ion.max_n, ion.r_min, ion.steps, ion.time);
-        //Then save it
-        out_file << buffer;
-    }
+    detector.log(ion, lattice, E, theta, phi);
     return;
 }

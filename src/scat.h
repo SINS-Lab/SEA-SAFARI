@@ -1,5 +1,6 @@
 #pragma once
 #include "lattice.h"
+#include "detector.h"
 #include <random>
 
 /**
@@ -29,3 +30,23 @@ void gridscat(Lattice &lattice, int *num);
  * spacing between particles.
  */
 void chainscat(Lattice &lattice, int *num);
+/**
+ * Fires ions at the surface in a grid. This grid goes from
+ * xstart to xstep in steps of xstep, and y for the equivalent 
+ * using ystart, etc.
+ *
+ * The number of trajectories is stuffed in *num
+ * 
+ * It will then do a sub-scattering for sections which were
+ * detected, where it divides the area around each hit up
+ * into 4 quadrants, and does scattering off there, it will
+ * do these divisions depth times.
+ * 
+ * For the initial set, current_depth should be 0.
+ * 
+ * The "area" flag in the data will be scaled based on current_depth.
+ */
+void adaptivegridscat(double xstart, double xstep, double xstop,
+                      double ystart, double ystep, double ystop,
+                      Lattice &lattice, Detector &detector,
+                      int max_depth, int current_depth, int *num);

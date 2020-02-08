@@ -20,6 +20,7 @@ std::ofstream debug_file;
 std::ofstream traj_file;
 std::ofstream xyz_file;
 std::ofstream crystal_file;
+Detector default_detector;
 
 double space_mask[3375][3];
 
@@ -147,6 +148,23 @@ int main(int argc, char *argv[])
         else if (settings.SCAT_TYPE == 888)
         {
             chainscat(lattice, &n);
+        }
+        else
+        {
+            //Otherwise this is an adaptive scat, with arguments of
+            //the maximum depth to persue.
+            debug_file << "Running Adaptive Grid " << std::endl;
+            std::cout << "Running Adaptive Grid " << std::endl;
+
+            SpotDetector detector(
+                        settings.detect_parameters[0],
+                        settings.detect_parameters[1],
+                        settings.PHI0,
+                        settings.detect_parameters[2]);
+            
+            adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
+                             settings.YSTART, settings.YSTEP, settings.YSTOP,
+                             lattice, detector, settings.SCAT_TYPE, 0, &n);
         }
 
         //Log some debug info from the lattice
