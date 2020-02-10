@@ -89,6 +89,7 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
                 if (ion_ptr != NULL && s->last_ion != ion_ptr->index)
                 {
                     s->last_ion = ion_ptr->index;
+                    s->thermal_seed = ion_ptr->thermal_seed;
                     s->reset();
                 }
                 //In this case, we want to make sure we are not including self.

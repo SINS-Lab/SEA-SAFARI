@@ -41,10 +41,10 @@ def loadFromText(file):
         else:
             # x, y, z_min
             # E, Theta, Phi
-            # level, weight
+            # index, weight
             data.append([float(arr[0]), float(arr[1]),float(arr[2]),\
                          float(arr[3]),float(arr[4]),float(arr[5]),\
-                         float(arr[6]),float(arr[7])])
+                         float(arr[6]),1.0])# 1.0 was float(arr[7])
         n = n + 1
     return data
 

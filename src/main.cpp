@@ -13,7 +13,7 @@
 #include "temps.h"        /* These are also initialized */
 #include "safari.h"       /* This includes the exit_fail function*/
 
-//Initialize the global variables.
+// Initialize the global variables.
 Safio settings;
 std::ofstream out_file;
 std::ofstream debug_file;
@@ -26,7 +26,7 @@ double space_mask[3375][3];
 
 int main(int argc, char *argv[])
 {
-    //Starts total runtime timer.
+    // Starts total runtime timer.
     double load = clock();
 
     std::map<std::string, ArgValue> args = get_arguments(argc, argv);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     args["-f"] = "t";
 
-    //We had no input file specified via command line
+    // We had no input file specified via command line
     if (!args["-i"])
     {
         std::ifstream input;
@@ -52,19 +52,19 @@ int main(int argc, char *argv[])
             std::cout << "Error opening Safari.input" << '\n';
             exit(EXIT_FAILURE);
         }
-        //Add the safio file to the arguments.
+        // Add the safio file to the arguments.
         args["-i"] = safio_file;
     }
 
     std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
-    //Load the input file
+    // Load the input file
     settings.load(args);
     debug_file << "Loaded Settings, Initializing Potentials and Temperatures" << '\n';
 
-    //Initialize potentials
+    // Initialize potentials
     init_potentials();
 
-    //Initialize temperatures
+    // Initialize temperatures
     init_temps();
 
     debug_file << "Initialized Potentials, Building Lattice" << '\n';
@@ -89,10 +89,24 @@ int main(int argc, char *argv[])
         lattice.build_lattice();
     }
 
-    //Initialize springs if not using einstein
+    // Initialize springs if not using einstein
     if (!settings.useEinsteinSprings)
     {
         lattice.init_springs(settings.neighbour_count);
+    }
+
+    // Only update the mask if it has more than 2 points, and has same for x and y.
+    if(settings.n_x_mask == settings.n_y_mask && settings.n_y_mask > 2)
+    {
+        lattice.mask.points = new Point[settings.n_y_mask];
+        for(int i =0; i<settings.n_y_mask; i++)
+        {
+            Point point;
+            point.x = settings.x_mask_points[i];
+            point.y = settings.y_mask_points[i];
+            lattice.mask.points[i] = point;
+        }
+        lattice.mask.num = settings.n_y_mask;
     }
 
     std::ofstream crys_xyz_file;
@@ -115,17 +129,51 @@ int main(int argc, char *argv[])
     crys_xyz_file.close();
     crystal_file.close();
 
-    //Initialize the space_math's lookup table
+    // Initialize the space_math's lookup table
     init_lookup();
 
-    //Starts trajectory timer.
+    // Starts trajectory timer.
     double start = clock();
     int n = 0;
+
+    default_detector.phi = settings.PHI0;
+    default_detector.theta = 45;
+    default_detector.e_min = settings.EMIN;
 
     if (settings.SCAT_FLAG == 666)
     {
         out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
-        if (settings.NUMCHA == 1 || settings.SCAT_TYPE == 777)
+
+        // 100 bifurcations is currently computationally infeasable, so
+        // this will never be a valid choice for this, at least until
+        // computers get many, many orders of magnitude better, when
+        // that happens, here is where this needs to be changed!
+        if (settings.SCAT_TYPE < 100)
+        {
+            // Otherwise this is an adaptive scat, with arguments of
+            // the maximum depth to persue.
+            debug_file << "Running Adaptive Grid " << std::endl;
+            std::cout << "Running Adaptive Grid " << std::endl;
+
+            default_detector.theta = settings.detect_parameters[0];
+            default_detector.dtheta = settings.detect_parameters[1];
+            default_detector.dphi = settings.detect_parameters[2];
+
+            // We use numcha for the number of iterations of adaptive grid.
+            // If temperature is 0, we only need 1 run.
+            int runs = settings.TEMP > 0.0001 ? settings.NUMCHA : 1;
+
+            for (int i = 0; i < runs; i++)
+            {
+                // TODO try to get lattice copying working, and copy it here.
+                // The we can OMP parallel this for loop.
+
+                adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
+                                 settings.YSTART, settings.YSTEP, settings.YSTOP,
+                                 lattice, default_detector, settings.SCAT_TYPE, 0, &n, i);
+            }
+        }
+        else if (settings.NUMCHA == 1 || settings.SCAT_TYPE == 777)
         {
             if (settings.NUMCHA == 1)
             {
@@ -149,25 +197,8 @@ int main(int argc, char *argv[])
         {
             chainscat(lattice, &n);
         }
-        else
-        {
-            //Otherwise this is an adaptive scat, with arguments of
-            //the maximum depth to persue.
-            debug_file << "Running Adaptive Grid " << std::endl;
-            std::cout << "Running Adaptive Grid " << std::endl;
 
-            SpotDetector detector(
-                        settings.detect_parameters[0],
-                        settings.detect_parameters[1],
-                        settings.PHI0,
-                        settings.detect_parameters[2]);
-            
-            adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
-                             settings.YSTART, settings.YSTEP, settings.YSTOP,
-                             lattice, detector, settings.SCAT_TYPE, 0, &n);
-        }
-
-        //Log some debug info from the lattice
+        // Log some debug info from the lattice
         debug_file << "Total Out of Phi(-5): " << lattice.undetectable_num << std::endl;
         debug_file << "Total Trapped  (-10): " << lattice.trapped_num << std::endl;
         debug_file << "Total Stuck   (-100): " << lattice.stuck_num << std::endl;
@@ -176,10 +207,10 @@ int main(int argc, char *argv[])
         debug_file << "Total OOB     (-400): " << lattice.left_num << std::endl;
         debug_file << "Total Errored (-500): " << lattice.err_num << std::endl;
 
-        //Compute time per trajectory.
+        // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;
         dt /= n;
-        //Convert to ms;
+        // Convert to ms;
         dt *= 1000;
 
         std::cout << "\nFinished Running " << safio_file << "\n"
@@ -187,7 +218,7 @@ int main(int argc, char *argv[])
         std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
         debug_file << "\nTotal number particles: " << n << std::endl;
         debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
-        //End final timer.
+        // End final timer.
         dt = (clock() - load) / CLOCKS_PER_SEC;
         std::cout << "Total Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
         debug_file << "\nTotal Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
@@ -219,15 +250,15 @@ int main(int argc, char *argv[])
         }
         else if (settings.SCAT_FLAG == 999)
         {
-            test_mask();
+            test_mask(lattice);
         }
-        //Compute time per trajectory.
+        // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;
         std::cout << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
         debug_file << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
     }
 
-    //Close files.
+    // Close files.
     out_file.close();
     debug_file.close();
     traj_file.close();
@@ -241,11 +272,11 @@ void exit_fail(std::string reason)
     debug_file << "Exiting Early, for reason:" << std::endl;
     debug_file << reason << std::endl;
 
-    //Close files.
+    // Close files.
     out_file.close();
     debug_file.close();
     traj_file.close();
 
-    //Exit
+    // Exit
     exit(EXIT_FAILURE);
 }

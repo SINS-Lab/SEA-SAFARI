@@ -7,15 +7,21 @@
 class Detector
 {
 public:
+    double e_min;
+    double theta;
+    double phi;
+    double dtheta = 90;
+    double dphi = 5;
 
-    bool hit(double E, double theta, double phi)
+    bool hit(double E, double theta_in, double phi_in)
     {
         //These are originally in -180 to 180 range,
         //+360 shift allows easier comparisons without edge cases.
-        double phi_test = phi + 360;
-        double phi_ref = settings.PHI0 + 360;
-        double diff = fabs(phi_test - phi_ref);
-        return E > 0 && diff < 10;
+        double test = phi_in + 360;
+        double ref = phi + 360;
+        double diff_phi = fabs(test - ref);
+        double diff_theta = fabs(theta_in - theta);
+        return E > e_min && diff_phi < dphi && diff_theta < dtheta;
     }
 
     void log(Ion &ion, Lattice &lattice, double E, double theta, double phi)
@@ -48,30 +54,6 @@ public:
         }
         //We use this as a after saving.
         ion.index = did_hit;
-    }
-};
-
-class SpotDetector : public Detector
-{
-public:
-    double e_min;
-    double theta;
-    double phi;
-    double size;
-
-    SpotDetector(double e_min_, double theta_, double phi_, double size_)
-    {
-        e_min = e_min_;
-        theta = theta_;
-        phi = phi_;
-        size = size_;
-    }
-
-    bool hit(double E, double theta_in, double phi_in)
-    {
-        return E > e_min &&
-               theta_in < theta + size && theta_in > theta - size &&
-               phi_in < phi + size && phi_in > phi - size;
     }
 };
 

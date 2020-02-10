@@ -1,7 +1,6 @@
 #include "lattice.h"
 
 #include "safio.h"        //settings
-#include "space_math.h"   //to_hash, includes the vec_math.h
 #include "string_utils.h" //to_double_array
 #include "traj.h"         //nearest neighbour lookup
 

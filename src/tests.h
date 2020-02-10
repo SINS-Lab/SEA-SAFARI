@@ -30,4 +30,4 @@ void test_rngs();
  * Tests that the 1d loop is converting
  * to a 3d loop in correct order.
  */ 
-void test_mask();
+void test_mask(Lattice &lattice);

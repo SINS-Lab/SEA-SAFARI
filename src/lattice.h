@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "vec_math.h"
+#include "space_math.h"   // vec_math.h and mask stuff
 #include "particles.h"
 #include <vector>
 #include <unordered_map>
@@ -51,6 +51,7 @@ struct Lattice
     //This is relevant if settings.SCAT_TYPE
     double xyz_bounds[6];
 
+    Mask mask;
 
     //Here we have some values which are recored as the run occurs.
     //These are recorded to the debug file after the run is completed.

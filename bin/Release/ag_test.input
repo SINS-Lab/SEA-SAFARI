@@ -23,7 +23,7 @@
 # Detector Limits:
 # EMIN,EMAX,ERES,ARES
 #
-0.5 250 2.5 0.5
+75 250 2.5 0.5
 
 # Detector Type and optional cull flag
 #  <type> <cull flag|optional>
@@ -40,8 +40,7 @@
 
 # Detector parameters, the number of these depends on Detector Type
 #
-#  Currently these are not implemented, but 4 are required
-45.0 45.0 5.0 0.0
+45.0 1.0 1.0
 
 # Integration Parameters
 # time steps
@@ -97,10 +96,10 @@ t
 #
 # x:(min, step, max)
 #
-0 0.05 3.6147
+0 0.01 3.6147
 # y:(min, step, max)
 #
-0 0.05 3.6147
+0 0.01 3.6147
 
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
@@ -120,7 +119,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 10
+666 4
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
@@ -172,7 +171,7 @@ t
 # Seed is used for both temperature and Montecarlo mode.
 # Initial Ion Index allows repeating runs done on thermalized surfaces.
 #
-300.0 0.9436337324 1
+0.0 0.9436337324 1
 
 # This is a flag that controls whether image charge effects are included
 #

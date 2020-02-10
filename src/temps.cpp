@@ -57,7 +57,7 @@ void thermaize(Site &site)
         //site.last_ion is usually set before this is called, this ensures
         //that if the scat is run using the same index as last time, then we will
         //be able to properly repeat specfic trajectories.
-        double seed = settings.SEED * (site.index + site.last_ion*settings.SEED);
+        double seed = settings.SEED * (site.index + site.thermal_seed*settings.SEED);
 
         temperature_rng.seed(seed);
         //2 random numbers

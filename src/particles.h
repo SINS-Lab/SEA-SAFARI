@@ -54,6 +54,9 @@ public:
 
     //Used to track the last ion which has interacted with us.
     int last_ion = -1;
+    //This is used for randomly position the site, normally
+    //this is the same value as last_ion, but adaptive grid differs
+    int thermal_seed = -1;
     //This is a unique identifier for this particle,
     //The lattice and the ions use different counters.
     int index = -1;

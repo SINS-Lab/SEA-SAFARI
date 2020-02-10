@@ -18,11 +18,15 @@
  * @param xyz - whether to log xyz file version of the trajectory.
  * 
  */
-void fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
+bool fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
 {
+    if (!lattice.mask.inside(x, y))
+        return false;
     ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
     ion.index = index;
+    ion.thermal_seed = index;
     traj(ion, lattice, log, xyz, default_detector);
+    return true;
 }
 
 void montecarloscat(Lattice &lattice, int *num)
@@ -48,7 +52,8 @@ void montecarloscat(Lattice &lattice, int *num)
 
         //Fire the ion at the random spot.
         Ion ion;
-        fire(lattice, ion, x, y, n, false, false);
+        if (!fire(lattice, ion, x, y, n, false, false))
+            n--;
     }
     *num = settings.NUMCHA;
     return;
@@ -113,8 +118,8 @@ void gridscat(Lattice &lattice, int *num)
             for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
             {
                 Ion ion;
-                fire(lattice, ion, x, y, n, false, false);
-                n++;
+                if (fire(lattice, ion, x, y, n, false, false))
+                    n++;
             }
     }
 
@@ -141,7 +146,6 @@ void chainscat(Lattice &lattice, int *num)
         Ion ion;
         //Fire at next point in the line.
         fire(lattice, ion, x, y, n, false, false);
-        n++;
     }
     *num = n;
     return;
@@ -168,36 +172,39 @@ int index = 0;
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
                       Lattice &lattice, Detector &detector,
-                      int max_depth, int current_depth, int *num)
+                      int max_depth, int current_depth, int *num, int iter)
 {
     if (current_depth > max_depth)
         return;
     bool log = false;
     bool xyz = false;
-    double weight = pow(4.0, current_depth);
     int d = current_depth + 1;
     for (double x = xstart; x <= xstop; x += xstep)
         for (double y = ystart; y <= ystop; y += ystep)
         {
-            Ion ion;
-            ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-            ion.index = index++;
-            ion.weight = current_depth;
-            traj(ion, lattice, log, xyz, detector);
-            *num = *num + 1;
-            if (ion.index)
+            if (lattice.mask.inside(x, y))
             {
-                //Do a higher resolution scan around the ion.
-                double dx = xstep / 2;
-                double dy = ystep / 2;
-                double x_min = x - dx / 2;
-                double y_min = y - dy / 2;
-                double x_max = x + dx;
-                double y_max = y + dy;
-                adaptivegridscat(x_min, dx, x_max,
-                                 y_min, dy, y_max,
-                                 lattice, detector,
-                                 max_depth, d, num);
+                Ion ion;
+                ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
+                ion.index = index++;
+                ion.weight = current_depth;
+                ion.thermal_seed = iter;
+                traj(ion, lattice, log, xyz, detector);
+                *num = *num + 1;
+                if (ion.index)
+                {
+                    //Do a higher resolution scan around the ion.
+                    double dx = xstep / 2;
+                    double dy = ystep / 2;
+                    double x_min = x - dx / 2;
+                    double y_min = y - dy / 2;
+                    double x_max = x + dx;
+                    double y_max = y + dy;
+                    adaptivegridscat(x_min, dx, x_max,
+                                     y_min, dy, y_max,
+                                     lattice, detector,
+                                     max_depth, d, num, iter);
+                }
             }
         }
 }

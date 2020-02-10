@@ -8,6 +8,28 @@ extern double space_mask[3375][3];
 //Populates space_mask.
 void init_lookup();
 
+struct Point 
+{ 
+    double x; 
+    double y; 
+};
+
+class Mask
+{
+public:
+    Point* points;
+    int num = 0;
+    bool inside(Point &p);
+    bool inside(double x, double y)
+    {
+        Point p;
+        p.x = x;
+        p.y = y;
+        return inside(p);
+    }
+};
+
+
 /**
  * This fills the location based on the given
  * shell and index on the current shell.

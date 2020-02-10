@@ -77,7 +77,7 @@ class SafariInput:
 
         self.NDTECT = 1
         self.save_errored = False
-        self.DTECTPAR = [55.0, 45.0, 3.0, 0.0]
+        self.DTECTPAR = [45.0, 1.0, 1.0]
         
         self.DELLOW = 1e-8
         self.DELT0 = 10.0
@@ -222,7 +222,7 @@ class SafariInput:
                     self.save_errored = args[1]
             # Detector Params, 4 of them
             if n == 4:
-                self.DTECTPAR = [args[0], args[1], args[2], args[3]]
+                self.DTECTPAR = args
             # min and max time steps
             if n == 5:
                 self.DELLOW = args[0]

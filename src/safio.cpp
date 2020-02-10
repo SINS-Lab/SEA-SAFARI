@@ -103,7 +103,7 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             }
             if (n == 4)
             {
-                detect_parameters = to_double_array(args, 0, 3);
+                detect_parameters = to_double_array(args, 0, args.size() - 1);
             }
             if (n == 5)
             {
@@ -165,12 +165,24 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                         XSTART = atof(args[0].c_str());
                         XSTEP = atof(args[1].c_str());
                         XSTOP = atof(args[2].c_str());
+
+                        if (args.size() > 3)
+                        {
+                            x_mask_points = to_double_array(args, 3, args.size() - 1);
+                            n_x_mask = args.size() - 4;
+                        }
                     }
                     else if (o == 1)
                     {
                         YSTART = atof(args[0].c_str());
                         YSTEP = atof(args[1].c_str());
                         YSTOP = atof(args[2].c_str());
+                        
+                        if (args.size() > 3)
+                        {
+                            y_mask_points = to_double_array(args, 3, args.size() - 1);
+                            n_y_mask = args.size() - 4;
+                        }
                     }
                 }
             }
