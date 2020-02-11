@@ -96,10 +96,10 @@ int main(int argc, char *argv[])
     }
 
     // Only update the mask if it has more than 2 points, and has same for x and y.
-    if(settings.n_x_mask == settings.n_y_mask && settings.n_y_mask > 2)
+    if (settings.n_x_mask == settings.n_y_mask && settings.n_y_mask > 2)
     {
         lattice.mask.points = new Point[settings.n_y_mask];
-        for(int i =0; i<settings.n_y_mask; i++)
+        for (int i = 0; i < settings.n_y_mask; i++)
         {
             Point point;
             point.x = settings.x_mask_points[i];

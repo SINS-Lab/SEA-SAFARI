@@ -204,6 +204,13 @@ void index_to_loc(int index, Vec3d &location)
     }
 }
 
+/*
+ * The code below came from: 
+ * 
+ * https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/ 
+ * 
+ */ 
+
 // Given three colinear points p, q, r, the function checks if
 // point q lies on line segment 'pr'
 bool onSegment(Point p, Point q, Point r)
