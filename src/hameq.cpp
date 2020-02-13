@@ -61,21 +61,21 @@ void update_site(Site &s, double dt)
  * @param 
  * @param dt - time step for this update.
  */
-void update_sites(Site &s, int last_step, double dt)
+void update_sites(Site &s, int last_update, double dt)
 {
     //We have already been updated!
-    if (s.last_step != last_step)
+    if (s.last_update != last_update)
     {
         //Flag us as updated, so we don't get this done again.
-        s.last_step = last_step;
+        s.last_update = last_update;
         //Site near us.
         update_site(s, dt);
-    }
-    //Update each nearby site as well
-    for (int i = 0; i < s.near; i++)
-    {
-        Site &s2 = *s.near_sites[i];
-        update_sites(s2, last_step, dt);
+        //Update each nearby site as well
+        for (int i = 0; i < s.near; i++)
+        {
+            Site &s2 = *s.near_sites[i];
+            update_sites(s2, last_update, dt);
+        }
     }
 }
 
@@ -108,7 +108,10 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
         //then we need to update more than just
         //the immediate neighbours, so we need to
         //use the slower version of this.
-        update_sites(ion, ion.last_step, dt);
+        int last_update = ion.last_update + 1;
+        //This will be re-set in the function call.
+        ion.last_update = -1;
+        update_sites(ion, last_update, dt);
     }
     else
     {

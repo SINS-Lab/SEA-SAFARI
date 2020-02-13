@@ -66,6 +66,10 @@ public:
     //allows for faster checks of whether force needs
     //to be reset.
     int last_step = -1;
+    //This is the last tick that the particle positions were updated.
+    //This is used only for the more complex updating when considering
+    //lattice-lattice correlations.
+    int last_update = -1;
 
     //Start of block of values related to nearby sites
 

@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
         // this will never be a valid choice for this, at least until
         // computers get many, many orders of magnitude better, when
         // that happens, here is where this needs to be changed!
-        if (settings.SCAT_TYPE < 100)
+        if (settings.SCAT_TYPE < 100 && settings.SCAT_TYPE)
         {
             // Otherwise this is an adaptive scat, with arguments of
             // the maximum depth to persue.
