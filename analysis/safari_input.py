@@ -78,6 +78,9 @@ class SafariInput:
         self.NDTECT = 1
         self.save_errored = False
         self.DTECTPAR = [45.0, 1.0, 1.0]
+
+        self.x_points = []
+        self.y_points = []
         
         self.DELLOW = 1e-8
         self.DELT0 = 10.0
@@ -266,10 +269,15 @@ class SafariInput:
                         self.XSTART = args[0]
                         self.XSTEP = args[1]
                         self.XSTOP = args[2]
+                        for i in range(3, len(args)):
+                            self.x_points.append(args[i])
+
                     if o == 1:
                         self.YSTART = args[0]
                         self.YSTEP = args[1]
                         self.YSTOP = args[2]
+                        for i in range(3, len(args)):
+                            self.y_points.append(args[i])
             # NWRITX, NWRITY
             if n == 14:
                 self.NWRITX = args[0]
@@ -474,9 +482,17 @@ class SafariInput:
             +  serialize(self.MAXDIV, self.MINDIV)  + '\n'
         
         file = file \
-            +  serialize(self.NUMCHA)  + '\n' \
-            +  serialize(self.XSTART, self.XSTEP, self.XSTOP)  + '\n' \
-            +  serialize(self.YSTART, self.YSTEP, self.YSTOP)  + '\n'
+            +  serialize(self.NUMCHA)  + '\n'
+        file = file \
+            +  serialize(self.XSTART, self.XSTEP, self.XSTOP)
+        if(len(self.x_points) > 0):
+            file = file + ' '  + serializeArr(self.x_points)
+        file = file + '\n'
+        file = file \
+            +  serialize(self.YSTART, self.YSTEP, self.YSTOP)
+        if(len(self.y_points) > 0):
+            file = file + ' '  + serializeArr(self.y_points)
+        file = file + '\n'
             
         file = file \
             +  serialize(self.NWRITX, self.NWRITY)  + '\n' \
