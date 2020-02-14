@@ -69,7 +69,6 @@ void Safio::load(std::map<std::string, ArgValue> &args)
 
         while (getline(safio_input, line))
         {
-            std::cout << line << '\n';
             findAndReplaceAll(line, "\r", "");
             findAndReplaceAll(line, "\n", "");
             //Skip blank lines
