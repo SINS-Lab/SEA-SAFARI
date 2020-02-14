@@ -18,6 +18,14 @@ shift_is_held = False
 #Used to toggle tooltips on and off
 tooltips = True
 
+def round_n(x, n):
+    if n < 1:
+        raise ValueError("number of significant digits must be >= 1")
+    # Use %e format to get the n most significant digits, as a string.
+    format = "%." + str(n-1) + "e"
+    as_string = format % x
+    return float(as_string)
+
 def loadCrystal(name):
     f = open(name+'.crys', 'r')
     data = []
@@ -33,19 +41,30 @@ def loadFromText(file):
     f = open(file, 'r')
     n = 0
     data = []
+    errors = 0
     for line in f:
         arr = line.split()
         if n == 0:
             # Skip, this is header line
             pass
         else:
-            # x, y, z_min
-            # E, Theta, Phi
-            # index, weight
-            data.append([float(arr[0]), float(arr[1]),float(arr[2]),\
-                         float(arr[3]),float(arr[4]),float(arr[5]),\
-                         float(arr[6]),1.0])# 1.0 was float(arr[7])
+            if len(arr) != 12:
+                print("Error on line {}".format(n))
+                errors = errors + 1
+                continue
+            try:
+                # x, y, z_min
+                # E, Theta, Phi
+                # index, weight
+                data.append([float(arr[0]), float(arr[1]),float(arr[2]),\
+                            float(arr[3]),float(arr[4]),float(arr[5]),\
+                            float(arr[6]),1.0])# 1.0 was float(arr[7])
+            except:
+                print("Error on line {}".format(n))
+                errors = errors + 1
         n = n + 1
+    if errors!=0 :
+        print("Total Errored Lines: {} ({}%)".format(errors, round_n(errors * 100.0/n,2)))
     return data
 
 def load(file):

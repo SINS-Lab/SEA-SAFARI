@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "space_math.h"   // vec_math.h and mask stuff
+#include "space_math.h" // vec_math.h and mask stuff
 #include "particles.h"
 #include <vector>
 #include <unordered_map>
@@ -24,28 +24,28 @@ public:
         sites = new Site[100];
     }
 
-    Cell(const Cell& other);
+    Cell(const Cell &other);
 
     ~Cell()
     {
-        delete []sites;
+        delete[] sites;
     }
 };
 
 struct Lattice
 {
-    //All sites in the lattice, 
+    //All sites in the lattice,
     //This is not actually used much.
-    std::vector<Site*> sites;
+    std::vector<Site *> sites;
 
     //All cells in the lattice, This is
     //what is used for any lookups
-    std::unordered_map<int,Cell*> cell_map;
+    std::unordered_map<int, Cell *> cell_map;
 
     int id = 1;
 
     //If relevant, this is used to determine
-    //the range of locations used for the 
+    //the range of locations used for the
     //xyz trajectories, the 6 entries are:
     //x1,y1,z1,x2,y2,z2
     //This is relevant if settings.SCAT_TYPE
@@ -64,27 +64,49 @@ struct Lattice
     int err_num = 0;          //Code -500
 
     //Default constructor
-    Lattice(){}
+    Lattice() {}
     //Copy constructor
-    Lattice(const Lattice& other);
+    Lattice(const Lattice &other);
     //Destructor
-    ~Lattice(){}
+    ~Lattice() {}
     //Constructs the lattice based on the settings
     void build_lattice();
     //Loads a lattice from the given input stream
-    void load_lattice(std::ifstream& input);
+    void load_lattice(std::ifstream &input);
     //Adds an atom of type a, at location x, y, z;
-    void add_site(Atom* a, double x, double y, double z);
+    void add_site(Atom *a, double x, double y, double z);
     //Adds the given site to the lattice
-    void add_site(Site& site);
+    void add_site(Site &site);
     //Retrieves the cell for the given coordinates,
     //NULL if no cell is found
-    Cell* get_cell(double x, double y, double z);
+    Cell *get_cell(double x, double y, double z);
     //Version that uses the hash directly
-    Cell* get_cell(int pos_hash);
+    Cell *get_cell(int pos_hash);
     //Makes the cell for the given coordinate, if the
     //cell already exists, it retrieves old one instead.
-    Cell* make_cell(double x, double y, double z);
+    Cell *make_cell(double x, double y, double z);
+
+    void clear_stats()
+    {
+        undetectable_num = 0; //Code -5
+        trapped_num = 0;      //Code -10
+        stuck_num = 0;        //Code -100
+        buried_num = 0;       //Code -200
+        froze_num = 0;        //Code -300
+        left_num = 0;         //Code -400
+        err_num = 0;          //Code -500
+    }
+
+    void add_stats(Lattice &other)
+    {
+        undetectable_num += other.undetectable_num;
+        trapped_num += other.trapped_num;
+        stuck_num += other.stuck_num;
+        buried_num += other.buried_num;
+        froze_num += other.froze_num;
+        left_num += other.left_num;
+        err_num += other.err_num;
+    }
 
     /**
      * This initializes the nearby neighbours for the sites.
@@ -92,7 +114,7 @@ struct Lattice
      * then do some cleanup.
      * 
      * @param nearest - Number of nearest neighbours to find.
-     */ 
+     */
     void init_springs(int nearest);
 
     /**
@@ -115,9 +137,8 @@ struct Lattice
      * @param sites_out - the vector to populate with rotated sites
      * @param maxZI - the index of the dir-most point in the new basis
      * 
-     */ 
-    void rotate_sites(Vec3d& dir, Vec3d& face, Vec3d& ex_basis, Vec3d& ey_basis, Vec3d& ez_basis,
-                    Vec3d* ex, Vec3d* ey, Vec3d* ez, bool scale_basis,
-                    std::vector<Site>* sites_out, std::vector<Site>& sites_in, int* maxZI);
-
+     */
+    void rotate_sites(Vec3d &dir, Vec3d &face, Vec3d &ex_basis, Vec3d &ey_basis, Vec3d &ez_basis,
+                      Vec3d *ex, Vec3d *ey, Vec3d *ez, bool scale_basis,
+                      std::vector<Site> *sites_out, std::vector<Site> &sites_in, int *maxZI);
 };

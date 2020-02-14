@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse                     # Parsing command line arguments
 import numpy as np                  # Array manipulation/maths
 import matplotlib                   # Plotting

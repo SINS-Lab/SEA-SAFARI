@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os           # path/file searching, etc
 import subprocess   # Subprocesses for each run
 import time         # Delay between spawning of runs
@@ -15,15 +17,12 @@ def run(threads, processes, directory='.', recursive=True):
             run(threads, processes, truefile)
             continue
         if filename.endswith(".input") and not filename==('safari.input'):
-            file = os.path.join(directory, filename).replace('.input','')
-            saf_file = open('safari.input', 'w')
-            saf_file.write(file)
-            saf_file.close()
+            arg = os.path.join(directory, filename).replace('.input','')
+            run_command = command + " -i " + arg
             print('Running: '+filename)
-            process = subprocess.Popen(command, shell=True)
+            process = subprocess.Popen(run_command, shell=True)
             processes.append(process)
-            #Wait a second for it to start running
-            time.sleep(1)
+            #Increment our counter of running processes
             number = len(processes) + 1
             # If hit number to run, wait for a run to finish, before continuing.
             while number > threads:

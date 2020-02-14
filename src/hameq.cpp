@@ -361,12 +361,11 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
 
                         if (rr < 0.1)
                         {
-                            // debug_file << "Somehow lattice site on other?: "
-                            //            << s.index << " "
-                            //            << s2.index << " "
-                            //            << rr << " "
-                            //            << s.rr_min_find << " "
-                            //            << hameq_tick <<std::endl;
+                            debug_file << "Somehow lattice site on other?: "
+                                       << s.index << " "
+                                       << s2.index << " "
+                                       << rr << " "
+                                       << s.rr_min_find <<std::endl;
                             continue;
                         }
 
@@ -374,17 +373,13 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                         {
                             //In here we use Lennard Jones forces
                             dV_dr = L_J_dV_dr(r, s2.atom->index, s.atom->index);
-                            if (fabs(dV_dr) > 1000)
+                            if (fabs(dV_dr) > 100000)
                             {
                                 debug_file << "Somehow large lattice force: "
                                            << dV_dr << ", sep: " << r << " "
                                            << ion.last_step << std::endl;
                                 dV_dr = 0;
                             }
-                            // debug_file << dV_dr << " " << r << " "
-                            //            << sqr(F_at2) << " "
-                            //            << sqr(F_at) << " "
-                            //            << hameq_tick <<std::endl;
                         }
                         else
                         {

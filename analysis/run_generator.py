@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import safari_input   # Makes the input files
 import os             # Makes directories, etc

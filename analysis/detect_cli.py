@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os                          # Path related things
 import numpy as np                 # used to make the frange
 import argparse                    # Parsing arguments

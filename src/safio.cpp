@@ -2,6 +2,21 @@
 
 #include "string_utils.h" //ArgValue, to_double_array, etc
 
+void findAndReplaceAll(std::string &data, std::string toSearch, std::string replaceStr)
+{
+    // Get the first occurrence
+    size_t pos = data.find(toSearch);
+
+    // Repeat till end is reached
+    while (pos != std::string::npos)
+    {
+        // Replace this occurrence of Sub String
+        data.replace(pos, toSearch.size(), replaceStr);
+        // Get the next occurrence from the current position
+        pos = data.find(toSearch, pos + replaceStr.size());
+    }
+}
+
 void Safio::load(std::map<std::string, ArgValue> &args)
 {
     //This should have been included to args if not originally present.
@@ -54,8 +69,15 @@ void Safio::load(std::map<std::string, ArgValue> &args)
 
         while (getline(safio_input, line))
         {
+            std::cout << line << '\n';
+            findAndReplaceAll(line, "\r", "");
+            findAndReplaceAll(line, "\n", "");
             //Skip blank lines
             if (line == "")
+                continue;
+            if (starts_with(line, " "))
+                continue;
+            if (starts_with(line, "\t"))
                 continue;
             //Allow having comment lines in the file
             //Comment lines start with a #
@@ -177,7 +199,7 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                         YSTART = atof(args[0].c_str());
                         YSTEP = atof(args[1].c_str());
                         YSTOP = atof(args[2].c_str());
-                        
+
                         if (args.size() > 3)
                         {
                             y_mask_points = to_double_array(args, 3, args.size() - 1);
