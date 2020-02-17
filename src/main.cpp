@@ -13,7 +13,7 @@
 #include "temps.h"        /* These are also initialized */
 #include "safari.h"       /* This includes the exit_fail function*/
 
-#define THREADCOUNT 12
+#define THREADCOUNT 10
 
 // Initialize the global variables.
 Safio settings;

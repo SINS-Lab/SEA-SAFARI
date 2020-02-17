@@ -1,6 +1,5 @@
 CXX = g++
 
-#-Ofast cuts runtime to approximately 1/3. -mstackrealign -malign-double 
 CXXFLAGS_D = -Wall -std=c++11 -O4 -fopenmp -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double -pg
 CXXFLAGS_X = -Wall -std=c++11 -O4 -fopenmp -march=native
 CXXFLAGS_R = -Wall -std=c++11 -O4 -fopenmp -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
@@ -40,11 +39,11 @@ OUTPUT_X = $(patsubst %,$(OUTDIR_A)/%,$(OUTNAME_Z))
 #debug: Sea-Safari-Debug
 all: XYZ_PROCESSOR Sea-Safari-Debug Sea-Safari-Release
 
-Sea-Safari-Debug: $(FILES_SAFARI)
+Sea-Safari-Debug:
 	$(CXX) $(CXXFLAGS_D) -o $(OUTPUT_D) $(FILES_SAFARI_D)
 
-Sea-Safari-Release: $(FILES_SAFARI)
+Sea-Safari-Release:
 	$(CXX) $(CXXFLAGS_R) -o $(OUTPUT_R) $(FILES_SAFARI_R)
 
-XYZ_PROCESSOR: $(FILES_XYZ)
+XYZ_PROCESSOR:
 	$(CXX) $(CXXFLAGS_X) -o $(OUTPUT_X) $(FILES_XYZ)
