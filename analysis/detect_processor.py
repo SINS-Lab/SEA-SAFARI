@@ -38,33 +38,38 @@ def loadCrystal(name):
     return data
 
 def loadFromText(file):
-    f = open(file, 'r')
+    f = open(file, 'r', errors='ignore')
     n = 0
     data = []
     errors = 0
-    for line in f:
-        arr = line.split()
-        if n == 0:
-            # Skip, this is header line
-            pass
-        else:
-            if len(arr) != 12:
-                print("Error on line {}".format(n))
-                errors = errors + 1
-                continue
-            try:
-                # x, y, z_min
-                # E, Theta, Phi
-                # index, weight
-                data.append([float(arr[0]), float(arr[1]),float(arr[2]),\
-                            float(arr[3]),float(arr[4]),float(arr[5]),\
-                            float(arr[6]),1.0])# 1.0 was float(arr[7])
-            except:
-                print("Error on line {}".format(n))
-                errors = errors + 1
-        n = n + 1
-    if errors!=0 :
-        print("Total Errored Lines: {} ({}%)".format(errors, round_n(errors * 100.0/n,2)))
+
+    try:
+        for line in f:
+            arr = line.split()
+            if n == 0:
+                # Skip, this is header line
+                pass
+            else:
+                if len(arr) != 12:
+                #   print("Error on line {}".format(n))
+                    errors = errors + 1
+                    continue
+                try:
+                    # x, y, z_min
+                    # E, Theta, Phi
+                    # index, weight
+                    data.append([float(arr[0]), float(arr[1]),float(arr[2]),\
+                                float(arr[3]),float(arr[4]),float(arr[5]),\
+                                float(arr[6]),1.0])# 1.0 was float(arr[7])
+                except:
+                    # print("Error on line {}".format(n))
+                    # errors = errors + 1
+                    pass
+            n = n + 1
+    except:
+        print("File errored {}, {}".format(file, n))
+  #  if errors!=0 :
+  #      print("Total Errored Lines: {} ({}%)".format(errors, round_n(errors * 100.0/n,2)))
     return data
 
 def load(file):
@@ -115,7 +120,7 @@ def integrate(numpoints, winv, points, areas, axis):
             intensity[i] = np.sum(gauss(points - axis[i], winv) * areas)
         
         # Cull out values that dont play nicely in excel
-        if intensity[i] < 1e-60:
+        if intensity[i] <= 1e-60:
             intensity[i] = 0
             
     m = np.max(intensity)
