@@ -136,13 +136,6 @@ void test_lattice_springs(Lattice &lattice)
 
 void test_mask(Lattice &lattice)
 {
-	// Vec3d loc;
-	// for(int i = 0; i<10*10*10; i++)
-	// {
-	// 	index_to_loc(i, loc);
-	// 	debug_file << loc[0] << " " << loc[1] << " " << loc[2] << std::endl;
-	// }
-
 	for (int i = 0; i < lattice.mask.num; i++)
 	{
 		Point p = lattice.mask.points[i];
@@ -155,6 +148,17 @@ void test_mask(Lattice &lattice)
 		for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
 		{
 			if (lattice.mask.inside(x, y))
+			{
+				debug_file << x << "\t" << y << std::endl;
+			}
+		}
+	Lattice lettuce = lattice;
+	debug_file << "============================="<< std::endl
+			   << std::endl;
+	for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
+		for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
+		{
+			if (lettuce.mask.inside(x, y))
 			{
 				debug_file << x << "\t" << y << std::endl;
 			}

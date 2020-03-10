@@ -8,16 +8,16 @@ extern double space_mask[3375][3];
 //Populates space_mask.
 void init_lookup();
 
-struct Point 
-{ 
-    double x; 
-    double y; 
+struct Point
+{
+    double x;
+    double y;
 };
 
 class Mask
 {
 public:
-    Point* points;
+    Point points[256];
     int num = 0;
     bool inside(Point &p);
     bool inside(double x, double y)
@@ -28,7 +28,6 @@ public:
         return inside(p);
     }
 };
-
 
 /**
  * This fills the location based on the given
@@ -61,7 +60,7 @@ void index_to_loc(int index, Vec3d &location);
  * 
  * @param direction - the reference direction
  * @param axis - the vector to rotate direction onto.
- */ 
+ */
 Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
 
 /**
@@ -73,5 +72,5 @@ Mat3d make_rot_matrix(Vec3d direction, Vec3d axis);
  * 
  * This allows for quick lookup of Cells of sites in 
  * an int-indexed map.
- */ 
+ */
 int to_hash(double x, double y, double z);

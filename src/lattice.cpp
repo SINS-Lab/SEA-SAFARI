@@ -417,6 +417,7 @@ Lattice::Lattice(const Lattice &other)
         }
         cell_map[key] = ours;
     }
+    mask = other.mask;
 }
 
 Cell::Cell(const Cell &other)

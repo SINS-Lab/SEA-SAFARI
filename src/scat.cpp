@@ -21,7 +21,10 @@
 bool fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
 {
     if (!lattice.mask.inside(x, y))
+    {
+        lattice.out_of_mask++;
         return false;
+    }
     ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
     ion.index = index;
     ion.thermal_seed = index;
@@ -206,5 +209,9 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                                      max_depth, d, num, iter);
                 }
             }
-        }
+            else
+            {
+                lattice.out_of_mask++;
+            }
+                }
 }

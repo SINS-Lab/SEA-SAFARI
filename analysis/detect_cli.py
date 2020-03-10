@@ -58,7 +58,7 @@ def process(num, axis_orig, areas, size, filename):
     amin = np.min(axis_orig)
     step = (amax - amin) / num
     axis = np.array([(amin + x*step) for x in range(num)])
-    points = detect.integrate(num, size, axis_orig, areas, axis)    
+    points = detect.integrate(num, 1.0/size, axis_orig, areas, axis)    
     output = open(filename, 'w')
     output.write('{}\t{}\n'.format('Phi', 'Intensity'))
     for i in range(len(points)):

@@ -100,7 +100,9 @@ int main(int argc, char *argv[])
     // Only update the mask if it has more than 2 points, and has same for x and y.
     if (settings.n_x_mask == settings.n_y_mask && settings.n_y_mask > 2)
     {
-        lattice.mask.points = new Point[settings.n_y_mask];
+        debug_file << "Initializing surface mask of size ";
+        std::cout << "Initializing surface mask of size ";
+
         for (int i = 0; i < settings.n_y_mask; i++)
         {
             Point point;
@@ -108,6 +110,8 @@ int main(int argc, char *argv[])
             point.y = settings.y_mask_points[i];
             lattice.mask.points[i] = point;
         }
+        debug_file << settings.n_y_mask << std::endl;
+        std::cout << settings.n_y_mask << std::endl;
         lattice.mask.num = settings.n_y_mask;
     }
 
@@ -165,7 +169,7 @@ int main(int argc, char *argv[])
             // If temperature is 0, we only need 1 run.
             int runs = settings.TEMP > 0.0001 ? settings.NUMCHA : 1;
 
-            if(runs==1)
+            if (runs == 1)
             {
                 adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
                                  settings.YSTART, settings.YSTEP, settings.YSTOP,
@@ -185,7 +189,6 @@ int main(int argc, char *argv[])
                     lattice.add_stats(toUse);
                 }
             }
-            
         }
         else if (settings.NUMCHA == 1 || settings.SCAT_TYPE == 777)
         {
@@ -220,6 +223,7 @@ int main(int argc, char *argv[])
         debug_file << "Total Froze   (-300): " << lattice.froze_num << std::endl;
         debug_file << "Total OOB     (-400): " << lattice.left_num << std::endl;
         debug_file << "Total Errored (-500): " << lattice.err_num << std::endl;
+        debug_file << "Total Out of Mask: " << lattice.out_of_mask << std::endl;
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;

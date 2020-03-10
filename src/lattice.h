@@ -62,6 +62,7 @@ struct Lattice
     int froze_num = 0;        //Code -300
     int left_num = 0;         //Code -400
     int err_num = 0;          //Code -500
+    int out_of_mask = 0;      //No code for this.
 
     //Default constructor
     Lattice() {}
@@ -106,6 +107,7 @@ struct Lattice
         froze_num += other.froze_num;
         left_num += other.left_num;
         err_num += other.err_num;
+        out_of_mask += other.out_of_mask;
     }
 
     /**

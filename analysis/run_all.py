@@ -36,7 +36,6 @@ def run(threads, processes, directory='.', recursive=True):
     return
     
 if __name__ == '__main__':
-#    run()
     txtnum = input("Number of Threads? ")
     rundir = input("Run Directory? ")
     threads = int(txtnum)
