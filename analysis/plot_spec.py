@@ -65,6 +65,8 @@ class Spec:
             ax.plot(self.Energies, intensity)
         ax.set_xlabel('Energy (eV)')
         ax.set_ylabel('Intensity (Arbitrary)')
+        ax.tick_params(which='both', direction="in")
+        
         fig.show()
         if save:
             fig.savefig('spec00.png')

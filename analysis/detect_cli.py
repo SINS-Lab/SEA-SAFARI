@@ -160,16 +160,16 @@ parser.add_argument("-m", "--mode", help="run mode (a,p,t)")
 parser.add_argument("-r", "--emin_rel", help="Relative Minimum energy to consider")
 args = parser.parse_args()
 
-theta = float(input('Detector Theta: ')) if not args.theta else float(args.theta)
 size = float(input('Detector Size: ')) if not args.size else float(args.size)
-emin = float(input('Minimum Energy: ')) if not args.emin else float(args.emin)
-emin_rel = 0 if not args.emin_rel else float(args.emin_rel)
 
 mode = 'a'
 if not args.mode is None:
     mode = args.mode
 
 if mode == 'a':
+    theta = float(input('Detector Theta: ')) if not args.theta else float(args.theta)
+    emin = float(input('Minimum Energy: ')) if not args.emin else float(args.emin)
+    emin_rel = 0 if not args.emin_rel else float(args.emin_rel)
     dir = input('Input Directory: ') if not args.directory else args.directory
     azimuthal_spectrum(dir, theta, size, emin, emin_rel);
 
