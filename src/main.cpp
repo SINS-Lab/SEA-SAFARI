@@ -168,24 +168,25 @@ int main(int argc, char *argv[])
             // We use numcha for the number of iterations of adaptive grid.
             // If temperature is 0, we only need 1 run.
             int runs = settings.TEMP > 0.0001 ? settings.NUMCHA : 1;
+            int ind = 0;
 
             if (runs == 1)
             {
                 adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
                                  settings.YSTART, settings.YSTEP, settings.YSTOP,
-                                 lattice, default_detector, settings.SCAT_TYPE, 0, &n, 0);
+                                 lattice, default_detector, settings.SCAT_TYPE, 0, &n, &ind, 0);
             }
             else
             {
                 #pragma omp parallel for num_threads(THREADCOUNT)
                 for (int i = 0; i < runs; i++)
                 {
-                    //Cop the lattice
+                    //Copy the lattice
                     Lattice toUse = lattice;
                     toUse.clear_stats();
                     adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
                                      settings.YSTART, settings.YSTEP, settings.YSTOP,
-                                     toUse, default_detector, settings.SCAT_TYPE, 0, &n, i);
+                                     toUse, default_detector, settings.SCAT_TYPE, 0, &n, &ind, i);
                     lattice.add_stats(toUse);
                 }
             }

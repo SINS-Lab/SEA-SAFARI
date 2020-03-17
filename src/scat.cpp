@@ -170,12 +170,10 @@ void save_adaptive(Ion &ion, Lattice &lattice, double E, double theta, double ph
     }
 }
 
-int index = 0;
-
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
                       Lattice &lattice, Detector &detector,
-                      int max_depth, int current_depth, int *num, int iter)
+                      int max_depth, int current_depth, int *num, int *index, int iter)
 {
     if (current_depth > max_depth)
         return;
@@ -189,7 +187,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
             {
                 Ion ion;
                 ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-                ion.index = index++;
+                ion.index = (*index++);
                 ion.weight = current_depth;
                 ion.thermal_seed = iter;
                 traj(ion, lattice, log, xyz, detector);
@@ -206,12 +204,12 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                     adaptivegridscat(x_min, dx, x_max,
                                      y_min, dy, y_max,
                                      lattice, detector,
-                                     max_depth, d, num, iter);
+                                     max_depth, d, num, index, iter);
                 }
             }
             else
             {
                 lattice.out_of_mask++;
             }
-                }
+        }
 }

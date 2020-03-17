@@ -4,6 +4,7 @@ import os           # path/file searching, etc
 import subprocess   # Subprocesses for each run
 import time         # Delay between spawning of runs
 import platform     # Linux vs Windows checks
+import argparse     # parses command line arguments
 
 def run(threads, processes, directory='.', recursive=True):
     
@@ -36,8 +37,16 @@ def run(threads, processes, directory='.', recursive=True):
     return
     
 if __name__ == '__main__':
-    txtnum = input("Number of Threads? ")
-    rundir = input("Run Directory? ")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--count", help="Number of processes")
+    parser.add_argument("-d", "--dir", help="Base directory to process")
+    args = parser.parse_args()
+    txtnum = args.count
+    rundir = args.dir
+    if txtnum is None:
+        txtnum = input("Number of Threads? ")
+    if rundir is None:
+        rundir = input("Run Directory? ")
     threads = int(txtnum)
     if rundir!='.':
         rundir = os.path.join('.',rundir)

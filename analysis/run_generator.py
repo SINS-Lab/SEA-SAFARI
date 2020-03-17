@@ -3,13 +3,17 @@
 import safari_input   # Makes the input files
 import os             # Makes directories, etc
 import numpy          # Used for frange
+import argparse       # parses command line arguments
 
 def frange(start, end, step):
     return numpy.arange(start, end, step)
 
 def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025,\
-             estep=1, pstep=1, tstep=1):
+             estep=1, pstep=1, tstep=1, TSA=None):
     
+    if TSA is not None:
+        TSA = float(TSA)
+
     safio = safari_input.SafariInput('template.input')
     rundir = os.path.join('.','runs')
     try:
@@ -32,6 +36,9 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
                 safio.E0 = e0
                 safio.THETA0 = theta
                 safio.PHI0 = phi
+
+                if TSA is not None:
+                    safio.DTECTPAR[0] = 180 - (TSA + safio.THETA0)
                 
                 if face is not None:
                     safio.face = face
@@ -47,26 +54,93 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
 
 if __name__ == '__main__':
     
-    basename = input("Output Base Name? ")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-o", "--output", help="Output file names")
+
+    parser.add_argument("--ei", help="Inital Energy")
+    parser.add_argument("--ef", help="Final Energy")
+    parser.add_argument("--de", help="Energy Step")
+
+    parser.add_argument("--ti", help="Inital Theta")
+    parser.add_argument("--tf", help="Final Theta")
+    parser.add_argument("--dt", help="Theta Step")
+
+    parser.add_argument("--pi", help="Inital Phi")
+    parser.add_argument("--pf", help="Final Phi")
+    parser.add_argument("--dp", help="Phi Step")
+
+    parser.add_argument("--tsa", help="Total Scattering Angle")
+
+    parser.add_argument("-e", help="Energy (acts for both ei and ef)")
+    parser.add_argument("-t", help="Theta (acts for both ti and tf)")
+    parser.add_argument("-p", help="Phi (acts for both pi and pf)")
+
+    parser.add_argument("-f","--face", help="Surface Face")
+    args = parser.parse_args()
+
+    basename = args.output
+
+    estart = args.ei
+    eend = args.ef
+    estep = args.de
+
+    tstart = args.ti
+    tend = args.tf
+    tstep = args.dt
+
+    pstart = args.pi
+    pend = args.pf
+    pstep = args.dp
+
+    face_line = args.face
+
+    tsa = args.tsa
+
+    if args.e is not None:
+        estart = args.e
+        eend = args.e
+
+    if args.t is not None:
+        tstart = args.t
+        tend = args.t
+
+    if args.p is not None:
+        pstart = args.p
+        pend = args.p
+
+    if basename is None:
+        basename = input("Output Base Name? ")
     
-    estart = input("Energy Start? ")
-    eend = input("Energy End? ")
-    estep = '1'
-    if(estart!=eend):
+    if estart is None:
+        estart = input("Energy Start? ")
+    if eend is None:
+        eend = input("Energy End? ")
+
+    if estep is None:
+        estep = '1'
+    if args.de is None and estart!=eend:
         estep = input("Energy Step? ")
     
-    tstart = input("Theta Start? ")
-    tend = input("Theta End? ")
-    tstep = '1'
-    if(tstart!=tend):
+    if tstart is None:
+        tstart = input("Theta Start? ")
+    if tend is None:
+        tend = input("Theta End? ")
+    if tstep is None:
+        tstep = '1'
+    if args.dt is None and tstart!=tend:
         tstep = input("Theta Step? ")
     
-    pstart = input("Phi Start? ")
-    pend = input("Phi End? ")
-    pstep = '1'
-    if(pstart!=pend):
+    if pstart is None:
+        pstart = input("Phi Start? ")
+    if pend is None:
+        pend = input("Phi End? ")
+    if pstep is None:
+        pstep = '1'
+    if args.dp is None and pstart!=pend:
         pstep = input("Phi Step? ")
-    face_line = input("Surface Face (h k l)? ")
+
+    if face_line is None:
+        face_line = input("Surface Face (h k l)? ")
     
     face = None
     if face_line != '':
@@ -74,4 +148,4 @@ if __name__ == '__main__':
     
     generate(basename, float(tstart), float(tend), float(pstart),\
                        float(pend), float(estart), float(eend), face,\
-                       estep=float(estep), pstep=float(pstep), tstep=float(tstep))
+                       estep=float(estep), pstep=float(pstep), tstep=float(tstep), TSA=tsa)
