@@ -1,0 +1,7 @@
+color Display Background white
+display depthcue off
+mol default style {VDW 1.0 10.0}
+mol new smooth7body4.xyz
+display rendermode GLSL
+display update
+display update ui

@@ -2,17 +2,20 @@
 Safari2.depend
 Safari2.layout
 
+# Don't need any of the visual studio code stuff.
 *.vs*
 
-#Don't need anything in here, this compiles.
+# Don't need anything in here, this compiles.
 obj/*
 
-#Don't include all the random test data
+# Don't include all the random test data
 analysis/tests/*
+bin/Release/tests/*
+bin/Debug/tests/*
 analysis/safari.input
 *_pycache_*
 
-#These are generated when you run things
+# These are generated when you run things
 *.data
 *.dbug
 *.traj
@@ -20,7 +23,7 @@ analysis/safari.input
 *.crys
 *.exe
 
-#profiling output stuff not needed.
+# profiling output stuff not needed.
 *.out
 *.stats
 
