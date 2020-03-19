@@ -4,20 +4,20 @@
 #include "safio.h"      //settings
 #include "temps.h"      //thermalize_ion, thermalize
 
-#include <algorithm> // std::transform 
-#include <cmath>    //sqrt, cos, sin, tan, etc
-#include <functional> // std::minus 
+#include <algorithm>  // std::transform
+#include <cmath>      //sqrt, cos, sin, tan, etc
+#include <functional> // std::minus
 
-double zeros[3] = { 0,0,0 };
+double zeros[3] = {0, 0, 0};
 
-void Ion::set_KE(double E0,  double theta0, double phi0, double x, double y)
+void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
 {
     //Start by resetting the ion to its initial state.
     reset();
     //Set the energy of the ion
     this->E0 = E0;
     //Attempt to thermalize the ion
-    if(settings.ESIZE > 0)
+    if (settings.ESIZE > 0)
     {
         thermaize_ion(*this);
     }
@@ -43,7 +43,7 @@ void Ion::set_KE(double E0,  double theta0, double phi0, double x, double y)
     r[0] = r_t[0] = -settings.Z1 * tan(theta0) * cos(phi0) + x;
     r[1] = r_t[1] = -settings.Z1 * tan(theta0) * sin(phi0) + y;
     r[2] = r_t[2] = settings.Z1;
-    
+
     //Reset the forces, this cleans up some of the debug output.
     std::copy(zeros, zeros + 3, dp_dt);
     std::copy(zeros, zeros + 3, dp_dt_t);
@@ -54,7 +54,7 @@ void Ion::set_KE(double E0,  double theta0, double phi0, double x, double y)
     r_0[2] = settings.Z1;
 
     //If we have image effect, account for that here.
-    if(settings.use_image)
+    if (settings.use_image)
     {
         //The image part is subtracted here, as we have already assigned
         //the sign outside the sqrt function, the output of Vi_z is negative.
@@ -85,15 +85,17 @@ void Site::reset()
 {
     //Reset positions and momenta
     std::copy(r_0, r_0 + 3, r);
+    std::copy(r_0, r_0 + 3, r_t);
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
 
     //Reset our tracked sites last steps too.
-    for(int i = 0; i<near; i++) 
+    for (int i = 0; i < near; i++)
     {
-        near_sites[i]->last_step = -1;
+        if (near_sites[i]->last_ion != last_ion)
+            near_sites[i]->last_step = -1;
     }
-    
+
     //Thermalize the site
     thermaize(*this);
 }
@@ -101,9 +103,11 @@ void Site::reset()
 void Site::write_info()
 {
     debug_file << "Atom: " << atom->symbol << std::endl;
+    debug_file << "r_0: " << r_0[0] << " " << r_0[1] << " " << r_0[2] << std::endl;
     debug_file << "r  : " << r[0] << " " << r[1] << " " << r[2] << std::endl;
     debug_file << "p  : " << p[0] << " " << p[1] << " " << p[2] << std::endl;
     debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
     debug_file << "F  : " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
     debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
+    debug_file << "pnt: " << r << " " << p << " " << r_0 << " " << last_ion << " " << last_step << " " << last_update << std::endl;
 }

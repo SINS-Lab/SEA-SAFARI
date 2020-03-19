@@ -109,8 +109,6 @@ void apply_hameq(Ion &ion, Lattice &lattice, double dt)
         //the immediate neighbours, so we need to
         //use the slower version of this.
         int last_update = ion.last_update + 1;
-        //This will be re-set in the function call.
-        ion.last_update = -1;
         update_sites(ion, last_update, dt);
     }
     else
@@ -328,6 +326,13 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                     {
                         Site &s2 = *s.near_sites[j];
 
+                        if (s2.last_ion != ion.index)
+                        {
+                            s2.last_ion = ion.index;
+                            s2.thermal_seed = ion.thermal_seed;
+                            s2.reset();
+                        }
+
                         if (predicted)
                         {
                             //Get predicted force array.
@@ -347,7 +352,6 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                             F_at2[0] = 0;
                             F_at2[1] = 0;
                             F_at2[2] = 0;
-                            apply_ion_lattice(ion, s2, F_at2, r_i, r2[0], r2[1], r2[2], dt, predicted, F_ion);
                         }
                         //This will be the magnitude of the force.
                         double dV_dr = 0;
@@ -361,11 +365,9 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
 
                         if (rr < 0.1)
                         {
-                            debug_file << "Somehow lattice site on other?: "
-                                       << s.index << " "
-                                       << s2.index << " "
-                                       << rr << " "
-                                       << s.rr_min_find <<std::endl;
+                            debug_file << "Somehow lattice site on other?" << std::endl;
+                            s.write_info();
+                            s2.write_info();
                             continue;
                         }
 
