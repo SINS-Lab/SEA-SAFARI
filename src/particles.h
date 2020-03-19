@@ -38,7 +38,7 @@ public:
     //Original Momentum
     double *p_0 = NULL;
     //The atom here
-    Atom* atom;
+    Atom* atom = NULL;
 
     //position
     double r[3];
