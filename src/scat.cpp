@@ -32,19 +32,19 @@ bool fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, b
     return true;
 }
 
-void montecarloscat(Lattice &lattice, int *num)
+void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed)
 {
     //Make a new RNG instance, and then set the seed to what it should be
     std::default_random_engine rng;
-    debug_file << "Initializing RNG, seed: " << settings.SEED << '\n';
+    debug_file << "Initializing RNG, seed: " << seed << '\n';
     //Initialize the RNG
-    rng.seed(make_seed(settings.SEED));
+    rng.seed(make_seed(seed));
 
     //Find the range of the region we are covering
     double x_size = (settings.XSTOP - settings.XSTART);
     double y_size = (settings.YSTOP - settings.YSTART);
 
-    for (int n = 0; n < settings.NUMCHA; n++)
+    for (int n = 0; n < numcha; n++)
     {
         //Find a new random location, these rands are 0-1
         double rx = frand(rng);
@@ -55,11 +55,9 @@ void montecarloscat(Lattice &lattice, int *num)
 
         //Fire the ion at the random spot.
         Ion ion;
-        if (!fire(lattice, ion, x, y, n, false, false))
+        if (!fire(lattice, ion, x, y, n + ionStart, false, false))
             n--;
     }
-    *num = settings.NUMCHA;
-    return;
 }
 
 void gridscat(Lattice &lattice, int *num)

@@ -29,7 +29,7 @@ public:
         bool did_hit = true;
         //Detectors should generally be 1 degree resolution,
         //A difference of 10 is far outside the allowed range.
-        if (!hit(E, theta, phi))
+        if (E > -10 && !hit(E, theta, phi))
         {
             theta = 0;
             phi = 90;

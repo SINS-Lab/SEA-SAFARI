@@ -14,7 +14,7 @@
  *
  * The number of trajectories is stuffed in *num
  */
-void montecarloscat(Lattice &lattice, int *num);
+void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed);
 /**
  * Fires ions at the surface in a grid. This grid goes from
  * x = settings.XSTART to settings.XSTOP in steps of

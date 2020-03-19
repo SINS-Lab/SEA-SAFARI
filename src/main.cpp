@@ -13,7 +13,7 @@
 #include "temps.h"        /* These are also initialized */
 #include "safari.h"       /* This includes the exit_fail function*/
 
-#define THREADCOUNT 10
+#define THREADCOUNT 5
 
 // Initialize the global variables.
 Safio settings;
@@ -209,7 +209,28 @@ int main(int argc, char *argv[])
         {
             debug_file << "Running Montecarlo " << std::endl;
             std::cout << "Running Montecarlo " << std::endl;
-            montecarloscat(lattice, &n);
+
+            double seeds[THREADCOUNT];
+            std::default_random_engine rng;
+            //Initialize the RNG
+            rng.seed(make_seed(settings.SEED));
+            for(int i = 0; i<THREADCOUNT; i++)
+            {
+                seeds[i] = frand(rng);
+            }
+            int ions_per_thread = settings.NUMCHA / THREADCOUNT;
+
+            #pragma omp parallel for num_threads(THREADCOUNT)
+            for(int i = 0; i<THREADCOUNT; i++)
+            {
+                int start = i * ions_per_thread;
+                //Copy the lattice
+                Lattice toUse = lattice;
+                toUse.clear_stats();
+                montecarloscat(toUse, start, ions_per_thread, seeds[i]);
+                lattice.add_stats(toUse);
+            }
+            n = ions_per_thread * THREADCOUNT;
         }
         else if (settings.SCAT_TYPE == 888)
         {
