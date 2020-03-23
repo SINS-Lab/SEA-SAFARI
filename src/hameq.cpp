@@ -7,7 +7,7 @@
 #include "safari.h"     //for exit_fail
 #include <cmath>        //sqrt
 
-int num_intersect_max = 1000000;
+int num_intersect_max = 10000;
 //This is a counter for number of intersections, if this exceeds max, it terminates safari.
 int num_intersect = 0;
 
@@ -184,10 +184,9 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
     //No force if ion is on an atom.
     if (r == 0)
     {
-        debug_file << "Ion intersected with atom?: "
-                   << ion.index
-                   << " " << s.index
-                   << " " << ion.steps << std::endl;
+        debug_file << "Ion intersected with atom?: " << std::endl;
+        ion.write_info();
+        s.write_info();
         if (num_intersect++ > num_intersect_max)
             exit_fail("Too many ion-site intersections");
     }
@@ -368,6 +367,8 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                             debug_file << "Somehow lattice site on other?" << std::endl;
                             s.write_info();
                             s2.write_info();
+                            if (num_intersect++ > num_intersect_max)
+                                exit_fail("Too many ion-site intersections");
                             continue;
                         }
 
@@ -375,12 +376,14 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                         {
                             //In here we use Lennard Jones forces
                             dV_dr = L_J_dV_dr(r, s2.atom->index, s.atom->index);
-                            if (fabs(dV_dr) > 100000)
+                            if (fabs(dV_dr) > 10000)
                             {
                                 debug_file << "Somehow large lattice force: "
                                            << dV_dr << ", sep: " << r << " "
                                            << ion.last_step << std::endl;
                                 dV_dr = 0;
+                                if (num_intersect++ > num_intersect_max)
+                                    exit_fail("Too many ion-site intersections");
                             }
                         }
                         else
