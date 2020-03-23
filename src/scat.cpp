@@ -100,7 +100,7 @@ void gridscat(Lattice &lattice, int *num)
             {
                 for (int i = 0; i < val.second->num; i++)
                 {
-                    val.second->sites[i].reset();
+                    val.second->sites[i]->reset();
                 }
             }
             //Run to output the xyz file

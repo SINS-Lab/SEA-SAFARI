@@ -308,7 +308,7 @@ void Lattice::init_springs(int nearest)
         //Loop over the sites in the cell.
         for (int i = 0; i < cell->num; i++)
         {
-            Site &site = cell->sites[i];
+            Site &site = *cell->sites[i];
             std::copy(site.r_0, site.r_0 + 3, site.r);
         }
     }
@@ -327,7 +327,7 @@ void Lattice::init_springs(int nearest)
         //Loop over the sites in the cell.
         for (int i = 0; i < cell->num; i++)
         {
-            Site &site = cell->sites[i];
+            Site &site = *cell->sites[i];
             //This is initialized null
             if (site.near_sites != NULL)
             {
@@ -410,7 +410,7 @@ Lattice::Lattice(const Lattice &other)
         Cell *ours = new Cell(cell);
         for (int i = 0; i < cell.num; i++)
         {
-            sites.push_back(&(ours->sites[i]));
+            sites.push_back(ours->sites[i]);
         }
         cell_map[key] = ours;
     }
@@ -426,13 +426,13 @@ Cell::Cell(const Cell &other)
 {
     num = other.num;
     //The copy knows how many it needs to store!
-    sites = new Site[num];
+    sites = new Site*[num];
     for (int i = 0; i < num; i++)
     {
-        Site &original = other.sites[i];
+        Site &original = *other.sites[i];
         //Copy it over
-        Site site = original;
-        sites[i] = site;
+        Site *copy = new Site(original);
+        sites[i] = copy;
     }
 }
 
@@ -441,16 +441,16 @@ void Cell::addSite(Site &site)
     if (num > lastSize)
     {
         lastSize = num + 100;
-        Site* more = new Site[lastSize];
+        Site** more = new Site*[lastSize];
         if (sites != NULL)
             std::copy(sites, sites + num, more);
         sites = more;
     }
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
-    sites[num] = site; //TODO check this for memory leaks
-    sites[num].cell_index = num;
-    sites[num].cell_number = pos_hash;
+    sites[num] = &site;
+    sites[num]->cell_index = num;
+    sites[num]->cell_number = pos_hash;
     num++;
 }
 
@@ -459,7 +459,7 @@ void Cell::removeSite(Site &site)
     // Replace the site with the last one
     sites[site.cell_index] = sites[num - 1];
     // Update the index of the moved site
-    sites[site.cell_index].cell_index = site.cell_index;
+    sites[site.cell_index]->cell_index = site.cell_index;
     num--;
 }
 

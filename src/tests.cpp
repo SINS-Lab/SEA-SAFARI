@@ -71,8 +71,8 @@ void test_lattice_copy(Lattice &lattice)
 			continue;
 
 		//Could use the second, but lets just pull from map to be sure.
-		Site *a = &(lattice.cell_map[x.first]->sites[0]);
-		Site *b = &(new_lat.cell_map[x.first]->sites[0]);
+		Site *a = (lattice.cell_map[x.first]->sites[0]);
+		Site *b = (new_lat.cell_map[x.first]->sites[0]);
 		std::cout << lattice.cell_map[x.first] << " " << new_lat.cell_map[x.first] << std::endl;
 		std::cout << a << " " << b << std::endl;
 
@@ -128,8 +128,8 @@ void test_lattice_springs(Lattice &lattice)
 		Cell *cell = x.second;
 		if (cell->num <= 0)
 			continue;
-		min = std::min(cell->sites[0].near, min);
-		max = std::max(cell->sites[0].near, max);
+		min = std::min(cell->sites[0]->near, min);
+		max = std::max(cell->sites[0]->near, max);
 	}
 	std::cout << "Min: " << min << ", Max: " << max << std::endl;
 }

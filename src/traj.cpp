@@ -92,7 +92,7 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
             //Check each site in this cell.
             for (int i = 0; i < num; i++)
             {
-                Site *s = &cell->sites[i];
+                Site *s = cell->sites[i];
                 //If some other ion has seen the site, reset it here.
                 //This reset puts it back to where it should be.
                 if (ion_ptr != NULL && s->last_ion != ion_ptr->index)

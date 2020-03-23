@@ -11,7 +11,7 @@ class Cell
 
 public:
     //Sites in this current cell
-    Site *sites = NULL;
+    Site **sites = NULL;
     //Number of sites in this cell
     int num = 0;
     //Index for this in hash map
