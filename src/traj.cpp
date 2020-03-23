@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm> // std::sort
 
-int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort)
+int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {
     //Initial locations are where ion is.
     double cell_x = site.r[0];
@@ -16,6 +16,15 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
     double cell_z = site.r[2];
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
+
+    if (updateCells && pos_hash != site.cell_number)
+    {
+        if(settings.scat_started)
+        {
+            debug_file << pos_hash << " " << site.cell_number << " " << site.cell_index << std::endl;
+        }
+    }
+
     //New site, so we need to re-calculate things
     if (pos_hash != site.last_index)
     {
@@ -124,13 +133,13 @@ end:
         site.near = std::min(site.total_near, target_num);
     }
 
-    if(ion_ptr != NULL && settings.useLennardJones)
+    if (ion_ptr != NULL && settings.useLennardJones)
     {
         //Update each nearby site as well
         for (int i = 0; i < site.near; i++)
         {
             Site &s2 = *site.near_sites[i];
-            fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true);
+            fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true, true);
         }
     }
     //Sets this to 0, so that the max check later is fine.
@@ -358,7 +367,7 @@ start:
     //Reset this to 0.
     dr_max = 0;
     //Find nearby lattice atoms
-    fill_nearest(&ion, ion, lattice, d_search, n_parts, settings.rr_max, sort);
+    fill_nearest(&ion, ion, lattice, d_search, n_parts, settings.rr_max, sort, false);
     //This is set back true later if needed.
     sort = false;
     //Increment counter for how many steps we have taken

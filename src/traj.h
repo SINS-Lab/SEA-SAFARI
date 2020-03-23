@@ -18,8 +18,9 @@
  * @param target_number - max value of near to allow
  * @param max_rr - maximum distance squared to include (checked after radius)
  * @param re_sort - whether the list needs to be re-sorted by nearest
+ * @param updateCells - this determines if the cells are updated
  */ 
-int fill_nearest(Ion* ion_ptr, Site &site, Lattice &lattice, int radius, int target_number, double max_rr, bool re_sort);
+int fill_nearest(Ion* ion_ptr, Site &site, Lattice &lattice, int radius, int target_number, double max_rr, bool re_sort, bool updateCells);
 
 /**
  * Sets the flags indicated by the various pointers, by checking

@@ -219,6 +219,10 @@ struct Safio
     double *NZ;
     double *ZMAX;
 
+    // This is used as a flag for whether scattering has started,
+    // for helping with debugging
+    bool scat_started = false;
+
     /**
      * Loads input from file of the given name in the args
      * Main should auto-populate this with the correct arguments.

@@ -335,7 +335,7 @@ void Lattice::init_springs(int nearest)
             }
             //Initialize large for initial search
             site.near_sites = new Site *[256];
-            fill_nearest(NULL, site, *this, 2, 24, max_rr, true);
+            fill_nearest(NULL, site, *this, 2, 24, max_rr, true, false);
             if (site.near == 0)
                 continue;
             //The +err is to allow some error from rounding, etc in loaded lattices.
@@ -448,9 +448,9 @@ void Cell::addSite(Site &site)
     }
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
-    sites[num] = *(&site);
-    site.cell_index = num;
-    site.cell_number = pos_hash;
+    sites[num] = site; //TODO check this for memory leaks
+    sites[num].cell_index = num;
+    sites[num].cell_number = pos_hash;
     num++;
 }
 
