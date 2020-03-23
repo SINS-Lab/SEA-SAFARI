@@ -19,10 +19,9 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
 
     if (updateCells && pos_hash != site.cell_number)
     {
-        if(settings.scat_started)
-        {
-            debug_file << pos_hash << " " << site.cell_number << " " << site.cell_index << std::endl;
-        }
+        Cell* from = lattice.get_cell(site.cell_number);
+        Cell* to = lattice.make_cell(pos_hash);
+        moveSite(site, from, to);
     }
 
     //New site, so we need to re-calculate things
