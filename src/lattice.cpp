@@ -418,6 +418,11 @@ Lattice::Lattice(const Lattice &other)
         cell_map[key] = ours;
     }
     mask = other.mask;
+    // Initialize springs if not using einstein
+    if (!settings.useEinsteinSprings)
+    {
+        init_springs(settings.neighbour_count);
+    }
 }
 
 Cell::Cell(const Cell &other)
