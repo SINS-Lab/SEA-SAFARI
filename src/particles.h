@@ -90,6 +90,11 @@ public:
     //Setting this back to -1 will force a re-check of near.
     int last_index = -1;
 
+    //These are for what cell we are in, they are not used for ions
+    int cell_number = -1;
+    //This is where in the cell's array we are.
+    int cell_index = -1;
+
     uint64_t hameq_tick = 0;
     uint64_t update_tick = 0;
 
@@ -105,6 +110,8 @@ public:
         p_0 = other.p_0;
         atom = other.atom;
         index = other.index;
+        cell_index = other.cell_index;
+        cell_number = other.cell_number;
     }
 
     bool compare_sites(const Site* a, const Site* b)

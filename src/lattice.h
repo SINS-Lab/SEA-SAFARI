@@ -7,6 +7,8 @@
 
 class Cell
 {
+    int lastSize = -1;
+
 public:
     //Sites in this current cell
     Site *sites = NULL;
@@ -21,7 +23,6 @@ public:
 
     Cell()
     {
-        sites = new Site[100];
     }
 
     Cell(const Cell &other);
@@ -30,6 +31,10 @@ public:
     {
         delete[] sites;
     }
+
+    void addSite(Site &site);
+
+    void removeSite(Site &site);
 };
 
 struct Lattice
@@ -86,6 +91,8 @@ struct Lattice
     //Makes the cell for the given coordinate, if the
     //cell already exists, it retrieves old one instead.
     Cell *make_cell(double x, double y, double z);
+    //Version that uses the hash directly
+    Cell *make_cell(int pos_hash);
 
     void clear_stats()
     {
@@ -144,3 +151,5 @@ struct Lattice
                       Vec3d *ex, Vec3d *ey, Vec3d *ez, bool scale_basis,
                       std::vector<Site> *sites_out, std::vector<Site> &sites_in, int *maxZI);
 };
+
+void moveSite(Site &site, Cell *from, Cell *to);

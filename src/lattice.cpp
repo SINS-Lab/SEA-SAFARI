@@ -159,17 +159,11 @@ void Lattice::add_site(Site &s)
     //This makes the cell if it doesn't exist, otherwise gets old one.
     Cell *cell = make_cell(s.r_0[0], s.r_0[1], s.r_0[2]);
 
-    //Get the values from the cell.
-    int *cel_num = &(cell->num);
-    int num = *cel_num;
-    Site *cel_sites = (cell->sites);
-
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
     s.index = sites.size();
     sites.push_back(&s);
-    cel_sites[num] = s;
-    *cel_num = num + 1;
+    cell->addSite(s);
     //Initializes the site
     s.reset();
 }
@@ -385,20 +379,23 @@ Cell *Lattice::get_cell(int pos_hash)
     return cell_map[pos_hash];
 }
 
-Cell *Lattice::make_cell(double x, double y, double z)
+Cell *Lattice::make_cell(int pos_hash)
 {
-    Cell *cell = get_cell(x, y, z);
+    Cell *cell = get_cell(pos_hash);
     //Return the old cell we had.
     if (cell != NULL)
         return cell;
-    //Otherwise, make a new one.
-    int pos_hash = to_hash(x, y, z);
     cell = new Cell();
     cell_map[pos_hash] = cell;
     cell->num = 0;
     cell->pos_hash = pos_hash;
-    cell->sites = new Site[100];
     return cell;
+}
+
+Cell *Lattice::make_cell(double x, double y, double z)
+{
+    int pos_hash = to_hash(x, y, z);
+    return make_cell(pos_hash);
 }
 
 Lattice::Lattice(const Lattice &other)
@@ -437,4 +434,40 @@ Cell::Cell(const Cell &other)
         Site site = original;
         sites[i] = site;
     }
+}
+
+void Cell::addSite(Site &site)
+{
+    if (num > lastSize)
+    {
+        lastSize = num + 100;
+        Site* more = new Site[lastSize];
+        if (sites != NULL)
+            std::copy(sites, sites + num, more);
+        sites = more;
+    }
+    //Sites are indexed to size, so that they
+    //can be looked up to find their atom later.
+    sites[num] = *(&site);
+    site.cell_index = num;
+    site.cell_number = pos_hash;
+    num++;
+}
+
+void Cell::removeSite(Site &site)
+{
+    // Replace the site with the last one
+    sites[site.cell_index] = sites[num - 1];
+    // Update the index of the moved site
+    sites[site.cell_index].cell_index = site.cell_index;
+    num--;
+}
+
+void moveSite(Site &site, Cell *from, Cell *to)
+{
+    // We only do this is we are actually in from!
+    if (site.cell_number != from->pos_hash)
+        return;
+    from->removeSite(site);
+    to->addSite(site);
 }
