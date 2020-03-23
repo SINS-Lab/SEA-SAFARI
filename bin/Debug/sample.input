@@ -20,8 +20,13 @@
 #
 250.0 45.0 0.00 22.989 Na
 
-# Detector Limits:
+# Most of these are currently unused at present
 # EMIN,EMAX,ERES,ARES
+#
+# EMIN - anything below this will not count as a hit in the detector
+# ERES - if not 0, will "thermalize" the ion as well (not currently implememnted)
+# EMAX - unused
+# ARES - unused
 #
 0.5 250 2.5 0.5
 
@@ -40,8 +45,13 @@
 
 # Detector parameters, the number of these depends on Detector Type
 #
-#  Currently these are not implemented, but 4 are required
-45.0 0.00 3.0 0.0
+# Currently, only 1 detector is implemented, it takes the arugments 
+# in the following order:
+#
+# Detector Theta, Theta size, Phi size
+#
+# This is also only used during adaptive grid
+45.0 0.00 3.0
 
 # Integration Parameters
 # time steps
@@ -83,6 +93,9 @@ t
 # max distance to search, threshold for failing due to energy change
 # Max distance is in "cells", each of which is roughly 5 angstroms across
 #
+# The energy change error for each hit is listed in the data file, this
+# can be used to determine a good value for this second parameter
+#
 2 5
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
@@ -94,6 +107,10 @@ t
 # Montecarlo mode ignores the step, and chainscat
 # will run from xmin, ymin to xmax, ymax, with the above
 # number of trajectories.
+#
+# Any values after this, will be applied as a mask for the surface
+# These values should be the coordinates of the corners of a polygon
+# In a closed order for that polygon.
 #
 # x:(min, step, max)
 #
@@ -117,6 +134,7 @@ t
 #   666 - Montecarlo - N Random shots in the range
 #   777 - Grid Scat - Shots in a grid, with the given steps
 #   888 - Chainscat - N shots in a line from min to max
+#  <100 - Adaptive Grid, with this value being the max depth
 
 # SCAT_FLAG, SCAT_TYPE
 #
@@ -143,9 +161,20 @@ t
 #   [c] = eV
 #   [d] = 1/Angstrom
 #
-4 1
+# The third parameter is the type of inter-lattice forces to use
+#
+#   0 - default if not present, use einstien springs
+#   1 - Use springs between nearest neighbours
+#   2 - Use lennard Jones, in this case, 
+#       needs additional parameters after
+#       the 4 parameters below
+#
+4 1 0
 
 # The parameters for the potentials
+#
+# If the interlattice force option is 2, there then needed
+# to be additional lennard jones parameters added after these
 #
 4153.6 3.625 27017.57 7.286
 
