@@ -114,10 +114,10 @@ t
 #
 # x:(min, step, max)
 #
--10 0.005 10
+0 0.1 4.0786
 # y:(min, step, max)
 #
--10 0.005 10
+0 0.1 4.0786
 
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
