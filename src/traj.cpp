@@ -388,7 +388,8 @@ start:
     //Showing any major jumps in energy of the particle.
     //This value should average around 0.01, so if larger than 50,
     //Then we have a major jump.
-    if (fabs(E3 - 2 * E2 + E1) > de_fail)
+    ion.Eerr_max = std::max(ion.Eerr_max, fabs(E3 - 2 * E2 + E1));
+    if (ion.Eerr_max > de_fail)
     {
         discont = true;
         goto end;

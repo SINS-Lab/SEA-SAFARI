@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 
     if (settings.SCAT_FLAG == 666)
     {
-        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\ttotal time\n";
+        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time\n";
 
         // 100 bifurcations is currently computationally infeasable, so
         // this will never be a valid choice for this, at least until

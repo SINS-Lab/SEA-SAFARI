@@ -44,11 +44,12 @@ public:
              */
             char buffer[200];
             //first stuff it in the buffer
-            sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
+            sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
                     ion.r_0[0], ion.r_0[1], ion.r_0[2],
                     E, theta, phi,
                     ion.index, ion.weight,
-                    ion.max_n, ion.r_min, ion.steps, ion.time);
+                    ion.max_n, ion.r_min, ion.steps,
+                    ion.Eerr_max, ion.time);
             //Then save it
             out_file << buffer;
         }

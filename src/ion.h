@@ -28,6 +28,9 @@ public:
     //potential energy the particle is in.
     double V = 0;
 
+    // Maximum integration error for this ion.
+    double Eerr_max = 0;
+
     Ion()
     {
         // In the parent class, this is left null, unless
