@@ -164,7 +164,6 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
         if (predicted)
         {
             ion.V += Vr_r(r, s.atom->index);
-            // debug_file << ion.V << " " << r << " " << ax << " " << ay << " " << az << std::endl;
         }
         //Scaled by 1/r for converting to cartesian
         dV_dr /= r;
@@ -368,7 +367,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                             s.write_info();
                             s2.write_info();
                             if (num_intersect++ > num_intersect_max)
-                                exit_fail("Too many ion-site intersections");
+                                exit_fail("Too many site-site intersections");
                             continue;
                         }
 
@@ -383,7 +382,7 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
                                            << ion.last_step << std::endl;
                                 dV_dr = 0;
                                 if (num_intersect++ > num_intersect_max)
-                                    exit_fail("Too many ion-site intersections");
+                                    exit_fail("Too many site-site intersections");
                             }
                         }
                         else
@@ -463,8 +462,6 @@ void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr
         F[1] = -F_ion[1];
         F[2] = -F_ion[2];
 
-        // debug_file << *dr_max << " "
-        //             << hameq_tick <<std::endl;
     }
 
     if (settings.use_image)
