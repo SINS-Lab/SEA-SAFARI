@@ -1,4 +1,5 @@
 # This is a sample input file for Sea-Safari.
+# This input file is set up for an adaptive grid run
 # Lines starting with # are comment lines, otherwise
 # All lines must follow the order found here,
 # blank lines are ignored also.
@@ -101,6 +102,8 @@ t
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
+# This value is ignored for this run.
+#
 10000
 
 # Range of the crystal to scatter off
@@ -138,7 +141,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 666
+666 2
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal

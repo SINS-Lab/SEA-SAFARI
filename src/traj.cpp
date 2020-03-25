@@ -211,7 +211,7 @@ void log_xyz(Ion &ion, Lattice &lattice, int &lattice_num, char *buffer)
     sprintf(buffer, "%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\n",
             ion.atom->symbol.c_str(), ion.r[0], ion.r[1], ion.r[2], // Sym, x, y, z,
             ion.p[0], ion.p[1], ion.p[2],                           //     px,py,pz,
-            ion.atom->mass, 0, 1);                                  //mass, index, near
+            ion.atom->mass, 0, 1);                                  // mass, index, near
     xyz_file << buffer;
 
     int num = lattice.sites.size();

@@ -77,7 +77,7 @@ void gridscat(Lattice &lattice, int *num)
             //Set min bounds from ion positions
             lattice.xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
             lattice.xyz_bounds[1] = std::min(ion.r_0[1], ion.r[1]) - settings.AY;
-            lattice.xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - settings.AZ;
+            lattice.xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - 2 * settings.AZ;
 
             //Set max bounds from ion positions
             lattice.xyz_bounds[3] = std::max(ion.r_0[0], ion.r[0]) + settings.AX;
