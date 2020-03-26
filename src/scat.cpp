@@ -185,7 +185,8 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
             {
                 Ion ion;
                 ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-                ion.index = (*index++);
+                ion.index = (*index) + 1;
+                *index = ion.index;
                 ion.weight = current_depth;
                 ion.thermal_seed = iter;
                 traj(ion, lattice, log, xyz, detector);
