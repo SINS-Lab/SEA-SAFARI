@@ -17,7 +17,7 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
 
-    if (updateCells && pos_hash != site.cell_number)
+    if (updateCells && pos_hash != site.cell_number && !settings.useEinsteinSprings)
     {
         Cell* from = lattice.get_cell(site.cell_number);
         Cell* to = lattice.make_cell(pos_hash);
