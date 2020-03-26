@@ -386,6 +386,12 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             BASIS[i].atom = &ATOMS[BASIS[i].index - 1];
         }
 
+        if (args["-t"])
+        {
+            TEMP = args["-t"].as_double();
+            debug_file << "Override of Temperature: " << TEMP << '\n';
+        }
+
         //check arguments for specifically enabling single-shot mode
         if (args["-s"].as_bool())
         {
