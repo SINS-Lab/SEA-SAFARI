@@ -300,16 +300,21 @@ void Lattice::init_springs(int nearest)
                     2;
 
     //Initial loop pass to reset all sites to initial locations
-    for (auto x : cell_map)
+    for (auto s : sites)
     {
-        Cell *cell = x.second;
-        if (cell->num <= 0)
-            continue;
-        //Loop over the sites in the cell.
-        for (int i = 0; i < cell->num; i++)
+        s->near = 0;
+        s->last_ion = -1;
+        s->last_index = -1;
+        s->reset();
+        double cell_x = s->r[0];
+        double cell_y = s->r[1];
+        double cell_z = s->r[2];
+        int pos_hash = to_hash(cell_x, cell_y, cell_z);
+        if (pos_hash != s->cell_number && !settings.useEinsteinSprings)
         {
-            Site *site = cell->sites[i];
-            std::copy(site->r_0, site->r_0 + 3, site->r);
+            Cell *from = get_cell(s->cell_number);
+            Cell *to = make_cell(pos_hash);
+            moveSite(s, from, to);
         }
     }
 
@@ -319,50 +324,60 @@ void Lattice::init_springs(int nearest)
     max_rr *= max_rr;
 
     //Loop over the cell map for the sites to use.
-    for (auto x : cell_map)
+    for (auto site : sites)
     {
-        Cell *cell = x.second;
-        if (cell->num <= 0)
-            continue;
-        //Loop over the sites in the cell.
-        for (int i = 0; i < cell->num; i++)
+        //Clear the old sites
+        delete site->near_sites;
+
+        //Initialize large for initial search
+        site->near_sites = new Site *[256];
+
+        if (site->rest_near_sites != NULL)
         {
-            Site *site = cell->sites[i];
-            //This is initialized null
-            if (site->near_sites != NULL)
+            for (int i = 0; i < site->rest_near_count; i++)
             {
-                delete site->near_sites;
+                site->near_sites[i] = site->rest_near_sites[i];
             }
-            //Initialize large for initial search
-            site->near_sites = new Site *[256];
-            fill_nearest(NULL, site, this, 2, 24, max_rr, true, false);
-            if (site->near == 0)
-                continue;
-            //The +err is to allow some error from rounding, etc in loaded lattices.
-            double dist_near = diff_sqr(site->r_0, site->near_sites[0]->r_0) + err;
-            int current = nearest;
-            int n = 0;
-            for (int j = 0; j < site->near; j++)
-            {
-                Site *s = site->near_sites[j];
-                double distsq = diff_sqr(site->r_0, s->r_0);
-
-                //This is next level of neighbour.
-                if (distsq > dist_near)
-                {
-                    current--;
-                    //Again, +err for fp errors.
-                    dist_near = distsq + err;
-                }
-                if (current <= 0)
-                    break;
-                n++;
-            }
-            site->near = n;
-
-            //We do not clean up the size of this array, as it is
-            //then used later when updated in traj.
+            site->near = site->rest_near_count;
+            continue;
         }
+
+        fill_nearest(NULL, site, this, 2, 24, max_rr, true, false);
+        if (site->near == 0)
+        {
+            site->rest_near_sites = new Site *[0];
+            continue;
+        }
+        //The +err is to allow some error from rounding, etc in loaded lattices.
+        double dist_near = diff_sqr(site->r_0, site->near_sites[0]->r_0) + err;
+        int current = nearest;
+        int n = 0;
+        for (int j = 0; j < site->near; j++)
+        {
+            Site *s = site->near_sites[j];
+            double distsq = diff_sqr(site->r_0, s->r_0);
+
+            //This is next level of neighbour.
+            if (distsq > dist_near)
+            {
+                current--;
+                //Again, +err for fp errors.
+                dist_near = distsq + err;
+            }
+            if (current <= 0)
+                break;
+            n++;
+        }
+        site->near = n;
+        site->rest_near_count = n;
+        site->rest_near_sites = new Site *[n];
+        for (int i = 0; i < site->rest_near_count; i++)
+        {
+            site->rest_near_sites[i] = site->near_sites[i];
+        }
+
+        //We do not clean up the size of this array, as it is
+        //then used later when updated in traj.
     }
 }
 
@@ -400,7 +415,7 @@ Cell *Lattice::make_cell(double x, double y, double z)
 
 Lattice::Lattice(const Lattice &other)
 {
-    for(auto s: other.sites)
+    for (auto s : other.sites)
     {
         Site *copy = new Site(*s);
         add_site(copy);
@@ -417,7 +432,7 @@ Cell::Cell(const Cell &other)
 {
     num = other.num;
     //The copy knows how many it needs to store!
-    sites = new Site*[num];
+    sites = new Site *[num];
     for (int i = 0; i < num; i++)
     {
         Site &original = *other.sites[i];
@@ -432,7 +447,7 @@ void Cell::addSite(Site *site)
     if (num > lastSize)
     {
         lastSize = num + 100;
-        Site** more = new Site*[lastSize];
+        Site **more = new Site *[lastSize];
         if (sites != NULL)
             std::copy(sites, sites + num, more);
         sites = more;
@@ -456,6 +471,8 @@ void Cell::removeSite(Site *site)
 
 void moveSite(Site *site, Cell *from, Cell *to)
 {
+    if (from == to)
+        return;
     // We only do this is we are actually in from!
     if (site->cell_number != from->pos_hash)
         return;

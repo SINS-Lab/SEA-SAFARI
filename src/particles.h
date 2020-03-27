@@ -8,11 +8,11 @@ struct Atom
     double charge = 0;
     int index = -1;
     std::string symbol = "n";
-    //Spring constants for x, y, z directions 
+    // Spring constants for x, y, z directions
     double spring[3];
-    //Std deviations in rx,ry,rz for the current temperature
+    // Std deviations in rx,ry,rz for the current temperature
     double dev_r[3];
-    //Std deviations in px,py,pz for the current temperature
+    // Std deviations in px,py,pz for the current temperature
     double dev_p[3];
 
     //Lennard Jones potential related
@@ -25,9 +25,8 @@ struct Atom
      * ie L_J_params[atom.index] is for a like pair.
      * 
      * TODO actually implement it this way later.
-     */ 
+     */
     //double** L_J_params;
-
 };
 
 class Site
@@ -38,12 +37,12 @@ public:
     //Original Momentum
     double *p_0 = NULL;
     //The atom here
-    Atom* atom = NULL;
+    Atom *atom = NULL;
 
     //position
     double r[3];
     //momentum
-    double p[3];    
+    double p[3];
     //forces
     double dp_dt[3];
 
@@ -76,6 +75,10 @@ public:
     //All of the sites nearby, only guarenteed to be filled
     //with site up to near
     Site **near_sites = NULL;
+    // This is the nearby sites when at rest, this is
+    // set during the initial setting of the springs.
+    Site **rest_near_sites = NULL;
+    int rest_near_count = 0;
     //Maximum number of nearby atoms for this ion
     int max_n = 0;
     //Nearest distance ever
@@ -104,7 +107,13 @@ public:
         p_0 = r_0 + 3;
     }
 
-    Site(const Site& other)
+    ~Site()
+    {
+        delete near_sites;
+        delete rest_near_sites;
+    }
+
+    Site(const Site &other)
     {
         r_0 = other.r_0;
         p_0 = other.p_0;
@@ -114,7 +123,7 @@ public:
         cell_number = other.cell_number;
     }
 
-    bool compare_sites(const Site* a, const Site* b)
+    bool compare_sites(const Site *a, const Site *b)
     {
         double dist_a = diff_sqr(a->r, this->r);
         double dist_b = diff_sqr(b->r, this->r);
@@ -126,11 +135,11 @@ public:
      * This also then calls thermalize, so
      * if an ion index is assigned previously,
      * that willl be used for seeding the RNG
-     */ 
+     */
     void reset();
 
     /**
      * Prints some info for this site to debug_file
-     */ 
+     */
     void write_info();
 };
