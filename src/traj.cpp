@@ -248,6 +248,13 @@ void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
           Detector &detector)
 {
+    if(!settings.useEinsteinSprings)
+    {
+        // We need to call this before each run, as the run can
+        // shuffle the sites between cells.
+        lattice->init_springs(settings.neighbour_count);
+    }
+    
     //Get some constants for the loop
 
     //Radius of atom search
