@@ -97,7 +97,7 @@ void Site::reset()
     }
 
     //Thermalize the site
-    thermaize(*this);
+    thermaize(this);
 }
 
 void Site::write_info()

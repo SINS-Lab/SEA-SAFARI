@@ -50,14 +50,14 @@ void init_temps()
     }
 }
 
-void thermaize(Site &site)
+void thermaize(Site *site)
 {
     if(settings.TEMP > 0)
     {
         //site.last_ion is usually set before this is called, this ensures
         //that if the scat is run using the same index as last time, then we will
         //be able to properly repeat specfic trajectories.
-        double seed = settings.SEED * (site.index + site.thermal_seed*settings.SEED);
+        double seed = settings.SEED * (site->index + site->thermal_seed*settings.SEED);
 
         temperature_rng.seed(seed);
         //2 random numbers
@@ -72,8 +72,8 @@ void thermaize(Site &site)
             //Other RNG
             r2 = frand(temperature_rng);
             //Adjusted position
-            site.r[i] = site.r_0[i] + site.atom->dev_r[i]*r1*cos(2*M_PI*r2);
-            site.p[i] = site.p_0[i] + site.atom->dev_p[i]*r1*sin(2*M_PI*r2);
+            site->r[i] = site->r_0[i] + site->atom->dev_r[i]*r1*cos(2*M_PI*r2);
+            site->p[i] = site->p_0[i] + site->atom->dev_p[i]*r1*sin(2*M_PI*r2);
 
             //TODO for cases where atomk !=0, this should instead factor
             //the springs due to neighbours, rather than this simple case.

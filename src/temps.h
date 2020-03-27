@@ -43,7 +43,7 @@ void init_temps();
  * 
  * @param site - the site to set to a random thermal state.
  */ 
-void thermaize(Site &site);
+void thermaize(Site *site);
 
 /**
  * This adjusts the ion's energy, based on the value of settings.ESIZE
