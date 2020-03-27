@@ -36,18 +36,19 @@ public:
         // In the parent class, this is left null, unless
         // lattice springs are used.
         // So for Ion, we initialize it at this size.
-        near_sites = new Site*[256];
+        near_sites = new Site *[256];
     }
 
     ~Ion()
     {
-        delete near_sites;
+        if (near_sites != NULL)
+            delete near_sites;
     }
 
     /**
      * Overrides the reset for Site, this is more specific
      * for the ion
-     */ 
+     */
     void reset();
 
     /**
@@ -59,5 +60,5 @@ public:
      * @param x - x impact parameter
      * @param y - y impact parameter
      */
-    void set_KE(double E0, double theta0, double phi0,double x, double y);
+    void set_KE(double E0, double theta0, double phi0, double x, double y);
 };

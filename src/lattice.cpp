@@ -327,7 +327,8 @@ void Lattice::init_springs(int nearest)
     for (auto site : sites)
     {
         //Clear the old sites
-        delete site->near_sites;
+        if (site->near_sites != NULL)
+            delete site->near_sites;
 
         //Initialize large for initial search
         site->near_sites = new Site *[256];

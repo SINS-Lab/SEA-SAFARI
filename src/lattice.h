@@ -29,7 +29,8 @@ public:
 
     ~Cell()
     {
-        delete[] sites;
+        if (sites != NULL)
+            delete[] sites;
     }
 
     void addSite(Site *site);

@@ -109,8 +109,10 @@ public:
 
     ~Site()
     {
-        delete near_sites;
-        delete rest_near_sites;
+        if (near_sites != NULL)
+            delete near_sites;
+        if (rest_near_sites != NULL)
+            delete rest_near_sites;
     }
 
     Site(const Site &other)
