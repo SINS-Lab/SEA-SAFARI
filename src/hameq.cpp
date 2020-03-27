@@ -141,7 +141,7 @@ double compute_error(Site &site, double dt)
     return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 }
 
-void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, double ay, double az, double dt, bool predicted, double *F_ion)
+void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, double ay, double az, double dt, bool predicted, double *F_ion)
 {
     double dx = 0, dy = 0, dz = 0;
 
@@ -158,12 +158,12 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
         ion.r_min = std::min(r, ion.r_min);
 
         //Magnitude of force for this location.
-        double dV_dr = dVr_dr(r, s.atom->index);
+        double dV_dr = dVr_dr(r, s->atom->index);
 
         //Potential for this location.
         if (predicted)
         {
-            ion.V += Vr_r(r, s.atom->index);
+            ion.V += Vr_r(r, s->atom->index);
         }
         //Scaled by 1/r for converting to cartesian
         dV_dr /= r;
@@ -185,7 +185,7 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
     {
         debug_file << "Ion intersected with atom?: " << std::endl;
         ion.write_info();
-        s.write_info();
+        s->write_info();
         if (num_intersect++ > num_intersect_max)
             exit_fail("Too many ion-site intersections");
     }
@@ -206,7 +206,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
 
     bool useEinsteinSprings = settings.useEinsteinSprings;
     bool useLennardJones = settings.useLennardJones;
-    // bool useAtomSpings = settings.useAtomSpings;//We default to this if not others.
 
     //Coordinate of the Ion
     double *r_i;
@@ -285,7 +284,7 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                 F_at[0] = 0;
                 F_at[1] = 0;
                 F_at[2] = 0;
-                apply_ion_lattice(ion, *s, F_at, r_i, ax, ay, az, dt, predicted, F_ion);
+                apply_ion_lattice(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F_ion);
             }
 
             //Apply spring forces.
