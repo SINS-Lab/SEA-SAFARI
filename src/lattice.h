@@ -74,7 +74,13 @@ struct Lattice
     //Copy constructor
     Lattice(const Lattice &other);
     //Destructor
-    ~Lattice() {}
+    ~Lattice()
+    {
+        for (auto s : sites)
+            delete s;
+        for (auto p : cell_map)
+            delete p.second;
+    }
     //Constructs the lattice based on the settings
     void build_lattice();
     //Loads a lattice from the given input stream

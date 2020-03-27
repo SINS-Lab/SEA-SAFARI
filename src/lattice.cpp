@@ -400,19 +400,10 @@ Cell *Lattice::make_cell(double x, double y, double z)
 
 Lattice::Lattice(const Lattice &other)
 {
-    for (auto x : other.cell_map)
+    for(auto s: other.sites)
     {
-        Cell cell = *x.second;
-        //Find un-filled cells
-        if (cell.num == 0)
-            continue;
-        int key = x.first;
-        Cell *ours = new Cell(cell);
-        for (int i = 0; i < cell.num; i++)
-        {
-            sites.push_back(ours->sites[i]);
-        }
-        cell_map[key] = ours;
+        Site *copy = new Site(*s);
+        add_site(copy);
     }
     mask = other.mask;
     // Initialize springs if not using einstein
