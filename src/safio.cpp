@@ -397,7 +397,8 @@ void Safio::load(std::map<std::string, ArgValue> &args)
         {
             NUMCHA = 1;
             SCAT_FLAG = 666;
-            SCAT_TYPE = 666;
+            if (SCAT_TYPE)
+                SCAT_TYPE = 666;
             //Set x-start
             if (args["-x"])
             {
@@ -427,7 +428,8 @@ void Safio::load(std::map<std::string, ArgValue> &args)
         if (NUMCHA == 1)
         {
             SCAT_FLAG = 666;
-            SCAT_TYPE = 666;
+            if (SCAT_TYPE)
+                SCAT_TYPE = 666;
             traj_file.open(output_name + ".traj");
             xyz_file.open(output_name + ".xyz");
             debug_file << "Initializing for single shot mode." << '\n';
