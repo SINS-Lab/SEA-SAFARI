@@ -102,9 +102,9 @@ t
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
-# This value is ignored for this run.
+# This value is the number of thermal iterations for this run
 #
-10000
+100
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat

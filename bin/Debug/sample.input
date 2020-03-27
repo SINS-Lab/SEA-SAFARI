@@ -101,6 +101,9 @@ t
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
+# In adaptive grid mode, this number is how many thermal iterations
+# are run, this is only applied if the temperature is not 0
+#
 10000
 
 # Range of the crystal to scatter off
