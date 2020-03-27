@@ -87,7 +87,7 @@ void test_lattice_copy(Lattice &lattice)
 
 	std::cout << "Testing lattice copying speeds" << std::endl;
 	double timer = clock();
-	int n = 1e4;
+	int n = 1e3;
 	int x = 0;
 	//This seems to work, but leaks memory like crazy...
 	for (int i = 0; i < n; i++)
