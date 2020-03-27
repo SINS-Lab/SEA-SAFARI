@@ -113,6 +113,7 @@ public:
             delete near_sites;
         if (rest_near_sites != NULL)
             delete rest_near_sites;
+        near_sites = NULL;
     }
 
     Site(const Site &other)

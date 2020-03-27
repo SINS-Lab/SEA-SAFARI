@@ -43,6 +43,7 @@ public:
     {
         if (near_sites != NULL)
             delete near_sites;
+        near_sites = NULL;
     }
 
     /**
