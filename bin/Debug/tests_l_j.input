@@ -18,12 +18,12 @@
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
 #
-254.0 45.0 0.00 22.989 Na
+50 45.0 0.00 122.989 Na
 
 # Detector Limits:
 # EMIN,EMAX,ERES,ARES
 #
-0.5 254 2.5 0.5
+0.5 50 2.5 0.5
 
 # Detector Type and optional cull flag
 #  <type> <cull flag|optional>
@@ -67,7 +67,7 @@ t
 
 # Number of allowed integration steps before failing.
 #
-4000
+8000
 
 # These are search related, max distances and table steps
 #
@@ -83,12 +83,12 @@ t
 # max distance to search, threshold for failing due to energy change
 # Max distance is in "cells", each of which is roughly 5 angstroms across
 #
-2 5
+2 5000000
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
-10
+5
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
@@ -128,7 +128,7 @@ t
 #
 # RAX, RAY
 #
-10.0 10.0
+5.0 5.0
 
 # These parameters are for the radial ion-atom potentials
 # The first number is how many parameters there are,

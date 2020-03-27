@@ -104,7 +104,7 @@ t
 #
 # This value is the number of thermal iterations for this run
 #
-100
+10
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat

@@ -77,7 +77,7 @@ t
 
 # Number of allowed integration steps before failing.
 #
-4000
+2000
 
 # These are search related, max distances and table steps
 #
@@ -96,7 +96,7 @@ t
 # The energy change error for each hit is listed in the data file, this
 # can be used to determine a good value for this second parameter
 #
-2 100
+2 5
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
@@ -104,7 +104,7 @@ t
 # In adaptive grid mode, this number is how many thermal iterations
 # are run, this is only applied if the temperature is not 0
 #
-10000
+1000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
