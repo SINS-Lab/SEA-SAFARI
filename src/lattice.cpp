@@ -335,7 +335,7 @@ void Lattice::init_springs(int nearest)
             }
             //Initialize large for initial search
             site.near_sites = new Site *[256];
-            fill_nearest(NULL, site, *this, 2, 24, max_rr, true, false);
+            fill_nearest(NULL, &site, this, 2, 24, max_rr, true, false);
             if (site.near == 0)
                 continue;
             //The +err is to allow some error from rounding, etc in loaded lattices.

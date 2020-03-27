@@ -8,39 +8,39 @@
 #include <cmath>
 #include <algorithm> // std::sort
 
-int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
+int fill_nearest(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {
     //Initial locations are where ion is.
-    double cell_x = site.r[0];
-    double cell_y = site.r[1];
-    double cell_z = site.r[2];
+    double cell_x = site->r[0];
+    double cell_y = site->r[1];
+    double cell_z = site->r[2];
 
     int pos_hash = to_hash(cell_x, cell_y, cell_z);
 
-    if (updateCells && pos_hash != site.cell_number && !settings.useEinsteinSprings)
+    if (updateCells && pos_hash != site->cell_number && !settings.useEinsteinSprings)
     {
-        Cell* from = lattice.get_cell(site.cell_number);
-        Cell* to = lattice.make_cell(pos_hash);
-        moveSite(site, from, to);
+        Cell* from = lattice->get_cell(site->cell_number);
+        Cell* to = lattice->make_cell(pos_hash);
+        moveSite(*site, from, to);
     }
 
     //New site, so we need to re-calculate things
-    if (pos_hash != site.last_index)
+    if (pos_hash != site->last_index)
     {
         //We need to resort this if we find new index.
         re_sort = true;
 
         //Update last index checked.
-        site.last_index = pos_hash;
+        site->last_index = pos_hash;
 
         //Number in current cell being checked.
         int num;
 
         //Reset total nearby, as we are now looking for them.
-        site.total_near = 0;
+        site->total_near = 0;
 
         //Initialize this big.
-        site.rr_min_find = 1e6;
+        site->rr_min_find = 1e6;
 
         //Location of mask
         Vec3d loc;
@@ -53,7 +53,7 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
 
         int last_check = -1;
 
-        int check_index = ion_ptr == NULL ? -site.index : site.index;
+        int check_index = ion_ptr == NULL ? -site->index : site->index;
         int check_step = ion_ptr == NULL ? -2 : ion_ptr->steps;
 
         //Loop over the mask, this is a radial loop.
@@ -73,7 +73,7 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
                 continue;
             last_check = pos_hash;
 
-            Cell *cell = lattice.get_cell(x, y, z);
+            Cell *cell = lattice->get_cell(x, y, z);
             //No cell here? skip.
             if (cell == NULL)
                 continue;
@@ -103,20 +103,20 @@ int fill_nearest(Ion *ion_ptr, Site &site, Lattice &lattice, int radius, int tar
                 //In this case, we want to make sure we are not including self.
                 if (ion_ptr == NULL)
                 {
-                    if (s->index == site.index)
+                    if (s->index == site->index)
                         continue;
                 }
                 //Check if site is close enough
-                double rr = diff_sqr(site.r, s->r);
+                double rr = diff_sqr(site->r, s->r);
                 if (rr > max_rr)
                     continue;
                 rr_min = std::min(rr_min, rr);
-                site.rr_min_find = std::min(rr, site.rr_min_find);
+                site->rr_min_find = std::min(rr, site->rr_min_find);
                 //Add the site to our tracked sites.
-                site.near_sites[site.total_near] = s;
-                site.total_near++;
+                site->near_sites[site->total_near] = s;
+                site->total_near++;
                 //If we have enough, goto end.
-                if (site.total_near > 255)
+                if (site->total_near > 255)
                     goto end;
             }
         }
@@ -125,26 +125,26 @@ end:
     if (re_sort)
     {
         //Reset number nearby.
-        site.near = 0;
+        site->near = 0;
         //Sort the sites, and update near to min of near or target_num
-        std::sort(site.near_sites, site.near_sites + site.total_near, [&site](Site *a, Site *b) { return site.compare_sites(a, b); });
+        std::sort(site->near_sites, site->near_sites + site->total_near, [site](Site *a, Site *b) { return site->compare_sites(a, b); });
         //Update nearby number, taking min of these two.
-        site.near = std::min(site.total_near, target_num);
+        site->near = std::min(site->total_near, target_num);
     }
 
     if (ion_ptr != NULL && settings.useLennardJones)
     {
         //Update each nearby site as well
-        for (int i = 0; i < site.near; i++)
+        for (int i = 0; i < site->near; i++)
         {
-            Site &s2 = *site.near_sites[i];
+            Site *s2 = site->near_sites[i];
             fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true, true);
         }
     }
     //Sets this to 0, so that the max check later is fine.
-    if (site.rr_min_find == 1e6)
-        site.rr_min_find = 0;
-    return site.near;
+    if (site->rr_min_find == 1e6)
+        site->rr_min_find = 0;
+    return site->near;
 }
 
 bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
@@ -366,7 +366,7 @@ start:
     //Reset this to 0.
     dr_max = 0;
     //Find nearby lattice atoms
-    fill_nearest(&ion, ion, lattice, d_search, n_parts, settings.rr_max, sort, false);
+    fill_nearest(&ion, &ion, &lattice, d_search, n_parts, settings.rr_max, sort, false);
     //This is set back true later if needed.
     sort = false;
     //Increment counter for how many steps we have taken
