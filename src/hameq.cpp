@@ -100,7 +100,7 @@ void predict_site_location(Site &s, double dt)
     s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
 }
 
-void apply_hameq(Ion &ion, Lattice &lattice, double dt)
+void apply_hameq(Ion &ion, Lattice *lattice, double dt)
 {
     if (!settings.useEinsteinSprings)
     {
@@ -191,7 +191,7 @@ void apply_ion_lattice(Ion &ion, Site &s, double *F_at, double *r_i, double ax, 
     }
 }
 
-void run_hameq(Ion &ion, Lattice &lattice, double dt, bool predicted, double *dr_max)
+void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr_max)
 {
     //Some useful variables.
     double dx = 0, dy = 0, dz = 0,

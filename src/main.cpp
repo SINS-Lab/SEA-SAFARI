@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
             {
                 adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
                                  settings.YSTART, settings.YSTEP, settings.YSTOP,
-                                 lattice, default_detector, settings.SCAT_TYPE, 0, &n, &ind, 0);
+                                 &lattice, default_detector, settings.SCAT_TYPE, 0, &n, &ind, 0);
             }
             else
             {
@@ -183,12 +183,13 @@ int main(int argc, char *argv[])
                 for (int i = 0; i < runs; i++)
                 {
                     //Copy the lattice
-                    Lattice toUse = lattice;
-                    toUse.clear_stats();
+                    Lattice *toUse = new Lattice(lattice);
+                    toUse->clear_stats();
                     adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
                                      settings.YSTART, settings.YSTEP, settings.YSTOP,
                                      toUse, default_detector, settings.SCAT_TYPE, 0, &n, &ind, i);
                     lattice.add_stats(toUse);
+                    delete toUse;
                 }
             }
         }
@@ -204,7 +205,7 @@ int main(int argc, char *argv[])
                 debug_file << "Running Grid Scat" << std::endl;
                 std::cout << "Running Grid Scat " << std::endl;
             }
-            gridscat(lattice, &n);
+            gridscat(&lattice, &n);
         }
         else if (settings.SCAT_TYPE == 666)
         {
@@ -226,16 +227,17 @@ int main(int argc, char *argv[])
             {
                 int start = i * ions_per_thread;
                 //Copy the lattice
-                Lattice toUse = lattice;
-                toUse.clear_stats();
+                Lattice *toUse = new Lattice(lattice);
+                toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
+                delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;
         }
         else if (settings.SCAT_TYPE == 888)
         {
-            chainscat(lattice, &n);
+            chainscat(&lattice, &n);
         }
 
         // Log some debug info from the lattice

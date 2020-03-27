@@ -78,7 +78,7 @@ double L_J_dV_dr_init(double r, int a, int b);
  * 
  * @return the energy change which would result from this interaction.
  */
-double apply_friction(Lattice &lattice, Ion &ion, double *F, double dt, bool predicted);
+double apply_friction(Lattice *lattice, Ion &ion, double *F, double dt, bool predicted);
 
 /**
  * Returns the electron density at the site of the ion.
@@ -91,4 +91,4 @@ double apply_friction(Lattice &lattice, Ion &ion, double *F, double dt, bool pre
  * 
  * @return the density of electrons at this location.
  */
-double electron_density(Lattice &lattice, Ion &ion, bool predicted);
+double electron_density(Lattice *lattice, Ion &ion, bool predicted);

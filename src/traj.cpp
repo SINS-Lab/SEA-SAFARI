@@ -21,7 +21,7 @@ int fill_nearest(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int tar
     {
         Cell* from = lattice->get_cell(site->cell_number);
         Cell* to = lattice->make_cell(pos_hash);
-        moveSite(*site, from, to);
+        moveSite(site, from, to);
     }
 
     //New site, so we need to re-calculate things
@@ -189,13 +189,13 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
     return true;
 }
 
-void log_xyz(Ion &ion, Lattice &lattice, int &lattice_num, char *buffer)
+void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 {
     //Update the lattice site momenta...
     for (int i = 0; i < ion.near; i++)
     {
         Site &s = *ion.near_sites[i];
-        lattice.sites[s.index] = &s;
+        lattice->sites[s.index] = &s;
         //Flag as nearby
         s.near_check = true;
     }
@@ -214,22 +214,22 @@ void log_xyz(Ion &ion, Lattice &lattice, int &lattice_num, char *buffer)
             ion.atom->mass, 0, 1);                                  // mass, index, near
     xyz_file << buffer;
 
-    int num = lattice.sites.size();
+    int num = lattice->sites.size();
     //Then stuff in the entire lattice, why not...
     for (int i = 0; i < num; i++)
     {
-        Site &s = *lattice.sites[i];
+        Site &s = *lattice->sites[i];
 
         //Check if we want to ignore the lattice site
         if (settings.SCAT_TYPE)
         {
             //check out of bounds, from r_0
-            if (s.r_0[0] < lattice.xyz_bounds[0]     //x
-                || s.r_0[0] > lattice.xyz_bounds[3]  //x
-                || s.r_0[1] < lattice.xyz_bounds[1]  //y
-                || s.r_0[1] > lattice.xyz_bounds[4]  //y
-                || s.r_0[2] < lattice.xyz_bounds[2]  //z
-                || s.r_0[2] > lattice.xyz_bounds[5]) //z
+            if (s.r_0[0] < lattice->xyz_bounds[0]     //x
+                || s.r_0[0] > lattice->xyz_bounds[3]  //x
+                || s.r_0[1] < lattice->xyz_bounds[1]  //y
+                || s.r_0[1] > lattice->xyz_bounds[4]  //y
+                || s.r_0[2] < lattice->xyz_bounds[2]  //z
+                || s.r_0[2] > lattice->xyz_bounds[5]) //z
                 continue;
         }
 
@@ -245,7 +245,7 @@ void log_xyz(Ion &ion, Lattice &lattice, int &lattice_num, char *buffer)
     }
 }
 
-void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz,
+void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
           Detector &detector)
 {
     //Get some constants for the loop
@@ -335,22 +335,22 @@ void traj(Ion &ion, Lattice &lattice, bool &log, bool &xyz,
 
     if (xyz)
     {
-        int num = lattice.sites.size();
+        int num = lattice->sites.size();
         //Here we initialize lattice_num, it was set to 1 earlier for the ion.
         //Now it gets incremented for each valid site
         for (int i = 0; i < num; i++)
         {
-            Site &s = *lattice.sites[i];
+            Site &s = *lattice->sites[i];
             //Check if we want to ignore the lattice site
             if (settings.SCAT_TYPE)
             {
                 //check out of bounds, from r_0
-                if (s.r_0[0] < lattice.xyz_bounds[0]     //x
-                    || s.r_0[0] > lattice.xyz_bounds[3]  //x
-                    || s.r_0[1] < lattice.xyz_bounds[1]  //y
-                    || s.r_0[1] > lattice.xyz_bounds[4]  //y
-                    || s.r_0[2] < lattice.xyz_bounds[2]  //z
-                    || s.r_0[2] > lattice.xyz_bounds[5]) //z
+                if (s.r_0[0] < lattice->xyz_bounds[0]     //x
+                    || s.r_0[0] > lattice->xyz_bounds[3]  //x
+                    || s.r_0[1] < lattice->xyz_bounds[1]  //y
+                    || s.r_0[1] > lattice->xyz_bounds[4]  //y
+                    || s.r_0[2] < lattice->xyz_bounds[2]  //z
+                    || s.r_0[2] > lattice->xyz_bounds[5]) //z
                     continue;
             }
             lattice_num++;
@@ -366,7 +366,7 @@ start:
     //Reset this to 0.
     dr_max = 0;
     //Find nearby lattice atoms
-    fill_nearest(&ion, &ion, &lattice, d_search, n_parts, settings.rr_max, sort, false);
+    fill_nearest(&ion, &ion, lattice, d_search, n_parts, settings.rr_max, sort, false);
     //This is set back true later if needed.
     sort = false;
     //Increment counter for how many steps we have taken
@@ -533,35 +533,35 @@ end:
         theta = 0;
         phi = 90;
         E = -100;
-        lattice.stuck_num++;
+        lattice->stuck_num++;
     }
     else if (buried)
     {
         theta = 0;
         phi = 90;
         E = -200;
-        lattice.buried_num++;
+        lattice->buried_num++;
     }
     else if (froze)
     {
         theta = 0;
         phi = 90;
         E = -300;
-        lattice.froze_num++;
+        lattice->froze_num++;
     }
     else if (off_edge)
     {
         theta = 0;
         phi = 90;
         E = -400;
-        lattice.left_num++;
+        lattice->left_num++;
     }
     else if (discont)
     {
         theta = 0;
         phi = 90;
         E = -500;
-        lattice.err_num++;
+        lattice->err_num++;
     }
     else
     {
@@ -593,7 +593,7 @@ end:
             theta = 0;
             phi = 90;
             E = -10;
-            lattice.trapped_num++;
+            lattice->trapped_num++;
         }
         else
         {

@@ -24,7 +24,7 @@ public:
         return E > e_min && diff_phi < dphi && diff_theta < dtheta;
     }
 
-    void log(Ion &ion, Lattice &lattice, double E, double theta, double phi)
+    void log(Ion &ion, Lattice *lattice, double E, double theta, double phi)
     {
         bool did_hit = true;
         //Detectors should generally be 1 degree resolution,
@@ -34,7 +34,7 @@ public:
             theta = 0;
             phi = 90;
             E = -5;
-            lattice.undetectable_num++;
+            lattice->undetectable_num++;
             did_hit = false;
         }
         if(E > 0 || settings.save_errored)

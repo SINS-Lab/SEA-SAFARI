@@ -154,18 +154,18 @@ void Lattice::build_lattice()
     debug_file << "built lattice" << std::endl;
 }
 
-void Lattice::add_site(Site &s)
+void Lattice::add_site(Site *s)
 {
     //This makes the cell if it doesn't exist, otherwise gets old one.
-    Cell *cell = make_cell(s.r_0[0], s.r_0[1], s.r_0[2]);
+    Cell *cell = make_cell(s->r_0[0], s->r_0[1], s->r_0[2]);
 
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
-    s.index = sites.size();
-    sites.push_back(&s);
+    s->index = sites.size();
+    sites.push_back(s);
     cell->addSite(s);
     //Initializes the site
-    s.reset();
+    s->reset();
 }
 
 Site *make_site(Atom *a, double px, double py, double pz)
@@ -191,7 +191,7 @@ void Lattice::add_site(Atom *a, double px, double py, double pz)
 {
     Site *s = make_site(a, px, py, pz);
     //Add the site to the lattice
-    add_site(*s);
+    add_site(s);
 }
 
 void Lattice::load_lattice(std::ifstream &input)
@@ -308,8 +308,8 @@ void Lattice::init_springs(int nearest)
         //Loop over the sites in the cell.
         for (int i = 0; i < cell->num; i++)
         {
-            Site &site = *cell->sites[i];
-            std::copy(site.r_0, site.r_0 + 3, site.r);
+            Site *site = cell->sites[i];
+            std::copy(site->r_0, site->r_0 + 3, site->r);
         }
     }
 
@@ -327,25 +327,25 @@ void Lattice::init_springs(int nearest)
         //Loop over the sites in the cell.
         for (int i = 0; i < cell->num; i++)
         {
-            Site &site = *cell->sites[i];
+            Site *site = cell->sites[i];
             //This is initialized null
-            if (site.near_sites != NULL)
+            if (site->near_sites != NULL)
             {
-                delete site.near_sites;
+                delete site->near_sites;
             }
             //Initialize large for initial search
-            site.near_sites = new Site *[256];
-            fill_nearest(NULL, &site, this, 2, 24, max_rr, true, false);
-            if (site.near == 0)
+            site->near_sites = new Site *[256];
+            fill_nearest(NULL, site, this, 2, 24, max_rr, true, false);
+            if (site->near == 0)
                 continue;
             //The +err is to allow some error from rounding, etc in loaded lattices.
-            double dist_near = diff_sqr(site.r_0, site.near_sites[0]->r_0) + err;
+            double dist_near = diff_sqr(site->r_0, site->near_sites[0]->r_0) + err;
             int current = nearest;
             int n = 0;
-            for (int j = 0; j < site.near; j++)
+            for (int j = 0; j < site->near; j++)
             {
-                Site *s = site.near_sites[j];
-                double distsq = diff_sqr(site.r_0, s->r_0);
+                Site *s = site->near_sites[j];
+                double distsq = diff_sqr(site->r_0, s->r_0);
 
                 //This is next level of neighbour.
                 if (distsq > dist_near)
@@ -358,7 +358,7 @@ void Lattice::init_springs(int nearest)
                     break;
                 n++;
             }
-            site.near = n;
+            site->near = n;
 
             //We do not clean up the size of this array, as it is
             //then used later when updated in traj.
@@ -436,7 +436,7 @@ Cell::Cell(const Cell &other)
     }
 }
 
-void Cell::addSite(Site &site)
+void Cell::addSite(Site *site)
 {
     if (num > lastSize)
     {
@@ -448,25 +448,25 @@ void Cell::addSite(Site &site)
     }
     //Sites are indexed to size, so that they
     //can be looked up to find their atom later.
-    sites[num] = &site;
+    sites[num] = site;
     sites[num]->cell_index = num;
     sites[num]->cell_number = pos_hash;
     num++;
 }
 
-void Cell::removeSite(Site &site)
+void Cell::removeSite(Site *site)
 {
     // Replace the site with the last one
-    sites[site.cell_index] = sites[num - 1];
+    sites[site->cell_index] = sites[num - 1];
     // Update the index of the moved site
-    sites[site.cell_index]->cell_index = site.cell_index;
+    sites[site->cell_index]->cell_index = site->cell_index;
     num--;
 }
 
-void moveSite(Site &site, Cell *from, Cell *to)
+void moveSite(Site *site, Cell *from, Cell *to)
 {
     // We only do this is we are actually in from!
-    if (site.cell_number != from->pos_hash)
+    if (site->cell_number != from->pos_hash)
         return;
     from->removeSite(site);
     to->addSite(site);

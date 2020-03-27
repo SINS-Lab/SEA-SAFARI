@@ -14,7 +14,7 @@
  *
  * The number of trajectories is stuffed in *num
  */
-void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed);
+void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed);
 /**
  * Fires ions at the surface in a grid. This grid goes from
  * x = settings.XSTART to settings.XSTOP in steps of
@@ -22,14 +22,14 @@ void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed);
  *
  * The number of trajectories is stuffed in *num
  */
-void gridscat(Lattice &lattice, int *num);
+void gridscat(Lattice *lattice, int *num);
 
 /**
  * Fires ions in a line, starting at XSTART, YSTART, ending at
  * XSTOP, YSTOP. It fires NUMCHA particles in this line, in even
  * spacing between particles.
  */
-void chainscat(Lattice &lattice, int *num);
+void chainscat(Lattice *lattice, int *num);
 /**
  * Fires ions at the surface in a grid. This grid goes from
  * xstart to xstep in steps of xstep, and y for the equivalent 
@@ -48,5 +48,5 @@ void chainscat(Lattice &lattice, int *num);
  */
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
-                      Lattice &lattice, Detector &detector,
+                      Lattice *lattice, Detector &detector,
                       int max_depth, int current_depth, int *num, int *index, int iter);

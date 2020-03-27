@@ -250,14 +250,14 @@ double dVi_dz(double z, int q)
     return 0;
 }
 
-double electron_density(Lattice &lattice, Ion &ion, bool predicted)
+double electron_density(Lattice *lattice, Ion &ion, bool predicted)
 {
     //TODO see https://github.com/SINS-Lab/SAFARI/blob/10305e6f9ee597e89a6df7acfede3554371f42bc/src/hameqinel.f
     // it has calculations for electron density.
     return 0;
 }
 
-double apply_friction(Lattice &lattice, Ion &ion, double* F, double dt, bool predicted)
+double apply_friction(Lattice *lattice, Ion &ion, double* F, double dt, bool predicted)
 {
     double vx = ion.p[0]/ion.atom->mass;
     double vy = ion.p[1]/ion.atom->mass;

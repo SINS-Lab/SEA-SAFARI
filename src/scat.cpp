@@ -4,7 +4,7 @@
 #include "temps.h"
 
 /**
- * Fires the given ion at the given lattice.
+ * Fires the given ion at the given lattice->
  * This also initializes the ions kinetic energy, and sets the
  * impact parameters to the given coordinates. 
  * The ion is assigned an index as well.
@@ -18,11 +18,11 @@
  * @param xyz - whether to log xyz file version of the trajectory.
  * 
  */
-bool fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
+bool fire(Lattice *lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
 {
-    if (!lattice.mask.inside(x, y))
+    if (!lattice->mask.inside(x, y))
     {
-        lattice.out_of_mask++;
+        lattice->out_of_mask++;
         return false;
     }
     ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
@@ -32,7 +32,7 @@ bool fire(Lattice &lattice, Ion &ion, double x, double y, int index, bool log, b
     return true;
 }
 
-void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed)
+void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
 {
     //Make a new RNG instance, and then set the seed to what it should be
     std::default_random_engine rng;
@@ -60,7 +60,7 @@ void montecarloscat(Lattice &lattice, int ionStart, int numcha, double seed)
     }
 }
 
-void gridscat(Lattice &lattice, int *num)
+void gridscat(Lattice *lattice, int *num)
 {
     int n = 0;
     if (settings.NUMCHA == 1)
@@ -75,28 +75,28 @@ void gridscat(Lattice &lattice, int *num)
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
 
             //Set min bounds from ion positions
-            lattice.xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
-            lattice.xyz_bounds[1] = std::min(ion.r_0[1], ion.r[1]) - settings.AY;
-            lattice.xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - 2 * settings.AZ;
+            lattice->xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
+            lattice->xyz_bounds[1] = std::min(ion.r_0[1], ion.r[1]) - settings.AY;
+            lattice->xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - 2 * settings.AZ;
 
             //Set max bounds from ion positions
-            lattice.xyz_bounds[3] = std::max(ion.r_0[0], ion.r[0]) + settings.AX;
-            lattice.xyz_bounds[4] = std::max(ion.r_0[1], ion.r[1]) + settings.AY;
-            lattice.xyz_bounds[5] = std::max(ion.r_0[2], ion.r[2]);
+            lattice->xyz_bounds[3] = std::max(ion.r_0[0], ion.r[0]) + settings.AX;
+            lattice->xyz_bounds[4] = std::max(ion.r_0[1], ion.r[1]) + settings.AY;
+            lattice->xyz_bounds[5] = std::max(ion.r_0[2], ion.r[2]);
 
             //Lets make this a square slab, so find midpoint of x,y
             //and then make it equal sized.
-            double dx = lattice.xyz_bounds[3] - lattice.xyz_bounds[0];
-            double dy = lattice.xyz_bounds[4] - lattice.xyz_bounds[1];
+            double dx = lattice->xyz_bounds[3] - lattice->xyz_bounds[0];
+            double dy = lattice->xyz_bounds[4] - lattice->xyz_bounds[1];
             double dr = std::max(dx, dy) / 2 + 5; //Add extra 5 for some padding
             //Set x/y to avg +- dr
-            lattice.xyz_bounds[0] = (lattice.xyz_bounds[3] + lattice.xyz_bounds[0]) / 2 - dr;
-            lattice.xyz_bounds[3] = (lattice.xyz_bounds[3] + lattice.xyz_bounds[0]) / 2 + dr;
-            lattice.xyz_bounds[1] = (lattice.xyz_bounds[4] + lattice.xyz_bounds[1]) / 2 - dr;
-            lattice.xyz_bounds[4] = (lattice.xyz_bounds[4] + lattice.xyz_bounds[1]) / 2 + dr;
+            lattice->xyz_bounds[0] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 - dr;
+            lattice->xyz_bounds[3] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 + dr;
+            lattice->xyz_bounds[1] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 - dr;
+            lattice->xyz_bounds[4] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 + dr;
 
-            //Reset each site in the lattice.
-            for (std::pair<int, Cell *> val : lattice.cell_map)
+            //Reset each site in the lattice->
+            for (std::pair<int, Cell *> val : lattice->cell_map)
             {
                 for (int i = 0; i < val.second->num; i++)
                 {
@@ -128,7 +128,7 @@ void gridscat(Lattice &lattice, int *num)
     return;
 }
 
-void chainscat(Lattice &lattice, int *num)
+void chainscat(Lattice *lattice, int *num)
 {
     double dx = settings.XSTART - settings.XSTOP;
     double dy = settings.YSTART - settings.YSTOP;
@@ -152,7 +152,7 @@ void chainscat(Lattice &lattice, int *num)
     return;
 }
 
-void save_adaptive(Ion &ion, Lattice &lattice, double E, double theta, double phi)
+void save_adaptive(Ion &ion, Lattice *lattice, double E, double theta, double phi)
 {
     if (settings.save_errored || E > 0)
     {
@@ -170,7 +170,7 @@ void save_adaptive(Ion &ion, Lattice &lattice, double E, double theta, double ph
 
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
-                      Lattice &lattice, Detector &detector,
+                      Lattice *lattice, Detector &detector,
                       int max_depth, int current_depth, int *num, int *index, int iter)
 {
     if (current_depth > max_depth)
@@ -181,7 +181,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
     for (double x = xstart; x <= xstop; x += xstep)
         for (double y = ystart; y <= ystop; y += ystep)
         {
-            if (lattice.mask.inside(x, y))
+            if (lattice->mask.inside(x, y))
             {
                 Ion ion;
                 ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
@@ -208,7 +208,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
             }
             else
             {
-                lattice.out_of_mask++;
+                lattice->out_of_mask++;
             }
         }
 }

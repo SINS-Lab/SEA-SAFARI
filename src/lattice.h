@@ -32,9 +32,9 @@ public:
         delete[] sites;
     }
 
-    void addSite(Site &site);
+    void addSite(Site *site);
 
-    void removeSite(Site &site);
+    void removeSite(Site *site);
 };
 
 struct Lattice
@@ -82,7 +82,7 @@ struct Lattice
     //Adds an atom of type a, at location x, y, z;
     void add_site(Atom *a, double x, double y, double z);
     //Adds the given site to the lattice
-    void add_site(Site &site);
+    void add_site(Site *site);
     //Retrieves the cell for the given coordinates,
     //NULL if no cell is found
     Cell *get_cell(double x, double y, double z);
@@ -105,16 +105,16 @@ struct Lattice
         err_num = 0;          //Code -500
     }
 
-    void add_stats(Lattice &other)
+    void add_stats(Lattice *other)
     {
-        undetectable_num += other.undetectable_num;
-        trapped_num += other.trapped_num;
-        stuck_num += other.stuck_num;
-        buried_num += other.buried_num;
-        froze_num += other.froze_num;
-        left_num += other.left_num;
-        err_num += other.err_num;
-        out_of_mask += other.out_of_mask;
+        undetectable_num += other->undetectable_num;
+        trapped_num += other->trapped_num;
+        stuck_num += other->stuck_num;
+        buried_num += other->buried_num;
+        froze_num += other->froze_num;
+        left_num += other->left_num;
+        err_num += other->err_num;
+        out_of_mask += other->out_of_mask;
     }
 
     /**
@@ -152,4 +152,4 @@ struct Lattice
                       std::vector<Site> *sites_out, std::vector<Site> &sites_in, int *maxZI);
 };
 
-void moveSite(Site &site, Cell *from, Cell *to);
+void moveSite(Site *site, Cell *from, Cell *to);
