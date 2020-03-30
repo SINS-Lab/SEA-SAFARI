@@ -86,6 +86,7 @@ void Site::reset()
     //Reset positions and momenta
     std::copy(r_0, r_0 + 3, r);
     std::copy(r_0, r_0 + 3, r_t);
+    std::copy(r_0, r_0 + 3, r_u);
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
 

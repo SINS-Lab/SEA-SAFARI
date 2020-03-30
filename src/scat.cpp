@@ -71,6 +71,7 @@ void gridscat(Lattice *lattice, int *num)
         //guarentee that any thermal effects can be repeated.
         if (settings.SCAT_TYPE)
         {
+            std::cout << "Single Shot Partial Lattice Mode " << std::endl;
             //Dry run to find bounds of operation
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
 
@@ -108,6 +109,7 @@ void gridscat(Lattice *lattice, int *num)
         }
         else
         {
+            std::cout << "Single Shot Full Lattice Mode " << std::endl;
             //Fire, log entire lattice, and also output xyz at once
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
         }

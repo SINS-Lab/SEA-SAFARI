@@ -168,17 +168,18 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
         //Scaled by 1/r for converting to cartesian
         dV_dr /= r;
 
-        //Convert from magnitude to components of vector
-        //Note, fx = -dV_dr * 2dx, however,
-        //we set the force to half of this.
+        // Convert from magnitude to components of vector
+        // Note, fx = -dV_dr * 2dx, however,
+        // we set the force to half of this.
         F_at[0] = -dV_dr * dx;
         F_at[1] = -dV_dr * dy;
         F_at[2] = -dV_dr * dz;
 
-        //Add force components to net force.
-        F_ion[0] += F_at[0];
-        F_ion[1] += F_at[1];
-        F_ion[2] += F_at[2];
+        // Add force components to net force.
+        F_ion[0] -= F_at[0];
+        F_ion[1] -= F_at[1];
+        F_ion[2] -= F_at[2];
+        // These are -=, as are opposite direction from on atom
     }
     //No force if ion is on an atom.
     if (r == 0)
@@ -194,8 +195,9 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
 void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr_max)
 {
     //Some useful variables.
-    double dx = 0, dy = 0, dz = 0,
-           rr = 0, r = 0;
+    double dx = 0, dy = 0, dz = 0,    // These for general distances
+           dx1 = 0, dy1 = 0, dz1 = 0, // This set for lattice correlation stuff
+           rr = 0, r = 0;             // General seperations
 
     //Lattice atom coordintates.
     double ax = 0, ay = 0, az = 0;
@@ -238,11 +240,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
     //This was set earlier when looking for nearby sites.
     if (ion.near)
     {
-        double F_ion[3];
-        F_ion[0] = 0;
-        F_ion[1] = 0;
-        F_ion[2] = 0;
-
         //Check this counter, used for statistics later.
         if (ion.near > ion.max_n)
             ion.max_n = ion.near;
@@ -284,18 +281,26 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                 F_at[0] = 0;
                 F_at[1] = 0;
                 F_at[2] = 0;
-                apply_ion_lattice(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F_ion);
+                apply_ion_lattice(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
             }
 
             //Apply spring forces.
             if (springs)
             {
+                // Displacement from rest
+                // This is used in einstein springs
+                // but also for determining if
+                // we actually want lattice correlations
+                dx = s->r[0] - s->r_0[0];
+                dy = s->r[1] - s->r_0[1];
+                dz = s->r[2] - s->r_0[2];
+
                 //Use einstein springs.
                 if (useEinsteinSprings)
                 {
-                    double dx_sq = (s->r[0] - s->r_0[0]) * (s->r[0] - s->r_0[0]);
-                    double dy_sq = (s->r[1] - s->r_0[1]) * (s->r[1] - s->r_0[1]);
-                    double dz_sq = (s->r[2] - s->r_0[2]) * (s->r[2] - s->r_0[2]);
+                    double dx_sq = dx * dx;
+                    double dy_sq = dy * dy;
+                    double dz_sq = dz * dz;
                     //V = 0.5kx^2
                     double V_s_x = 0.5 * s->atom->spring[0] * dx_sq;
                     double V_s_y = 0.5 * s->atom->spring[1] * dy_sq;
@@ -306,9 +311,9 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     if (settings.max_spring_V > V_s)
                     {
                         //F = -kx
-                        F_at[0] -= s->atom->spring[0] * (s->r[0] - s->r_0[0]);
-                        F_at[1] -= s->atom->spring[1] * (s->r[1] - s->r_0[1]);
-                        F_at[2] -= s->atom->spring[2] * (s->r[2] - s->r_0[2]);
+                        F_at[0] -= s->atom->spring[0] * dx;
+                        F_at[1] -= s->atom->spring[1] * dy;
+                        F_at[2] -= s->atom->spring[2] * dz;
                     }
                     //These springs are only applied if the site is still "near" the original location.
                 }
@@ -318,8 +323,10 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     double *F_at2;
                     double *r2;
 
+                    bool moved = (dx*dx + dy*dy + dz*dz) > 0.1;
+
                     //Use atomk as k for springs between nearest sites, or lennard jones potentials
-                    for (int j = 0; j < s->near; j++)
+                    if(moved) for (int j = 0; j < s->near; j++)
                     {
                         Site *s2 = s->near_sites[j];
 
@@ -350,14 +357,23 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                             F_at2[1] = 0;
                             F_at2[2] = 0;
                         }
+
+                        dx = r2[0] - r_i[0];
+                        dy = r2[1] - r_i[1];
+                        dz = r2[2] - r_i[2];
+                        rr = dx * dx + dy * dy + dz * dz;
+
+                        // Only consider correlations actually in range.
+                        if(rr > settings.rr_max) continue;
+
                         //This will be the magnitude of the force.
                         double dV_dr = 0;
 
                         //Compute lattice site separation here.
-                        dx = ax - r2[0];
-                        dy = ay - r2[1];
-                        dz = az - r2[2];
-                        rr = dx * dx + dy * dy + dz * dz;
+                        dx1 = r2[0] - ax;
+                        dy1 = r2[1] - ay;
+                        dz1 = r2[2] - az;
+                        rr = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
                         r = sqrt(rr);
 
                         if (r < 0.1)
@@ -417,9 +433,9 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
 
                         //These are scaled by 1/r for conversion to
                         //the same coordinate system as the fmag was caluclated for
-                        double dx_hat = (r2[0] - ax) / r;
-                        double dy_hat = (r2[1] - ay) / r;
-                        double dz_hat = (r2[2] - az) / r;
+                        double dx_hat = dx1 / r;
+                        double dy_hat = dy1 / r;
+                        double dz_hat = dz1 / r;
                         //Note, fx = -dV_dr * 2dx, however,
                         //we set the force to half of this->
                         //Apply to us
@@ -436,9 +452,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                             if (!predicted)
                                 //set the predictions
                                 predict_site_location(*s2, dt);
-                            else
-                                //set account for site errors
-                                *dr_max = std::max(compute_error(*s2, dt), *dr_max);
                         }
                     }
                 }
@@ -455,12 +468,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
             }
         }
         //We have now exited the lattice considerations.
-
-        //Superposition of all of the atom-ion interaction
-        F[0] = -F_ion[0];
-        F[1] = -F_ion[1];
-        F[2] = -F_ion[2];
-
     }
 
     if (settings.use_image)

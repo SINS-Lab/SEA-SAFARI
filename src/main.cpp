@@ -228,9 +228,11 @@ int main(int argc, char *argv[])
                 int start = i * ions_per_thread;
                 //Copy the lattice
                 Lattice *toUse = new Lattice(lattice);
+                std::cout << "Starting Thread " << i << std::endl;
                 toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
+                std::cout << "Finished Thread " << i << std::endl;
                 delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;

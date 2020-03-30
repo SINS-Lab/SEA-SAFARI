@@ -51,6 +51,9 @@ public:
     //forces after dt
     double dp_dt_t[3];
 
+    // Position during last neighbour
+    double r_u[3];
+
     //Used to track the last ion which has interacted with us.
     int last_ion = -1;
     //This is used for randomly position the site, normally

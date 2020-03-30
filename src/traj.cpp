@@ -134,13 +134,19 @@ end:
 
     if (ion_ptr != NULL && settings.useLennardJones)
     {
-        //Update each nearby site as well
-        for (int i = 0; i < site->near; i++)
-        {
-            Site *s2 = site->near_sites[i];
-            fill_nearest(NULL, s2, lattice, radius, target_num, max_rr, true, true);
-        }
+        // double dx, dy, dz;
+        // //Update each nearby site as well
+        // for (int i = 0; i < site->near; i++)
+        // {
+        //     Site *s = site->near_sites[i];
+        //     dx = s->r[0] - s->r_u[0];
+        //     dy = s->r[1] - s->r_u[1];
+        //     dz = s->r[2] - s->r_u[2];
+        //     bool moved = sqrt(dx*dx + dy*dy + dz*dz) > settings.DIST_SEARCH / 10;
+        //     if(moved) fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
+        // }
     }
+    std::copy(site->r, site->r + 3, site->r_u);
     //Sets this to 0, so that the max check later is fine.
     if (site->rr_min_find == 1e6)
         site->rr_min_find = 0;
@@ -426,8 +432,8 @@ start:
             change = 2;
         //If timestep tries to speed up between 1 and 2 times,
         //just leave it where it is.
-        if (change > 1 && change < 2)
-            change = 1;
+        // if (change > 1 && change < 2)
+        //     change = 1;
 
         //Large change in energy, try to reduce timestep.
         if (change < .2 && dt > dt_low)
