@@ -134,17 +134,17 @@ end:
 
     if (ion_ptr != NULL && settings.useLennardJones)
     {
-        // double dx, dy, dz;
-        // //Update each nearby site as well
-        // for (int i = 0; i < site->near; i++)
-        // {
-        //     Site *s = site->near_sites[i];
-        //     dx = s->r[0] - s->r_u[0];
-        //     dy = s->r[1] - s->r_u[1];
-        //     dz = s->r[2] - s->r_u[2];
-        //     bool moved = sqrt(dx*dx + dy*dy + dz*dz) > settings.DIST_SEARCH / 10;
-        //     if(moved) fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
-        // }
+        double dx, dy, dz;
+        //Update each nearby site as well
+        for (int i = 0; i < site->near; i++)
+        {
+            Site *s = site->near_sites[i];
+            dx = s->r[0] - s->r_u[0];
+            dy = s->r[1] - s->r_u[1];
+            dz = s->r[2] - s->r_u[2];
+            bool moved = sqrt(dx*dx + dy*dy + dz*dz) > settings.DIST_SEARCH / 10;
+            if(moved) fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
+        }
     }
     std::copy(site->r, site->r + 3, site->r_u);
     //Sets this to 0, so that the max check later is fine.
