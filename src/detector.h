@@ -26,10 +26,10 @@ public:
 
     void log(Ion &ion, Lattice *lattice, double E, double theta, double phi)
     {
-        bool did_hit = true;
+        bool did_hit = E > -10;
         //Detectors should generally be 1 degree resolution,
         //A difference of 10 is far outside the allowed range.
-        if (E > -10 && !hit(E, theta, phi))
+        if (did_hit && !hit(E, theta, phi))
         {
             theta = 0;
             phi = 90;
@@ -37,7 +37,7 @@ public:
             lattice->undetectable_num++;
             did_hit = false;
         }
-        if(E > 0 || settings.save_errored)
+        if(did_hit || settings.save_errored)
         {       
             /**
              * This uses the default saving behaviour
