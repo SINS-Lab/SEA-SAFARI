@@ -102,22 +102,22 @@ void predict_site_location(Site &s, double dt)
 
 void apply_hameq(Ion &ion, Lattice *lattice, double dt)
 {
-    if (!settings.useEinsteinSprings)
-    {
-        //If we are using better correlations,
-        //then we need to update more than just
-        //the immediate neighbours, so we need to
-        //use the slower version of this.
-        int last_update = ion.last_update + 1;
-        update_sites(ion, last_update, dt);
-    }
-    else
+    // if (!settings.useEinsteinSprings)
+    // {
+    //     //If we are using better correlations,
+    //     //then we need to update more than just
+    //     //the immediate neighbours, so we need to
+    //     //use the slower version of this.
+    //     int last_update = ion.last_update + 1;
+    //     update_sites(ion, last_update, dt);
+    // }
+    // else
     {
         update_site(ion, dt);
         for (int i = 0; i < ion.near; i++)
         {
-            Site &s = *ion.near_sites[i];
-            update_site(s, dt);
+            Site *s = ion.near_sites[i];
+            update_site(*s, dt);
         }
     }
 }
