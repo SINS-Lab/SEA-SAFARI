@@ -139,6 +139,7 @@ void init_potentials()
 
 double interp_r(double r, double *arr)
 {
+    if(r >= r_max) return 0;
     //Index for before r
     int i_bef = (int)(r/dr_min);
     //Index for after r
@@ -169,7 +170,7 @@ double dVr_dr(double r, int n)
 
 double L_J_dV_dr(double r, int a, int b)
 {
-    if(dr_min == 0) return L_J_dV_dr(r, a, b);
+    if(dr_min == 0) return L_J_dV_dr_init(r, a, b);
     //TODO accound for b.
     return interp_r(r, L_J_dV_dr_cache[a-1]);
 }
