@@ -51,17 +51,17 @@ int main(int argc, char *argv[])
         }
         else
         {
-            std::cout << "Error opening Safari.input" << '\n';
+            std::cout << "Error opening Safari.input\n";
             exit(EXIT_FAILURE);
         }
         // Add the safio file to the arguments.
         args["-i"] = safio_file;
     }
 
-    std::cout << "Loading Info From: " << safio_file + ".input" << '\n';
+    std::cout << "Loading Info From: " << safio_file + ".input\n";
     // Load the input file
     settings.load(args);
-    debug_file << "Loaded Settings, Initializing Potentials and Temperatures" << '\n';
+    debug_file << "Loaded Settings, Initializing Potentials and Temperatures\n";
 
     // Initialize potentials
     init_potentials();
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     // Initialize temperatures
     init_temps();
 
-    debug_file << "Initialized Potentials, Building Lattice" << '\n';
+    debug_file << "Initialized Potentials, Building Lattice\n";
 
     char buffer[200];
 
@@ -83,8 +83,8 @@ int main(int argc, char *argv[])
         input.open(crys_in_file);
         lattice.load_lattice(input);
         input.close();
-        debug_file << "Lattice loaded" << '\n';
-        std::cout << "Lattice loaded" << '\n';
+        debug_file << "Lattice loaded\n";
+        std::cout << "Lattice loaded\n";
     }
     else
     {
@@ -117,8 +117,8 @@ int main(int argc, char *argv[])
 
     std::ofstream crys_xyz_file;
     crys_xyz_file.open(settings.output_name + ".crys.xyz");
-    debug_file << "Printing Lattice" << '\n';
-    std::cout << "Printing Lattice" << '\n';
+    debug_file << "Printing Lattice\n";
+    std::cout << "Printing Lattice\n";
     int num = lattice.sites.size();
     crys_xyz_file << num << "\n\n";
     for (int i = 0; i < num; i++)
@@ -155,12 +155,12 @@ int main(int argc, char *argv[])
         // this will never be a valid choice for this, at least until
         // computers get many, many orders of magnitude better, when
         // that happens, here is where this needs to be changed!
-        if (settings.SCAT_TYPE < 100 && settings.SCAT_TYPE)
+        if (settings.SCAT_TYPE < 100 && settings.NUMCHA != 1)
         {
             // Otherwise this is an adaptive scat, with arguments of
             // the maximum depth to persue.
-            debug_file << "Running Adaptive Grid " << std::endl;
-            std::cout << "Running Adaptive Grid " << std::endl;
+            debug_file << "Running Adaptive Grid\n";
+            std::cout << "Running Adaptive Grid\n";
 
             default_detector.theta = settings.detect_parameters[0];
             default_detector.dtheta = settings.detect_parameters[1];
@@ -216,14 +216,14 @@ int main(int argc, char *argv[])
             std::default_random_engine rng;
             //Initialize the RNG
             rng.seed(make_seed(settings.SEED));
-            for(int i = 0; i<THREADCOUNT; i++)
+            for (int i = 0; i < THREADCOUNT; i++)
             {
                 seeds[i] = frand(rng);
             }
             int ions_per_thread = settings.NUMCHA / THREADCOUNT;
 
             #pragma omp parallel for num_threads(THREADCOUNT)
-            for(int i = 0; i<THREADCOUNT; i++)
+            for (int i = 0; i < THREADCOUNT; i++)
             {
                 int start = i * ions_per_thread;
                 //Copy the lattice
@@ -260,13 +260,13 @@ int main(int argc, char *argv[])
 
         std::cout << "\nFinished Running " << safio_file << "\n"
                   << std::endl;
-        std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
+        std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
         debug_file << "\nTotal number particles: " << n << std::endl;
-        debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms" << std::endl;
+        debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
         // End final timer.
         dt = (clock() - load) / CLOCKS_PER_SEC;
-        std::cout << "Total Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
-        debug_file << "\nTotal Runtime: " << std::setprecision(4) << dt << "s" << std::endl;
+        std::cout << "Total Runtime: " << std::setprecision(4) << dt << "s\n";
+        debug_file << "\nTotal Runtime: " << std::setprecision(4) << dt << "s\n";
     }
     else
     {
@@ -299,8 +299,8 @@ int main(int argc, char *argv[])
         }
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;
-        std::cout << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
-        debug_file << "Finished Running Tests, Time taken: " << dt << "s" << std::endl;
+        std::cout << "Finished Running Tests, Time taken: " << dt << "s\n";
+        debug_file << "Finished Running Tests, Time taken: " << dt << "s\n";
     }
 
     // Close files.
@@ -312,9 +312,9 @@ int main(int argc, char *argv[])
 
 void exit_fail(std::string reason)
 {
-    std::cout << "Exiting Early, for reason:" << std::endl;
+    std::cout << "Exiting Early, for reason:\n";
     std::cout << reason << std::endl;
-    debug_file << "Exiting Early, for reason:" << std::endl;
+    debug_file << "Exiting Early, for reason:\n";
     debug_file << reason << std::endl;
 
     // Close files.

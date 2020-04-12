@@ -400,7 +400,7 @@ start:
                        << " " << stuck
                        << " " << left
                        << " " << off_edge
-                       << std::endl;
+                       << "\n";
         goto end;
     }
 
@@ -430,10 +430,6 @@ start:
         //cause major discontinuities later
         if (change >= 2)
             change = 2;
-        //If timestep tries to speed up between 1 and 2 times,
-        //just leave it where it is.
-        // if (change > 1 && change < 2)
-        //     change = 1;
 
         //Large change in energy, try to reduce timestep.
         if (change < .2 && dt > dt_low)
@@ -444,7 +440,7 @@ start:
                 dt = dt_low;
             if (log)
             {
-                debug_file << "change_down: " << change << std::endl;
+                debug_file << "change_down: " << change << "\n";
             }
             //Reset the last index the ion saw,
             //this forces a re-check of nearby atoms
