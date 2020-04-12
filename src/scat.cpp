@@ -71,9 +71,11 @@ void gridscat(Lattice *lattice, int *num)
         //guarentee that any thermal effects can be repeated.
         if (settings.SCAT_TYPE)
         {
-            std::cout << "Single Shot Partial Lattice Mode " << std::endl;
+            Lattice *initial = new Lattice(*lattice);
+            std::cout << "Single Shot Partial Lattice Mode\n";
             //Dry run to find bounds of operation
-            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
+            fire(initial, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
+            delete initial;
 
             //Set min bounds from ion positions
             lattice->xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
@@ -96,29 +98,29 @@ void gridscat(Lattice *lattice, int *num)
             lattice->xyz_bounds[1] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 - dr;
             lattice->xyz_bounds[4] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 + dr;
 
-            //Reset each site in the lattice->
-            for (std::pair<int, Cell *> val : lattice->cell_map)
-            {
-                for (int i = 0; i < val.second->num; i++)
-                {
-                    val.second->sites[i]->reset();
-                }
-            }
+            std::cout << "Single Shot Pass 2\n";
+
             //Run to output the xyz file
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, false, true);
         }
         else
         {
-            std::cout << "Single Shot Full Lattice Mode " << std::endl;
+            std::cout << "Single Shot Full Lattice Mode\n";
             //Fire, log entire lattice, and also output xyz at once
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
         }
+        if (ion.r[2] < settings.Z1)
+        {
+            std::cout << "Ion buried!\n";
+        }
+        else
+            std::cout << "Ion Escaped!\n";
         n++;
     }
     else
     {
-        for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
-            for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
+        for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
+            for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
             {
                 Ion ion;
                 if (fire(lattice, ion, x, y, n, false, false))
@@ -177,11 +179,12 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
 {
     if (current_depth > max_depth)
         return;
+    bool print = iter == 0 and current_depth == 0;
     bool log = false;
     bool xyz = false;
     int d = current_depth + 1;
-    for (double x = xstart; x <= xstop; x += xstep)
-        for (double y = ystart; y <= ystop; y += ystep)
+    for (double y = ystart; y <= ystop; y += ystep)
+        for (double x = xstart; x <= xstop; x += xstep)
         {
             if (lattice->mask.inside(x, y))
             {
@@ -195,6 +198,13 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                 *num = *num + 1;
                 if (ion.index)
                 {
+                    if (print)
+                    {
+                        if ((x + xstep) > xstop)
+                            std::cout << "\x1B[32mx\x1B[0m\n";
+                        else
+                            std::cout << "\x1B[32mx\x1B[0m";
+                    }
                     //Do a higher resolution scan around the ion.
                     double dx = xstep / 2;
                     double dy = ystep / 2;
@@ -207,10 +217,24 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                                      lattice, detector,
                                      max_depth, d, num, index, iter);
                 }
+                else if (print)
+                {
+                    if ((x + xstep) > xstop)
+                        std::cout << "\x1B[31mo\x1B[0m\n";
+                    else
+                        std::cout << "\x1B[31mo\x1B[0m";
+                }
             }
             else
             {
                 lattice->out_of_mask++;
+                if (print)
+                {
+                    if ((x + xstep) > xstop)
+                        std::cout << "\x1B[30m.\x1B[0m\n";
+                    else
+                        std::cout << "\x1B[30m.\x1B[0m";
+                }
             }
         }
 }
