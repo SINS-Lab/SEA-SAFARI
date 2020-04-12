@@ -102,16 +102,27 @@ void predict_site_location(Site &s, double dt)
 
 void apply_hameq(Ion &ion, Lattice *lattice, double dt)
 {
-    // if (!settings.useEinsteinSprings)
-    // {
-    //     //If we are using better correlations,
-    //     //then we need to update more than just
-    //     //the immediate neighbours, so we need to
-    //     //use the slower version of this.
-    //     int last_update = ion.last_update + 1;
-    //     update_sites(ion, last_update, dt);
-    // }
-    // else
+    if (!settings.useEinsteinSprings)
+    {
+        update_site(ion, dt);
+        for (int i = 0; i < ion.near; i++)
+        {
+            Site *s = ion.near_sites[i];
+            update_site(*s, dt);
+            s->last_update = ion.steps;
+            if (!settings.rigidBounds)
+                for (int j = 0; j < s->near; j++)
+                {
+                    Site *s2 = s->near_sites[j];
+                    if (s2->last_update != ion.steps)
+                    {
+                        update_site(*s2, dt);
+                    }
+                    s2->last_update = ion.steps;
+                }
+        }
+    }
+    else
     {
         update_site(ion, dt);
         for (int i = 0; i < ion.near; i++)
@@ -195,9 +206,9 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
 void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr_max)
 {
     //Some useful variables.
-    double dx = 0, dy = 0, dz = 0,    // These for general distances
-           dx1 = 0, dy1 = 0, dz1 = 0, // This set for lattice correlation stuff
-           rr = 0, r = 0;             // General seperations
+    double dx = 0, dy = 0, dz = 0, // These for general distances
+        dx1 = 0, dy1 = 0, dz1 = 0, // This set for lattice correlation stuff
+        rr = 0, r = 0;             // General seperations
 
     //Lattice atom coordintates.
     double ax = 0, ay = 0, az = 0;
@@ -323,10 +334,8 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     double *F_at2;
                     double *r2;
 
-                    bool moved = (dx*dx + dy*dy + dz*dz) > 0.1;
-
                     //Use atomk as k for springs between nearest sites, or lennard jones potentials
-                    if(moved) for (int j = 0; j < s->near; j++)
+                    for (int j = 0; j < s->near; j++)
                     {
                         Site *s2 = s->near_sites[j];
 
@@ -364,7 +373,8 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                         rr = dx * dx + dy * dy + dz * dz;
 
                         // Only consider correlations actually in range.
-                        if(rr > settings.rr_max) continue;
+                        if (rr > settings.rr_max)
+                            continue;
 
                         //This will be the magnitude of the force.
                         double dV_dr = 0;
