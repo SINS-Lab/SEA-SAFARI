@@ -1,4 +1,5 @@
 # This is a sample input file for Sea-Safari.
+# This input file is set up for an adaptive grid run
 # Lines starting with # are comment lines, otherwise
 # All lines must follow the order found here,
 # blank lines are ignored also.
@@ -18,12 +19,17 @@
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
 #
-50.0 45.0 0.00 132.9 Cs
+250.0 45.0 0.00 22.989 Na
 
-# Detector Limits:
+# Most of these are currently unused at present
 # EMIN,EMAX,ERES,ARES
 #
-0.5 50 0.5 0.5
+# EMIN - anything below this will not count as a hit in the detector
+# ERES - if not 0, will "thermalize" the ion as well (not currently implememnted)
+# EMAX - unused
+# ARES - unused
+#
+0.5 250 2.5 0.5
 
 # Detector Type and optional cull flag
 #  <type> <cull flag|optional>
@@ -40,13 +46,18 @@
 
 # Detector parameters, the number of these depends on Detector Type
 #
-#  Currently these are not implemented, but 4 are required
-45.0 10.0 10.0
+# Currently, only 1 detector is implemented, it takes the arugments 
+# in the following order:
+#
+# Detector Theta, Theta size, Phi size
+#
+# This is also only used during adaptive grid
+45.0 10 10.0
 
 # Integration Parameters
 # time steps
 #
-1e-03 10.0
+1e-08 10.0
 #
 # Error parameters
 #
@@ -83,10 +94,15 @@ t
 # max distance to search, threshold for failing due to energy change
 # Max distance is in "cells", each of which is roughly 5 angstroms across
 #
-2 500
+# The energy change error for each hit is listed in the data file, this
+# can be used to determine a good value for this second parameter
+#
+2 100
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
+#
+# This value is the number of thermal iterations for this run
 #
 10
 
@@ -95,12 +111,16 @@ t
 # will run from xmin, ymin to xmax, ymax, with the above
 # number of trajectories.
 #
-# x:(min, step, max)
+# Any values after this, will be applied as a mask for the surface
+# These values should be the coordinates of the corners of a polygon
+# In a closed order for that polygon.
 #
-0 0.005 3.6147
-# y:(min, step, max)
+# x:(min, step, max) (Optional polygon)
 #
-0 0.005 3.6147
+0 0.040786 4.0786
+# y:(min, step, max) (Optional polygon)
+#
+0 0.040786 4.0786
 
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
@@ -117,10 +137,11 @@ t
 #   666 - Montecarlo - N Random shots in the range
 #   777 - Grid Scat - Shots in a grid, with the given steps
 #   888 - Chainscat - N shots in a line from min to max
+#  <100 - Adaptive Grid, with this value being the max depth
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 666
+666 2
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
@@ -128,7 +149,7 @@ t
 #
 # RAX, RAY
 #
-10.0 10.0
+5.0 5.0
 
 # These parameters are for the radial ion-atom potentials
 # The first number is how many parameters there are,
@@ -143,11 +164,22 @@ t
 #   [c] = eV
 #   [d] = 1/Angstrom
 #
-4 1 2
+# The third parameter is the type of inter-lattice forces to use
+#
+#   0 - default if not present, use einstien springs
+#   1 - Use springs between nearest neighbours
+#   2 - Use lennard Jones, in this case, 
+#       needs additional parameters after
+#       the 4 parameters below
+#
+4 1 0
 
 # The parameters for the potentials
 #
-644.061 3.971 1662 13.13 -0.415 2.277
+# If the interlattice force option is 2, there then needed
+# to be additional lennard jones parameters added after these
+#
+4153.6 3.625 27017.57 7.286
 
 # These parameters are for the image charge.
 # The first is how many parameters, the second is the type.
@@ -161,7 +193,7 @@ t
 #       1: z_min, potential is constant v_min below this.
 #       2: v_min, this is the minimum value for the potential
 #
-2 1
+2 0
 
 # The parameters for the image potential
 #
@@ -172,7 +204,7 @@ t
 # Seed is used for both temperature and Montecarlo mode.
 # Initial Ion Index allows repeating runs done on thermalized surfaces.
 #
-0.0 0.9436337324 1
+300.0 0.9436337324 1
 
 # This is a flag that controls whether image charge effects are included
 #
@@ -192,7 +224,7 @@ f
 #
 # These 3 values are AX, AY, AZ, the lattice constants for the basis.
 #
-3.6147 3.6147 3.6147
+4.0786 4.0786 4.0786
 
 # This line is how many sites are in the basis
 4
@@ -216,15 +248,26 @@ f
 # Atomic Mass, Atomic Number, Atomic Symbol
 # Spring Constants (kx, ky, kz)
 #
-63.546 29 Cu
+196.967 79 Au
 5.0 5.0 5.0
 
 # These control inter-atomic forces
-# The first parameter is a flag which controls whether the inter-atomic
-# forces are even applied. The second and third are currently unused,
-# They should enable correlations other than basic einstien springs.
+# 
+# Parameters:
+# 
+# 1. Whether interatomic forces occur at all.
 #
-t 0 0 2
+# 2. k factor for interatomic springs.
+#
+# 3. this is breaking condition for interatomic springs,
+#    if using einstien, this is value in eV for where they break
+#    for interatomic springs, this is scaled by 1/r^2 for the initial
+#    seperation of the lattice sites
+#
+# 4. Number of nearest neighbours to consider for interaction,
+#    This defaults to 1 if the argument is not present.
+#
+t 1.5 10 2
 
 # This line defines the surface face of the crystal to generate.
 # The first three parameters are nessisary, they are the 
@@ -249,4 +292,3 @@ t 0 0 2
 # These are only checked if they are not both 0
 # 
 0 0
-
