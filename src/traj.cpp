@@ -401,6 +401,10 @@ start:
                        << " " << left
                        << " " << off_edge
                        << "\n";
+        if (xyz)
+        {
+            log_xyz(ion, lattice, lattice_num, buffer);
+        }
         goto end;
     }
 
@@ -413,6 +417,10 @@ start:
     if (ion.Eerr_max > de_fail)
     {
         discont = true;
+        if (xyz)
+        {
+            log_xyz(ion, lattice, lattice_num, buffer);
+        }
         goto end;
     }
 
