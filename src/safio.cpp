@@ -225,8 +225,9 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                 lattice_potential_type = args.size() > 2 ? atoi(args[2].c_str()) : 0;
 
                 useEinsteinSprings = lattice_potential_type == 0;
-                useAtomSpings = lattice_potential_type == 1;
-                useLennardJones = lattice_potential_type == 2;
+                useAtomSpings = lattice_potential_type & 1;
+                useLennardJones = lattice_potential_type & 2;
+                rigidBounds = lattice_potential_type & 4;
             }
             if (n == 17)
             {

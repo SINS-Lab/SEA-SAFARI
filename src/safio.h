@@ -120,6 +120,7 @@ struct Safio
     bool useEinsteinSprings = true; // 0
     bool useAtomSpings = false;     // 1
     bool useLennardJones = false;   // 2
+    bool rigidBounds = false;       // 4
 
     // Image Potential Values
     int image_potential_type;
