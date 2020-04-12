@@ -441,6 +441,11 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                             dV_dr = -atomk * dl;
                         }
 
+                        // This is divided by 2, as the other site will also then apply this.
+                        // This should be removed if the code is updated so this is only
+                        // run once per site pair.
+                        dV_dr/=2;
+
                         //These are scaled by 1/r for conversion to
                         //the same coordinate system as the fmag was caluclated for
                         double dx_hat = dx1 / r;
