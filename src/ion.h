@@ -36,7 +36,7 @@ public:
         // In the parent class, this is left null, unless
         // lattice springs are used.
         // So for Ion, we initialize it at this size.
-        near_sites = new Site *[256];
+        near_sites = new Site *[MAX_NEAR];
     }
 
     ~Ion()

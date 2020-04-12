@@ -116,7 +116,7 @@ int fill_nearest(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int tar
                 site->near_sites[site->total_near] = s;
                 site->total_near++;
                 //If we have enough, goto end.
-                if (site->total_near > 255)
+                if (site->total_near >= MAX_NEAR)
                     goto end;
             }
         }

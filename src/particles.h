@@ -2,6 +2,8 @@
 #include "vec_math.h"
 #include <string>
 
+#define MAX_NEAR 2048
+
 struct Atom
 {
     double mass = 1;

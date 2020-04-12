@@ -66,8 +66,8 @@ void Lattice::build_lattice()
     // This adds some leeway to account for
     // floating point error in the matrix multiplications
     double zTop = settings.AZ * 0.1;
-    //Set the bottom of the slab to twice the buried distance
-    double zBottom = -settings.BDIST * 2;
+    //Set the bottom of the slab to buried distance plus some lattice constants
+    double zBottom = -settings.BDIST - 2 * settings.AZ;
     //Basis for the lattice.
     std::vector<Site> basis;
 
@@ -331,7 +331,7 @@ void Lattice::init_springs(int nearest)
             delete site->near_sites;
 
         //Initialize large for initial search
-        site->near_sites = new Site *[256];
+        site->near_sites = new Site *[MAX_NEAR];
 
         if (site->rest_near_sites != NULL)
         {
