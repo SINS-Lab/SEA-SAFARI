@@ -143,6 +143,8 @@ void chainscat(Lattice *lattice, int *num)
 
     double x, y;
     int n = 0;
+    int steps = settings.NUMCHA / 100;
+    steps = std::max(1, steps);
     for (n = 0; n < settings.NUMCHA; n++)
     {
         //Step in the line defined by dx, dy.
@@ -151,7 +153,12 @@ void chainscat(Lattice *lattice, int *num)
         Ion ion;
         //Fire at next point in the line.
         fire(lattice, ion, x, y, n, false, false);
+        if ((n % steps) == steps - 1)
+        {
+            std::cout << "\x1B[32mx\x1B[0m" << std::flush;
+        }
     }
+    std::cout << "\n";
     *num = n;
     return;
 }
@@ -201,9 +208,10 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                     if (print)
                     {
                         if ((x + xstep) > xstop)
-                            std::cout << "\x1B[32mx\x1B[0m\n";
+                            std::cout << "\x1B[32mx\x1B[0m\n"
+                                      << std::flush;
                         else
-                            std::cout << "\x1B[32mx\x1B[0m";
+                            std::cout << "\x1B[32mx\x1B[0m" << std::flush;
                     }
                     //Do a higher resolution scan around the ion.
                     double dx = xstep / 2;
@@ -220,9 +228,10 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                 else if (print)
                 {
                     if ((x + xstep) > xstop)
-                        std::cout << "\x1B[31mo\x1B[0m\n";
+                        std::cout << "\x1B[31mo\x1B[0m\n"
+                                  << std::flush;
                     else
-                        std::cout << "\x1B[31mo\x1B[0m";
+                        std::cout << "\x1B[31mo\x1B[0m" << std::flush;
                 }
             }
             else
@@ -231,9 +240,10 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                 if (print)
                 {
                     if ((x + xstep) > xstop)
-                        std::cout << "\x1B[30m.\x1B[0m\n";
+                        std::cout << "\x1B[30m.\x1B[0m\n"
+                                  << std::flush;
                     else
-                        std::cout << "\x1B[30m.\x1B[0m";
+                        std::cout << "\x1B[30m.\x1B[0m" << std::flush;
                 }
             }
         }
