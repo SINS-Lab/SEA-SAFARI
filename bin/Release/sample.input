@@ -77,7 +77,7 @@ t
 
 # Number of allowed integration steps before failing.
 #
-2000
+4000
 
 # These are search related, max distances and table steps
 #
