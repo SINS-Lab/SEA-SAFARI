@@ -4,6 +4,8 @@
  * signaling flags, such as printing rest of debug file on exit.
  */ 
 
+#define THREADCOUNT 5
+
 /**
  * This will call exit(EXIT_FAILURE),
  * after finishing the debug file, and printing
