@@ -10,15 +10,15 @@ class Cell
     int lastSize = -1;
 
 public:
-    //Sites in this current cell
+    // Sites in this current cell
     Site **sites = NULL;
-    //Number of sites in this cell
+    // Number of sites in this cell
     int num = 0;
-    //Index for this in hash map
+    // Index for this in hash map
     int pos_hash = -1;
-    //Used to check if this cell has been checked
+    // Used to check if this cell has been checked
     int check_stamp = -1;
-    //Used to check if this cell has been checked
+    // Used to check if this cell has been checked
     int ion_stamp = -1;
 
     Cell()
@@ -40,41 +40,48 @@ public:
 
 struct Lattice
 {
-    //All sites in the lattice,
-    //This is not actually used much.
+    // All sites in the lattice,
     std::vector<Site *> sites;
+    // the sites currently active for integration
+    std::vector<Site *> active_sites;
 
-    //All cells in the lattice, This is
-    //what is used for any lookups
+    // Variables for tracking active statistics
+    int max_active = 0;
+    long sum_active = 0;
+    int count_active = 0;
+
+    // All cells in the lattice, This is
+    // what is used for any lookups
     std::unordered_map<int, Cell *> cell_map;
 
     int id = 1;
 
-    //If relevant, this is used to determine
-    //the range of locations used for the
-    //xyz trajectories, the 6 entries are:
-    //x1,y1,z1,x2,y2,z2
-    //This is relevant if settings.SCAT_TYPE
+    // If relevant, this is used to determine
+    // the range of locations used for the
+    // xyz trajectories, the 6 entries are:
+    // x1,y1,z1,x2,y2,z2
+    // This is relevant if settings.SCAT_TYPE
     double xyz_bounds[6];
 
     Mask mask;
 
-    //Here we have some values which are recored as the run occurs.
-    //These are recorded to the debug file after the run is completed.
-    int undetectable_num = 0; //Code -5
-    int trapped_num = 0;      //Code -10
-    int stuck_num = 0;        //Code -100
-    int buried_num = 0;       //Code -200
-    int froze_num = 0;        //Code -300
-    int left_num = 0;         //Code -400
-    int err_num = 0;          //Code -500
-    int out_of_mask = 0;      //No code for this.
+    // Here we have some values which are recored as the run occurs.
+    // These are recorded to the debug file after the run is completed.
+    int undetectable_num = 0; // Code -5
+    int trapped_num = 0;      // Code -10
+    int stuck_num = 0;        // Code -100
+    int buried_num = 0;       // Code -200
+    int froze_num = 0;        // Code -300
+    int left_num = 0;         // Code -400
+    int err_num = 0;          // Code -500
+    int intersections = 0;    // Code -600
+    int out_of_mask = 0;      // No code for this.
 
-    //Default constructor
+    // Default constructor
     Lattice() {}
-    //Copy constructor
+    // Copy constructor
     Lattice(const Lattice &other);
-    //Destructor
+    // Destructor
     ~Lattice()
     {
         for (auto s : sites)
@@ -82,34 +89,39 @@ struct Lattice
         for (auto p : cell_map)
             delete p.second;
     }
-    //Constructs the lattice based on the settings
+    // Constructs the lattice based on the settings
     void build_lattice();
-    //Loads a lattice from the given input stream
+    // Loads a lattice from the given input stream
     void load_lattice(std::ifstream &input);
-    //Adds an atom of type a, at location x, y, z;
+    // Adds an atom of type a, at location x, y, z;
     void add_site(Atom *a, double x, double y, double z);
-    //Adds the given site to the lattice
+    // Adds the given site to the lattice
     void add_site(Site *site);
-    //Retrieves the cell for the given coordinates,
-    //NULL if no cell is found
+    // Retrieves the cell for the given coordinates,
+    // NULL if no cell is found
     Cell *get_cell(double x, double y, double z);
-    //Version that uses the hash directly
+    // Version that uses the hash directly
     Cell *get_cell(int pos_hash);
-    //Makes the cell for the given coordinate, if the
-    //cell already exists, it retrieves old one instead.
+    // Makes the cell for the given coordinate, if the
+    // cell already exists, it retrieves old one instead.
     Cell *make_cell(double x, double y, double z);
-    //Version that uses the hash directly
+    // Version that uses the hash directly
     Cell *make_cell(int pos_hash);
 
     void clear_stats()
     {
-        undetectable_num = 0; //Code -5
-        trapped_num = 0;      //Code -10
-        stuck_num = 0;        //Code -100
-        buried_num = 0;       //Code -200
-        froze_num = 0;        //Code -300
-        left_num = 0;         //Code -400
-        err_num = 0;          //Code -500
+        undetectable_num = 0; // Code -5
+        trapped_num = 0;      // Code -10
+        stuck_num = 0;        // Code -100
+        buried_num = 0;       // Code -200
+        froze_num = 0;        // Code -300
+        left_num = 0;         // Code -400
+        err_num = 0;          // Code -500
+        intersections = 0;    // Code -600
+
+        max_active = 0;
+        count_active = 0;
+        sum_active = 0;
     }
 
     void add_stats(Lattice *other)
@@ -122,6 +134,11 @@ struct Lattice
         left_num += other->left_num;
         err_num += other->err_num;
         out_of_mask += other->out_of_mask;
+        intersections += other->intersections;
+
+        max_active = std::max(max_active, other->max_active);
+        count_active += other->count_active;
+        sum_active += other->sum_active;
     }
 
     /**

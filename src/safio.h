@@ -121,6 +121,7 @@ struct Safio
     bool useAtomSpings = false;     // 1
     bool useLennardJones = false;   // 2
     bool rigidBounds = false;       // 4
+    bool dynamicNeighbours = false; // 8
 
     // Image Potential Values
     int image_potential_type;
@@ -235,6 +236,7 @@ struct Safio
      *      -i [inputfile] - same format that goes in safari.input, required
      *      -o [outputfile] - optional, uses input file value if not found.
      *      -t [temperature] - the temperature for this run
+     *      -n [number] - replaces the value for numcha
      *      -f - if present, will open crys and data files
      *      -s - Enables single shot mode (NUMCHA=1, SCAT_FLAG=666)
      *         -x [value] - sets x-start (if -s is present)

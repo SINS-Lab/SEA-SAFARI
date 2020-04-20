@@ -10,26 +10,34 @@
 class Ion : public Site
 {
 public:
-    //Charge of the ion
+    // Charge of the ion
     int q = 1;
-    //The initial energy of this ion
+    // The initial energy of this ion
     double E0 = 0;
 
-    //Number of traj steps done, note that this is not
-    //the same as the number of time steps, as this is
-    //incremented even if it reduces timestep and tries over.
+    // Number of traj steps done, note that this is not
+    // the same as the number of time steps, as this is
+    // incremented even if it reduces timestep and tries over.
     int steps = 0;
-    //Total flight time of the ion
+    // Total flight time of the ion
     double time = 0;
 
-    //This is a weighting factor for the ion's detectability.
+    // This is a weighting factor for the ion's detectability.
     double weight = 1;
 
-    //potential energy the particle is in.
+    // potential energy the particle is in.
     double V = 0;
 
     // Maximum integration error for this ion.
     double Eerr_max = 0;
+
+    // Number of times a site-site intersection occurs.
+    int site_site_intersects = 0;
+
+    // Used to track maximum number of active sites when in dynamic
+    // neighbour tracking mode.
+    int max_active = 0;
+    
 
     Ion()
     {

@@ -17,10 +17,10 @@ void findAndReplaceAll(std::string &data, std::string toSearch, std::string repl
     }
 }
 
-void Safio::load(std::map<std::string, ArgValue> &args)
+void Safio::load(std::map<std::string, ArgValue> &prog_args)
 {
-    //This should have been included to args if not originally present.
-    input_name = args["-i"].as_string();
+    //This should have been included to prog_args if not originally present.
+    input_name = prog_args["-i"].as_string();
     output_name = input_name;
 
     settings = *this;
@@ -30,15 +30,15 @@ void Safio::load(std::map<std::string, ArgValue> &args)
 
     //check if we have alternate output file name
     //All other streams after this will use the output file name instead.
-    if (args["-o"])
+    if (prog_args["-o"])
     {
-        output_name = args["-o"].as_string();
+        output_name = prog_args["-o"].as_string();
     }
     std::cout << "Output files: " << output_name << std::endl;
 
     //Only open these if flagged,
     //this allows modules to use safio, but not open the files
-    if (args["-f"])
+    if (prog_args["-f"])
     {
         filename = output_name + ".data";
         out_file.open(filename);
@@ -51,7 +51,7 @@ void Safio::load(std::map<std::string, ArgValue> &args)
     filename = output_name + ".dbug";
     debug_file.open(filename);
     //This one needs to specify the old file name.
-    debug_file << "Loading Info From: " << args["-i"].as_string() << "\n\n";
+    debug_file << "Loading Info From: " << prog_args["-i"].as_string() << "\n\n";
 
     //Number of parameters for potentials.
     //This is used to know how many values to look for in a line
@@ -87,15 +87,15 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             debug_file << line << '\n';
 
             //Splits line for parsing.
-            std::vector<std::string> args = split(line);
+            std::vector<std::string> line_args = split(line);
 
             if (n == 1)
             {
-                E0 = atof(args[0].c_str());
-                THETA0 = atof(args[1].c_str());
-                PHI0 = atof(args[2].c_str());
-                MASS = atof(args[3].c_str());
-                SYMION = &args[4][0];
+                E0 = atof(line_args[0].c_str());
+                THETA0 = atof(line_args[1].c_str());
+                PHI0 = atof(line_args[2].c_str());
+                MASS = atof(line_args[3].c_str());
+                SYMION = &line_args[4][0];
 
                 //initialize the atom for this ion.
                 ion.mass = MASS;
@@ -111,65 +111,65 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             }
             if (n == 2)
             {
-                EMIN = atof(args[0].c_str());
-                EMAX = atof(args[1].c_str());
-                ESIZE = atof(args[2].c_str());
-                ASIZE = atof(args[3].c_str());
+                EMIN = atof(line_args[0].c_str());
+                EMAX = atof(line_args[1].c_str());
+                ESIZE = atof(line_args[2].c_str());
+                ASIZE = atof(line_args[3].c_str());
             }
             if (n == 3)
             {
-                detector_type = atoi(args[0].c_str());
-                if (args.size() > 1 && args[1] == "f")
+                detector_type = atoi(line_args[0].c_str());
+                if (line_args.size() > 1 && line_args[1] == "f")
                     save_errored = false;
             }
             if (n == 4)
             {
-                detect_parameters = to_double_array(args, 0, args.size() - 1);
+                detect_parameters = to_double_array(line_args, 0, line_args.size() - 1);
             }
             if (n == 5)
             {
-                DELLOW = atof(args[0].c_str());
-                DELT0 = atof(args[1].c_str());
+                DELLOW = atof(line_args[0].c_str());
+                DELT0 = atof(line_args[1].c_str());
             }
             if (n == 6)
             {
-                error_exponent = atof(args[0].c_str());
-                DEMIN = atof(args[1].c_str());
-                error_scale = atof(args[2].c_str());
+                error_exponent = atof(line_args[0].c_str());
+                DEMIN = atof(line_args[1].c_str());
+                error_scale = atof(line_args[2].c_str());
             }
             if (n == 7)
             {
-                NPART = atoi(args[0].c_str());
+                NPART = atoi(line_args[0].c_str());
             }
             if (n == 8)
             {
-                RECOIL = args[0] == "t";
+                RECOIL = line_args[0] == "t";
             }
             if (n == 9)
             {
-                Z1 = atof(args[0].c_str());
+                Z1 = atof(line_args[0].c_str());
             }
             if (n == 10)
             {
-                MAX_STEPS = atoi(args[0].c_str());
+                MAX_STEPS = atoi(line_args[0].c_str());
             }
             if (n == 11)
             {
-                R_MAX = atof(args[0].c_str());
+                R_MAX = atof(line_args[0].c_str());
                 rr_max = R_MAX * R_MAX;
-                DR_MIN_TAB = atof(args[1].c_str());
+                DR_MIN_TAB = atof(line_args[1].c_str());
             }
             if (n == 12)
             {
-                ZMIN = atof(args[0].c_str());
-                ZSTEP = atof(args[1].c_str());
+                ZMIN = atof(line_args[0].c_str());
+                ZSTEP = atof(line_args[1].c_str());
             }
             if (n == 13)
             {
                 if (o <= 0)
                 {
-                    DIST_SEARCH = atoi(args[0].c_str());
-                    FAILED_DE = atoi(args[1].c_str());
+                    DIST_SEARCH = atoi(line_args[0].c_str());
+                    FAILED_DE = atoi(line_args[1].c_str());
 
                     //Since we re-purposed the above, we always
                     //have the 4 successive arguments.
@@ -179,70 +179,72 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                 {
                     if (o == 3)
                     {
-                        NUMCHA = atoi(args[0].c_str());
+                        NUMCHA = atoi(line_args[0].c_str());
                     }
                     else if (o == 2)
                     {
-                        XSTART = atof(args[0].c_str());
-                        XSTEP = atof(args[1].c_str());
-                        XSTOP = atof(args[2].c_str());
+                        XSTART = atof(line_args[0].c_str());
+                        XSTEP = atof(line_args[1].c_str());
+                        XSTOP = atof(line_args[2].c_str());
 
-                        if (args.size() > 3)
+                        if (line_args.size() > 3)
                         {
-                            x_mask_points = to_double_array(args, 3, args.size() - 1);
-                            n_x_mask = args.size() - 4;
+                            x_mask_points = to_double_array(line_args, 3, line_args.size() - 1);
+                            n_x_mask = line_args.size() - 4;
                         }
                     }
                     else if (o == 1)
                     {
-                        YSTART = atof(args[0].c_str());
-                        YSTEP = atof(args[1].c_str());
-                        YSTOP = atof(args[2].c_str());
+                        YSTART = atof(line_args[0].c_str());
+                        YSTEP = atof(line_args[1].c_str());
+                        YSTOP = atof(line_args[2].c_str());
 
-                        if (args.size() > 3)
+                        if (line_args.size() > 3)
                         {
-                            y_mask_points = to_double_array(args, 3, args.size() - 1);
-                            n_y_mask = args.size() - 4;
+                            y_mask_points = to_double_array(line_args, 3, line_args.size() - 1);
+                            n_y_mask = line_args.size() - 4;
                         }
                     }
                 }
             }
             if (n == 14)
             {
-                SCAT_FLAG = atoi(args[0].c_str());
-                SCAT_TYPE = atoi(args[1].c_str());
+                SCAT_FLAG = atoi(line_args[0].c_str());
+                SCAT_TYPE = atoi(line_args[1].c_str());
             }
             if (n == 15)
             {
-                RAX = atof(args[0].c_str());
-                RAY = atof(args[1].c_str());
+                RAX = atof(line_args[0].c_str());
+                RAY = atof(line_args[1].c_str());
             }
             if (n == 16)
             {
-                npar = atoi(args[0].c_str());
-                binary_potential_type = atoi(args[1].c_str());
+                npar = atoi(line_args[0].c_str());
+                binary_potential_type = atoi(line_args[1].c_str());
                 lattice_potential_start = npar;
-                lattice_potential_type = args.size() > 2 ? atoi(args[2].c_str()) : 0;
-
+                lattice_potential_type = line_args.size() > 2 ? atoi(line_args[2].c_str()) : 0;
+                if (prog_args["--latflag"])
+                    lattice_potential_type = prog_args["--latflag"].as_int();
                 useEinsteinSprings = lattice_potential_type == 0;
                 useAtomSpings = lattice_potential_type & 1;
                 useLennardJones = lattice_potential_type & 2;
                 rigidBounds = lattice_potential_type & 4;
+                dynamicNeighbours = lattice_potential_type & 8;
             }
             if (n == 17)
             {
-                binary_potential_parameters = to_double_array(args, 0, args.size() - 1);
+                binary_potential_parameters = to_double_array(line_args, 0, line_args.size() - 1);
             }
             if (n == 18)
             {
-                npar = atoi(args[0].c_str());
-                image_potential_type = atoi(args[1].c_str());
+                npar = atoi(line_args[0].c_str());
+                image_potential_type = atoi(line_args[1].c_str());
             }
             if (n == 19)
             {
                 if (o <= 0)
                 {
-                    image_parameters = to_double_array(args, 0, npar - 1);
+                    image_parameters = to_double_array(line_args, 0, npar - 1);
                     //If this is the case, we have more arguments
                     if (image_potential_type == 2)
                     {
@@ -254,67 +256,67 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                 {
                     if (o == 6)
                     {
-                        NBZ = atoi(args[0].c_str());
-                        TOL = atof(args[1].c_str());
+                        NBZ = atoi(line_args[0].c_str());
+                        TOL = atof(line_args[1].c_str());
                     }
                     else if (o == 5)
                     {
-                        ZMAX = to_double_array(args, 0, NBZ - 1);
+                        ZMAX = to_double_array(line_args, 0, NBZ - 1);
                     }
                     else if (o == 4)
                     {
-                        NZ = to_double_array(args, 0, NBZ - 1);
+                        NZ = to_double_array(line_args, 0, NBZ - 1);
                     }
                     else if (o == 3)
                     {
-                        NBG = atoi(args[0].c_str());
-                        GTOL = atof(args[1].c_str());
+                        NBG = atoi(line_args[0].c_str());
+                        GTOL = atof(line_args[1].c_str());
                     }
                     else if (o == 2)
                     {
-                        GMAX = to_double_array(args, 0, NBG - 1);
+                        GMAX = to_double_array(line_args, 0, NBG - 1);
                     }
                     else if (o == 1)
                     {
-                        NG = to_double_array(args, 0, NBG - 1);
+                        NG = to_double_array(line_args, 0, NBG - 1);
                     }
                 }
             }
             if (n == 20)
             {
-                TEMP = atof(args[0].c_str());
-                SEED = atof(args[1].c_str());
-                ion_index = atoi(args[2].c_str());
+                TEMP = atof(line_args[0].c_str());
+                SEED = atof(line_args[1].c_str());
+                ion_index = atoi(line_args[2].c_str());
             }
             if (n == 21)
             {
-                use_image = args[0] == "t";
+                use_image = line_args[0] == "t";
             }
             if (n == 22)
             {
-                SENRGY = atof(args[0].c_str());
-                BDIST = atof(args[1].c_str());
+                SENRGY = atof(line_args[0].c_str());
+                BDIST = atof(line_args[1].c_str());
             }
             if (n == 23)
             {
-                AX = atof(args[0].c_str());
-                AY = atof(args[1].c_str());
-                AZ = atof(args[2].c_str());
+                AX = atof(line_args[0].c_str());
+                AY = atof(line_args[1].c_str());
+                AZ = atof(line_args[2].c_str());
             }
             if (n == 24)
             {
                 if (o <= 0)
                 {
-                    NBASIS = atoi(args[0].c_str());
+                    NBASIS = atoi(line_args[0].c_str());
                     o = NBASIS + 1;
                 }
                 else
                 {
                     Site s;
-                    s.r_0[0] = atof(args[0].c_str());
-                    s.r_0[1] = atof(args[1].c_str());
-                    s.r_0[2] = atof(args[2].c_str());
-                    s.index = atoi(args[3].c_str());
+                    s.r_0[0] = atof(line_args[0].c_str());
+                    s.r_0[1] = atof(line_args[1].c_str());
+                    s.r_0[2] = atof(line_args[2].c_str());
+                    s.index = atoi(line_args[3].c_str());
                     BASIS.push_back(s);
                 }
             }
@@ -322,7 +324,7 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             {
                 if (o <= 0)
                 {
-                    NTYPES = atoi(args[0].c_str());
+                    NTYPES = atoi(line_args[0].c_str());
                     o = NTYPES * 2 + 1;
                 }
                 else
@@ -330,35 +332,35 @@ void Safio::load(std::map<std::string, ArgValue> &args)
                     if (o % 2 == 0)
                     {
                         Atom a;
-                        a.mass = atof(args[0].c_str());
-                        a.charge = atof(args[1].c_str());
-                        a.symbol = args[2];
+                        a.mass = atof(line_args[0].c_str());
+                        a.charge = atof(line_args[1].c_str());
+                        a.symbol = line_args[2];
                         a.index = o / 2;
                         ATOMS.push_back(a);
                     }
                     else
                     {
                         Atom &a = ATOMS.back();
-                        a.spring[0] = atof(args[0].c_str());
-                        a.spring[1] = atof(args[1].c_str());
-                        a.spring[2] = atof(args[2].c_str());
+                        a.spring[0] = atof(line_args[0].c_str());
+                        a.spring[1] = atof(line_args[1].c_str());
+                        a.spring[2] = atof(line_args[2].c_str());
                     }
                 }
             }
             if (n == 26)
             {
-                CORR = args[0] == "t";
-                ATOMK = atof(args[1].c_str());
-                max_spring_V = atof(args[2].c_str());
-                neighbour_count = args.size() > 3 ? atoi(args[3].c_str()) : 1;
+                CORR = line_args[0] == "t";
+                ATOMK = atof(line_args[1].c_str());
+                max_spring_V = atof(line_args[2].c_str());
+                neighbour_count = line_args.size() > 3 ? atoi(line_args[3].c_str()) : 1;
             }
             if (n == 27)
             {
-                face = to_double_array(args, 0, 2);
-                load_crystal = args.size() > 3 and args[3] == "t";
+                face = to_double_array(line_args, 0, 2);
+                load_crystal = line_args.size() > 3 and line_args[3] == "t";
                 if (load_crystal)
                 {
-                    loaded_face = to_double_array(args, 4, 6);
+                    loaded_face = to_double_array(line_args, 4, 6);
                 }
                 else
                 {
@@ -371,8 +373,8 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             }
             if (n == 28)
             {
-                F_a = atof(args[0].c_str());
-                F_b = atof(args[1].c_str());
+                F_a = atof(line_args[0].c_str());
+                F_b = atof(line_args[1].c_str());
             }
             // Decrement our sub-line first.
             o--;
@@ -387,31 +389,36 @@ void Safio::load(std::map<std::string, ArgValue> &args)
             BASIS[i].atom = &ATOMS[BASIS[i].index - 1];
         }
 
-        if (args["-t"])
+        if (prog_args["-n"])
         {
-            TEMP = args["-t"].as_double();
+            NUMCHA = prog_args["-n"].as_int();
+        }
+
+        if (prog_args["-t"])
+        {
+            TEMP = prog_args["-t"].as_double();
             debug_file << "Override of Temperature: " << TEMP << '\n';
         }
 
         //check arguments for specifically enabling single-shot mode
-        if (args["-s"].as_bool())
+        if (prog_args["-s"].as_bool())
         {
             NUMCHA = 1;
             SCAT_FLAG = 666;
             if (SCAT_TYPE)
                 SCAT_TYPE = 666;
             //Set x-start
-            if (args["-x"])
+            if (prog_args["-x"])
             {
-                XSTART = args["-x"].as_double();
+                XSTART = prog_args["-x"].as_double();
             }
             //Set y-start
-            if (args["-y"])
+            if (prog_args["-y"])
             {
-                YSTART = args["-y"].as_double();
+                YSTART = prog_args["-y"].as_double();
             }
             //If this is true, it will output only nearish to xyz
-            SCAT_TYPE = args["-r"].as_bool();
+            SCAT_TYPE = prog_args["-r"].as_bool();
 
             debug_file << "After commandline args: " << '\n';
             debug_file << "NUMCHA: " << NUMCHA << '\n';
