@@ -15,8 +15,8 @@ public:
 
     bool hit(double E, double theta_in, double phi_in)
     {
-        //These are originally in -180 to 180 range,
-        //+360 shift allows easier comparisons without edge cases.
+        // These are originally in -180 to 180 range,
+        // +360 shift allows easier comparisons without edge cases.
         double test = phi_in + 360;
         double ref = phi + 360;
         double diff_phi = fabs(test - ref);
@@ -27,8 +27,8 @@ public:
     void log(Ion &ion, Lattice *lattice, double E, double theta, double phi)
     {
         bool did_hit = E > -10;
-        //Detectors should generally be 1 degree resolution,
-        //A difference of 10 is far outside the allowed range.
+        // Detectors should generally be 1 degree resolution,
+        // A difference of 10 is far outside the allowed range.
         if (did_hit && !hit(E, theta, phi))
         {
             theta = 0;
@@ -43,17 +43,17 @@ public:
              * This uses the default saving behaviour
              */
             char buffer[200];
-            //first stuff it in the buffer
+            // first stuff it in the buffer
             sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
                     ion.r_0[0], ion.r_0[1], ion.r_0[2],
                     E, theta, phi,
                     ion.index, ion.weight,
                     ion.max_n, ion.r_min, ion.steps,
                     ion.Eerr_max, ion.time);
-            //Then save it
-            out_file << buffer;
+            // Then save it
+            out_file << buffer << std::flush;
         }
-        //We use this as a after saving.
+        // We use this as a after saving.
         ion.index = did_hit;
     }
 };

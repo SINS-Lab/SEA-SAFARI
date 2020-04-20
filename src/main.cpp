@@ -13,8 +13,6 @@
 #include "temps.h"        /* These are also initialized */
 #include "safari.h"       /* This includes the exit_fail function*/
 
-#define THREADCOUNT 5
-
 // Initialize the global variables.
 Safio settings;
 std::ofstream out_file;
@@ -110,8 +108,8 @@ int main(int argc, char *argv[])
             point.y = settings.y_mask_points[i];
             lattice.mask.points[i] = point;
         }
-        debug_file << settings.n_y_mask << std::endl;
-        std::cout << settings.n_y_mask << std::endl;
+        debug_file << settings.n_y_mask << "\n";
+        std::cout << settings.n_y_mask << "\n";
         lattice.mask.num = settings.n_y_mask;
     }
 
@@ -197,20 +195,26 @@ int main(int argc, char *argv[])
         {
             if (settings.NUMCHA == 1)
             {
-                debug_file << "Running Single Shot" << std::endl;
-                std::cout << "Running Single Shot" << std::endl;
+                debug_file << "Running Single Shot"
+                           << "\n";
+                std::cout << "Running Single Shot"
+                          << "\n";
             }
             else
             {
-                debug_file << "Running Grid Scat" << std::endl;
-                std::cout << "Running Grid Scat " << std::endl;
+                debug_file << "Running Grid Scat"
+                           << "\n";
+                std::cout << "Running Grid Scat "
+                          << "\n";
             }
             gridscat(&lattice, &n);
         }
         else if (settings.SCAT_TYPE == 666)
         {
-            debug_file << "Running Montecarlo " << std::endl;
-            std::cout << "Running Montecarlo " << std::endl;
+            debug_file << "Running Montecarlo "
+                       << "\n";
+            std::cout << "Running Montecarlo "
+                      << "\n";
 
             double seeds[THREADCOUNT];
             std::default_random_engine rng;
@@ -228,29 +232,40 @@ int main(int argc, char *argv[])
                 int start = i * ions_per_thread;
                 //Copy the lattice
                 Lattice *toUse = new Lattice(lattice);
-                std::cout << "Starting Thread " << i << std::endl;
+                std::cout << "Starting Thread " << i << "\n";
                 toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
-                std::cout << "Finished Thread " << i << std::endl;
+                std::cout << "Finished Thread " << i << "\n";
                 delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;
         }
         else if (settings.SCAT_TYPE == 888)
         {
+            debug_file << "Running Chainscat"
+                       << "\n";
+            std::cout << "Running Chainscat"
+                      << "\n";
             chainscat(&lattice, &n);
         }
 
         // Log some debug info from the lattice
-        debug_file << "Total Out of Phi(-5): " << lattice.undetectable_num << std::endl;
-        debug_file << "Total Trapped  (-10): " << lattice.trapped_num << std::endl;
-        debug_file << "Total Stuck   (-100): " << lattice.stuck_num << std::endl;
-        debug_file << "Total Buried  (-200): " << lattice.buried_num << std::endl;
-        debug_file << "Total Froze   (-300): " << lattice.froze_num << std::endl;
-        debug_file << "Total OOB     (-400): " << lattice.left_num << std::endl;
-        debug_file << "Total Errored (-500): " << lattice.err_num << std::endl;
-        debug_file << "Total Out of Mask: " << lattice.out_of_mask << std::endl;
+        debug_file << "Total Out of Phi  (-5): " << lattice.undetectable_num << "\n";
+        debug_file << "Total Trapped     (-10): " << lattice.trapped_num << "\n";
+        debug_file << "Total Stuck       (-100): " << lattice.stuck_num << "\n";
+        debug_file << "Total Buried      (-200): " << lattice.buried_num << "\n";
+        debug_file << "Total Froze       (-300): " << lattice.froze_num << "\n";
+        debug_file << "Total OOB         (-400): " << lattice.left_num << "\n";
+        debug_file << "Total Errored     (-500): " << lattice.err_num << "\n";
+        debug_file << "Total Intersected (-600): " << lattice.intersections << "\n";
+        debug_file << "Total Out of Mask: " << lattice.out_of_mask << "\n";
+
+        if (settings.dynamicNeighbours)
+        {
+            debug_file << "\nMax active sites: " << lattice.max_active << "\n";
+            debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";
+        }
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;
@@ -259,9 +274,9 @@ int main(int argc, char *argv[])
         dt *= 1000;
 
         std::cout << "\nFinished Running " << safio_file << "\n"
-                  << std::endl;
+                  << "\n";
         std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
-        debug_file << "\nTotal number particles: " << n << std::endl;
+        debug_file << "\nTotal number particles: " << n << "\n";
         debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
         // End final timer.
         dt = (clock() - load) / CLOCKS_PER_SEC;
@@ -313,9 +328,9 @@ int main(int argc, char *argv[])
 void exit_fail(std::string reason)
 {
     std::cout << "Exiting Early, for reason:\n";
-    std::cout << reason << std::endl;
+    std::cout << reason << "\n";
     debug_file << "Exiting Early, for reason:\n";
-    debug_file << reason << std::endl;
+    debug_file << reason << "\n";
 
     // Close files.
     out_file.close();
