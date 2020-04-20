@@ -584,9 +584,15 @@ class Spectrum:
         
         for i in range(len(self.data)):
             line = self.data[i]
-            x.append(line[4])
-            y.append(line[3])
-            c.append(line[5])
+            e = line[3]
+            t = line[4]
+            p = line[5]
+            
+            if e < 0:
+                continue
+            x.append(t)
+            y.append(e)
+            c.append(p)
         
        # c = np.log(c)
         
