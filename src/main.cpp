@@ -16,6 +16,7 @@
 // Initialize the global variables.
 Safio settings;
 std::ofstream out_file;
+std::ofstream sptr_file;
 std::ofstream debug_file;
 std::ofstream traj_file;
 std::ofstream xyz_file;
@@ -147,7 +148,9 @@ int main(int argc, char *argv[])
     if (settings.SCAT_FLAG == 666)
     {
         settings.scat_started = true;
-        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time\n";
+        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
+        if (settings.saveSputter)
+            sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
 
         // 100 bifurcations is currently computationally infeasable, so
         // this will never be a valid choice for this, at least until
@@ -322,6 +325,7 @@ int main(int argc, char *argv[])
     out_file.close();
     debug_file.close();
     traj_file.close();
+    sptr_file.close();
     return 0;
 }
 
@@ -336,6 +340,7 @@ void exit_fail(std::string reason)
     out_file.close();
     debug_file.close();
     traj_file.close();
+    sptr_file.close();
 
     // Exit
     exit(EXIT_FAILURE);

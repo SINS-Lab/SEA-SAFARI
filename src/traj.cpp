@@ -1,10 +1,10 @@
 
-#include "traj.h"          // header for this
-#include "hameq.h"         // the integrator
-#include "potentials.h"    // the potential used
-#include "safio.h"         // general settings
-#include <cmath>           // trig functions and sqrt
-#include <algorithm>       // std::sort
+#include "traj.h"       // header for this
+#include "hameq.h"      // the integrator
+#include "potentials.h" // the potential used
+#include "safio.h"      // general settings
+#include <cmath>        // trig functions and sqrt
+#include <algorithm>    // std::sort
 
 void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {
@@ -144,8 +144,9 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int r
             dx = s->r[0] - s->r_u[0];
             dy = s->r[1] - s->r_u[1];
             dz = s->r[2] - s->r_u[2];
-            bool moved = sqrt(dx*dx + dy*dy + dz*dz) > settings.DIST_SEARCH / 10;
-            if(moved) fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
+            bool moved = sqrt(dx * dx + dy * dy + dz * dz) > settings.DIST_SEARCH / 10;
+            if (moved)
+                fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
         }
     }
 
@@ -166,8 +167,8 @@ int fill_nearest(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int tar
 
     if (updateCells && pos_hash != site->cell_number && !settings.useEinsteinSprings)
     {
-        Cell* from = lattice->get_cell(site->cell_number);
-        Cell* to = lattice->make_cell(pos_hash);
+        Cell *from = lattice->get_cell(site->cell_number);
+        Cell *to = lattice->make_cell(pos_hash);
         moveSite(site, from, to);
     }
 
@@ -289,8 +290,9 @@ end:
             dx = s->r[0] - s->r_u[0];
             dy = s->r[1] - s->r_u[1];
             dz = s->r[2] - s->r_u[2];
-            bool moved = sqrt(dx*dx + dy*dy + dz*dz) > settings.DIST_SEARCH / 10;
-            if(moved) fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
+            bool moved = sqrt(dx * dx + dy * dy + dz * dz) > settings.DIST_SEARCH / 10;
+            if (moved)
+                fill_nearest(NULL, s, lattice, radius, target_num, max_rr, true, true);
         }
     }
     std::copy(site->r, site->r + 3, site->r_u);
@@ -401,13 +403,13 @@ void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
           Detector &detector)
 {
-    if(!settings.useEinsteinSprings)
+    if (!settings.useEinsteinSprings)
     {
         // We need to call this before each run, as the run can
         // shuffle the sites between cells.
         lattice->init_springs(settings.neighbour_count);
     }
-    
+
     // Get some constants for the loop
 
     // Radius of atom search
@@ -505,12 +507,12 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
             if (settings.SCAT_TYPE)
             {
                 // check out of bounds, from r_0
-                if (s.r_0[0] < lattice->xyz_bounds[0]     //x
-                    || s.r_0[0] > lattice->xyz_bounds[3]  //x
-                    || s.r_0[1] < lattice->xyz_bounds[1]  //y
-                    || s.r_0[1] > lattice->xyz_bounds[4]  //y
-                    || s.r_0[2] < lattice->xyz_bounds[2]  //z
-                    || s.r_0[2] > lattice->xyz_bounds[5]) //z
+                if (s.r_0[0] < lattice->xyz_bounds[0]     // x
+                    || s.r_0[0] > lattice->xyz_bounds[3]  // x
+                    || s.r_0[1] < lattice->xyz_bounds[1]  // y
+                    || s.r_0[1] > lattice->xyz_bounds[4]  // y
+                    || s.r_0[2] < lattice->xyz_bounds[2]  // z
+                    || s.r_0[2] > lattice->xyz_bounds[5]) // z
                     continue;
             }
             lattice_num++;
@@ -519,16 +521,26 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
         log_xyz(ion, lattice, lattice_num, buffer);
     }
 
+    // Reset some values before the integration loop
     r.set(ion.r);
     ion.last_step = 0;
     ion.max_active = 0;
     ion.site_site_intersects = 0;
 
+    // Only bother to call clear if we will use this
+    if (settings.saveSputter)
+    {
+        if (ion.sputter != NULL)
+            delete ion.sputter;
+        ion.sputter = new Site *[1024];
+        ion.sputtered = 0;
+    }
+
 start:
     // Reset this to 0.
     dr_max = 0;
     // Find nearby lattice atoms
-    if(settings.dynamicNeighbours)
+    if (settings.dynamicNeighbours)
     {
         update_dynamic_neighbours(&ion, &ion, lattice, d_search, n_parts, settings.rr_max, sort, false);
     }
@@ -585,7 +597,7 @@ start:
     // Find the forces at the next location
     run_hameq(ion, lattice, dt, true, &dr_max);
 
-    if(ion.site_site_intersects)
+    if (ion.site_site_intersects)
     {
         if (xyz)
         {
@@ -690,7 +702,42 @@ end:
         ion.write_info();
     }
 
-    double E = T;
+    lattice->sum_active += ion.max_active;
+    lattice->count_active++;
+
+    // Log the sputtered data first, the ion's index is set as a flag in the logging process
+    if (settings.saveSputter)
+    {
+        for (int i = 0; i < ion.sputtered; i++)
+        {
+            Site *s = ion.sputter[i];
+            // Cache this value
+            int oldIndex = s->index;
+
+            // Copy some values over from the ion
+            s->steps = ion.steps;
+            s->weight = ion.weight;
+            s->index = ion.index;
+            s->Eerr_max = ion.Eerr_max;
+            s->time = ion.time;
+            detector.log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            // Revert the change to index.
+            s->index = oldIndex;
+        }
+    }
+
+    // Output data
+    detector.log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    return;
+}
+
+void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
+                   bool stuck, bool buried, bool froze, bool off_edge, bool discont,
+                   bool ignore_bounds)
+{
+    double psq = sqr(ion.p);
+    double mx2 = ion.atom->mass * 2;
+    double E = psq / mx2;
     // z-momentum squared, exit theta, exit phi
     double pzz = 0, theta, phi;
     /**
@@ -757,13 +804,12 @@ end:
         double px = ion.p[0];
         double py = ion.p[1];
         double pz = ion.p[2];
-        psq = sqr(ion.p);
         // Find the momentum at infinity
-        if (settings.use_image)
+        if (settings.use_image and ion.q != 0)
         {
             // Image charge would pull it towards surface, this accounts
             // for that effect.
-            pzz = (pz * pz) + (2 * mass * Vi_z(settings.Z1, ion.q));
+            pzz = (pz * pz) + (mx2 * Vi_z(settings.Z1, ion.q));
             pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
             // Recalulate this, as pz has changed
             // We are fine with pzz being -ve, as that case
@@ -787,7 +833,7 @@ end:
         else
         {
             // Recalculate E, incase image affected it
-            E = 0.5 * psq / mass;
+            E = psq / mx2;
 
             // calculate theta, depends on pz
             theta = acos(pzz / p) * 180 / M_PI;
@@ -806,10 +852,33 @@ end:
         }
     }
 
-    lattice->sum_active += ion.max_active;
-    lattice->count_active++;
-
-    // Output data
-    detector.log(ion, lattice, E, theta, phi);
-    return;
+    bool did_hit = E > -10;
+    // Detectors should generally be 1 degree resolution,
+    // A difference of 10 is far outside the allowed range.
+    if (did_hit && !hit(E, theta, phi) && !ignore_bounds)
+    {
+        theta = 0;
+        phi = 90;
+        E = -5;
+        lattice->undetectable_num++;
+        did_hit = false;
+    }
+    if (did_hit || settings.save_errored)
+    {
+        /**
+             * This uses the default saving behaviour
+             */
+        char buffer[200];
+        // first stuff it in the buffer
+        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
+                ion.r_0[0], ion.r_0[1], ion.r_0[2],
+                E, theta, phi,
+                ion.index, ion.weight,
+                ion.max_n, ion.r_min, ion.steps,
+                ion.Eerr_max, ion.time);
+        // Then save it
+        out_file << buffer << std::flush;
+    }
+    // We use this as a after saving.
+    ion.index = did_hit;
 }

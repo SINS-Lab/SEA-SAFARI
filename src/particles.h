@@ -1,6 +1,6 @@
 #pragma once
-#include "vec_math.h"
-#include <string>
+#include "vec_math.h" // for diff_sqr
+#include <string>     // for the atom symbol
 
 #define MAX_NEAR 2048
 
@@ -34,74 +34,95 @@ struct Atom
 class Site
 {
 public:
-    //Original location
+    // Original location
     double *r_0 = NULL;
-    //Original Momentum
+    // Original Momentum
     double *p_0 = NULL;
-    //The atom here
+    // The atom here
     Atom *atom = NULL;
+    // Charge for image considerations
+    int q = 0;
 
-    //position
+    // position
     double r[3];
-    //momentum
+    // momentum
     double p[3];
-    //forces
+    // forces
     double dp_dt[3];
 
-    //position after time dt
+    // position after time dt
     double r_t[3];
-    //forces after dt
+    // forces after dt
     double dp_dt_t[3];
 
-    // Position during last neighbour
+    // Position during last neighbour check
     double r_u[3];
 
-    //Used to track the last ion which has interacted with us.
+    // Things here for saving to data files
+    
+    // Number of traj steps done, note that this is not
+    // the same as the number of time steps, as this is
+    // incremented even if it reduces timestep and tries over.
+    int steps = 0;
+    // Total flight time of the ion
+    double time = 0;
+    // This is a weighting factor for the ion's detectability.
+    double weight = 1;
+    // Maximum integration error for this ion.
+    double Eerr_max = 0;
+    // Number of times a site-site intersection occurs.
+    int site_site_intersects = 0;
+
+
+    // Used to track the last ion which has interacted with us.
     int last_ion = -1;
-    //This is used for randomly position the site, normally
-    //this is the same value as last_ion, but adaptive grid differs
+    // This is used for randomly position the site, normally
+    // this is the same value as last_ion, but adaptive grid differs
     int thermal_seed = -1;
-    //This is a unique identifier for this particle,
-    //The lattice and the ions use different counters.
+    // This is a unique identifier for this particle,
+    // The lattice and the ions use different counters.
     int index = -1;
-    //this is used for xyz output of nearest.
+    // this is used for xyz output of nearest.
     bool near_check = 0;
-    //This is last integration step performed, this
-    //allows for faster checks of whether force needs
-    //to be reset.
+    // This is last integration step performed, this
+    // allows for faster checks of whether force needs
+    // to be reset.
     int last_step = -1;
-    //This is the last tick that the particle positions were updated.
-    //This is used only for the more complex updating when considering
-    //lattice-lattice correlations.
+    // This is the last tick that the particle positions were updated.
+    // This is used only for the more complex updating when considering
+    // lattice-lattice correlations.
     int last_update = -1;
 
-    //Start of block of values related to nearby sites
+    // Start of block of values related to nearby sites
 
-    //All of the sites nearby, only guarenteed to be filled
-    //with site up to near
+    // All of the sites nearby, only guarenteed to be filled
+    // with site up to near
     Site **near_sites = NULL;
     // This is the nearby sites when at rest, this is
     // set during the initial setting of the springs.
     Site **rest_near_sites = NULL;
     int rest_near_count = 0;
-    //Maximum number of nearby atoms for this ion
+    // Maximum number of nearby atoms for this ion
     int max_n = 0;
-    //Nearest distance ever
+    // Nearest distance ever
     double r_min = 1e3;
-    //Nearest distance when finding nearby, squared
+    // Nearest distance when finding nearby, squared
     double rr_min_find = 1e3;
-    //This is the total number of Site*s stored in near_sites
+    // This is the total number of Site*s stored in near_sites
     int total_near = 0;
-    //Current number of nearby atoms.
+    // Current number of nearby atoms.
     int near = 0;
-    //This is the last place the near things were updated.
-    //Setting this back to -1 will force a re-check of near.
+    // This is the last place the near things were updated.
+    // Setting this back to -1 will force a re-check of near.
     int last_index = -1;
 
-    //These are for what cell we are in, they are not used for ions
+    // These are for what cell we are in, they are not used for ions
     int cell_number = -1;
-    //This is where in the cell's array we are.
+    // This is where in the cell's array we are.
     int cell_index = -1;
+
+    // Whether we have left the surface
+    bool left = false;
 
     uint64_t hameq_tick = 0;
     uint64_t update_tick = 0;

@@ -1,5 +1,6 @@
 #pragma once
-#include "ion.h"
+#include "ion.h"     // for Ion
+#include "lattice.h" // for Lattice
 
 /**
  * This computes the forces to apply on the lattice

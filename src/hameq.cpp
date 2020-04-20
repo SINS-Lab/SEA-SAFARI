@@ -1,8 +1,8 @@
 #include "hameq.h"
 
-#include "safio.h"      // For settings
-#include "traj.h"       // For nearest check method
-#include "potentials.h" // For forces/potentials
+#include "safio.h"      // for settings
+#include "traj.h"       // for nearest check method
+#include "potentials.h" // for forces/potentials
 #include "vec_math.h"   // General maths help
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
@@ -95,6 +95,22 @@ void predict_site_location(Site &s, double dt)
     s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
 }
 
+void check_sputter(Ion &ion, Site *s)
+{
+    if (settings.saveSputter and not s->left)
+    {
+        double pz = s->p[2];
+        double rz = s->r[2];
+        // TODO better conditions for leaving surface
+        if (pz > 0 and rz > settings.Z1 / 4)
+        {
+            s->left = true;
+            ion.sputter[ion.sputtered] = s;
+            ion.sputtered++;
+        }
+    }
+}
+
 void apply_hameq(Ion &ion, Lattice *lattice, double dt)
 {
     if (!settings.useEinsteinSprings)
@@ -104,11 +120,11 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
         if (settings.dynamicNeighbours)
         {
             int num = lattice->active_sites.size();
-            #pragma omp parallel for num_threads(THREADCOUNT)
             for (int i = 0; i < num; i++)
             {
                 Site *s = lattice->active_sites[i];
                 update_site(*s, dt);
+                check_sputter(ion, s);
                 s->last_update = ion.steps;
             }
         }
@@ -127,6 +143,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
                         if (s2->last_update != ion.steps)
                         {
                             update_site(*s2, dt);
+                            check_sputter(ion, s);
                         }
                         s2->last_update = ion.steps;
                     }
@@ -140,6 +157,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
         {
             Site *s = ion.near_sites[i];
             update_site(*s, dt);
+            check_sputter(ion, s);
         }
     }
 }

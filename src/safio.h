@@ -122,6 +122,7 @@ struct Safio
     bool useLennardJones = false;   // 2
     bool rigidBounds = false;       // 4
     bool dynamicNeighbours = false; // 8
+    bool saveSputter = false;       // 16
 
     // Image Potential Values
     int image_potential_type;
@@ -252,6 +253,8 @@ struct Safio
 extern Safio settings;
 // This is the .data file to store the outputs.
 extern std::ofstream out_file;
+// This is the .sptr file to store the sputtered info in.
+extern std::ofstream sptr_file;
 // This is the .traj file to ion trajectory to.
 extern std::ofstream traj_file;
 // This is the .traj file to ion xyz to.

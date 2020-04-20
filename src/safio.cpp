@@ -225,11 +225,12 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 lattice_potential_type = line_args.size() > 2 ? atoi(line_args[2].c_str()) : 0;
                 if (prog_args["--latflag"])
                     lattice_potential_type = prog_args["--latflag"].as_int();
-                useEinsteinSprings = lattice_potential_type == 0;
                 useAtomSpings = lattice_potential_type & 1;
                 useLennardJones = lattice_potential_type & 2;
+                useEinsteinSprings = !(useAtomSpings || useLennardJones);
                 rigidBounds = lattice_potential_type & 4;
                 dynamicNeighbours = lattice_potential_type & 8;
+                saveSputter = lattice_potential_type & 16;
             }
             if (n == 17)
             {
@@ -431,6 +432,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         safio_input.close();
         debug_file << "\nLoaded SAFIO" << '\n';
         std::cout << "\nLoaded SAFIO" << '\n';
+
+        if(saveSputter)
+        {
+            sptr_file.open(output_name + ".sptr");
+        }
 
         //Then we need these files.
         if (NUMCHA == 1)

@@ -24,38 +24,9 @@ public:
         return E > e_min && diff_phi < dphi && diff_theta < dtheta;
     }
 
-    void log(Ion &ion, Lattice *lattice, double E, double theta, double phi)
-    {
-        bool did_hit = E > -10;
-        // Detectors should generally be 1 degree resolution,
-        // A difference of 10 is far outside the allowed range.
-        if (did_hit && !hit(E, theta, phi))
-        {
-            theta = 0;
-            phi = 90;
-            E = -5;
-            lattice->undetectable_num++;
-            did_hit = false;
-        }
-        if(did_hit || settings.save_errored)
-        {       
-            /**
-             * This uses the default saving behaviour
-             */
-            char buffer[200];
-            // first stuff it in the buffer
-            sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
-                    ion.r_0[0], ion.r_0[1], ion.r_0[2],
-                    E, theta, phi,
-                    ion.index, ion.weight,
-                    ion.max_n, ion.r_min, ion.steps,
-                    ion.Eerr_max, ion.time);
-            // Then save it
-            out_file << buffer << std::flush;
-        }
-        // We use this as a after saving.
-        ion.index = did_hit;
-    }
+    void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
+             bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
+             bool ignore_bounds);
 };
 
 extern Detector default_detector;
