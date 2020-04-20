@@ -1,8 +1,8 @@
 CXX = g++
 
-CXXFLAGS_D = -Wall -std=c++11 -O4 -fopenmp -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double -pg
-CXXFLAGS_X = -Wall -std=c++11 -O4 -fopenmp -march=native
-CXXFLAGS_R = -Wall -std=c++11 -O4 -fopenmp -march=native -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
+CXXFLAGS_D = -Wall -std=c++11 -O4 -fopenmp -march=native -m64 -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double -pg
+CXXFLAGS_X = -Wall -std=c++11 -O4 -fopenmp -march=native -m64 -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
+CXXFLAGS_R = -Wall -std=c++11 -O4 -fopenmp -march=native -m64 -msse4.2 -mavx2 -ffast-math -mfpmath=sse -freciprocal-math -ffinite-math-only -mrecip=all -mstackrealign -mpc64 -malign-double
 
 SRCDIR = src
 OUTDIR_D = bin/Debug
