@@ -2,7 +2,7 @@ color Display Background black
 display depthcue off
 mol default style {Licorice 1.1 20 12}
 mol default color MASS
-mol new tests/415/cs_cu_ss_50eV_12nn_rigid_proc.xyz
+mol new tests/cs_cu_ss.xyz
 display rendermode GLSL
 display update
 display update ui

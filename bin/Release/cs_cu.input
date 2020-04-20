@@ -36,7 +36,7 @@
 #   be included in the data file, they will only be included
 #   in the final error counts in the debug output file.
 #
-1 t
+1 f
 
 # Detector parameters, the number of these depends on Detector Type
 #
@@ -46,7 +46,7 @@
 # Integration Parameters
 # time steps
 #
-1e-03 10.0
+1e-05 10.0
 #
 # Error parameters
 #
@@ -54,7 +54,7 @@
 
 # max number of atoms to interact with
 #
-2000
+12
 
 # this one should always be true.
 # This is whether the surface recoils on impact.
@@ -67,13 +67,13 @@ t
 
 # Number of allowed integration steps before failing.
 #
-4000
+10000
 
 # These are search related, max distances and table steps
 #
 # for r:
 #
-60.0 0.002
+15.0 0.002
 #
 # for z: (not yet implemented)
 #
@@ -88,7 +88,7 @@ t
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.
 #
-1000
+100
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
@@ -120,7 +120,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 888
+666 2
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
@@ -143,10 +143,10 @@ t
 #   [c] = eV
 #   [d] = 1/Angstrom
 #
-4 1 2
+4 1 10
 
 # The parameters for the potentials
-#2075
+#
 644.061 3.971 1662 13.13 -0.415 2.277
 
 # These parameters are for the image charge.
@@ -185,7 +185,7 @@ f
 # bound to the surface, and not leaving.
 # Buried Distance is the minimum distance below Z=0 before failing
 #
--1.5 2
+-1.5 10
 
 # This section controls the lattice to scatter off.
 # First is the basis to generate the lattice from.
