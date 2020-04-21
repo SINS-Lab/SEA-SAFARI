@@ -163,22 +163,6 @@ void chainscat(Lattice *lattice, int *num)
     return;
 }
 
-void save_adaptive(Ion &ion, Lattice *lattice, double E, double theta, double phi)
-{
-    if (settings.save_errored || E > 0)
-    {
-        char buffer[200];
-        //first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\n",
-                ion.r_0[0], ion.r_0[1], ion.r_0[2],
-                E, theta, phi,
-                ion.index, 1.0,
-                ion.max_n, ion.r_min, ion.steps, ion.time);
-        //Then save it
-        out_file << buffer;
-    }
-}
-
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
                       Lattice *lattice, Detector &detector,
