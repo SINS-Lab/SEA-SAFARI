@@ -1,13 +1,7 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <stdlib.h>
-#include <vector>
-#include <map>
-#include "particles.h"
-#include "string_utils.h"
+
+#include "particles.h"     // Atom object is in here
+#include "string_utils.h"  // helpful for argument parsing
 
 /**
  * This is the main configuration and settings header for Sea-Safari.

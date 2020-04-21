@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-#include "ion.h"
-#include "lattice.h"
+
+#include "ion.h"      // for the Ion object
+#include "lattice.h"  // for the Lattice object
 
 #define eqsr 14.398
 

@@ -1,9 +1,9 @@
 #pragma once
-#include <iostream>
-#include "space_math.h" // vec_math.h and mask stuff
-#include "particles.h"
-#include <vector>
-#include <unordered_map>
+
+#include "space_math.h"  // vec_math.h and mask stuff
+#include "particles.h"   // for Site object
+#include <vector>        // for lists of sites
+#include <unordered_map> // for cell lookups
 
 class Cell
 {

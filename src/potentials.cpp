@@ -1,9 +1,9 @@
 #include "potentials.h"
 
-#include "safio.h"   //settings
-#include "safari.h"  //exit_fail
+#include "safio.h"   // settings
+#include "safari.h"  // exit_fail
 
-#include <math.h>    //exp, sqrt, etc
+#include <math.h>    // exp, sqrt, etc
 
 /**
  * This contains sets of 

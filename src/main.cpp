@@ -1,7 +1,7 @@
 #include <stdlib.h> /* srand, rand */
-#include <cstdio>
-#include <time.h> /* For runtime tracker */
-#include <iomanip>
+#include <cstdio>   /* the output file streams*/
+#include <time.h>   /* for runtime tracker */
+#include <iomanip>  /* precision setting on output numbers */
 
 #include "safio.h"        /* settings */
 #include "vec_math.h"     /* General math */
