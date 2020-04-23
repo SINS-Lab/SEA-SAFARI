@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     std::ofstream crys_xyz_file;
     crys_xyz_file.open(settings.output_name + ".crys.xyz");
     debug_file << "Printing Lattice\n";
-    std::cout << "Printing Lattice\n";
+    std::cout << "Printing Lattice\n" << std::flush;
     int num = lattice.sites.size();
     crys_xyz_file << num << "\n\n";
     for (int i = 0; i < num; i++)
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
             // Otherwise this is an adaptive scat, with arguments of
             // the maximum depth to persue.
             debug_file << "Running Adaptive Grid\n";
-            std::cout << "Running Adaptive Grid\n";
+            std::cout << "Running Adaptive Grid\n" << std::flush;
 
             default_detector.theta = settings.detect_parameters[0];
             default_detector.dtheta = settings.detect_parameters[1];
@@ -201,14 +201,14 @@ int main(int argc, char *argv[])
                 debug_file << "Running Single Shot"
                            << "\n";
                 std::cout << "Running Single Shot"
-                          << "\n";
+                          << "\n" << std::flush;
             }
             else
             {
                 debug_file << "Running Grid Scat"
                            << "\n";
                 std::cout << "Running Grid Scat "
-                          << "\n";
+                          << "\n" << std::flush;
             }
             gridscat(&lattice, &n);
         }
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
             debug_file << "Running Montecarlo "
                        << "\n";
             std::cout << "Running Montecarlo "
-                      << "\n";
+                      << "\n" << std::flush;
 
             double seeds[THREADCOUNT];
             std::default_random_engine rng;
@@ -235,11 +235,11 @@ int main(int argc, char *argv[])
                 int start = i * ions_per_thread;
                 //Copy the lattice
                 Lattice *toUse = new Lattice(lattice);
-                std::cout << "Starting Thread " << i << "\n";
+                std::cout << "Starting Thread " << i << "\n" << std::flush;
                 toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
-                std::cout << "Finished Thread " << i << "\n";
+                std::cout << "Finished Thread " << i << "\n" << std::flush;
                 delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
             debug_file << "Running Chainscat"
                        << "\n";
             std::cout << "Running Chainscat"
-                      << "\n";
+                      << "\n" << std::flush;
             chainscat(&lattice, &n);
         }
 

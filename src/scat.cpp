@@ -72,7 +72,7 @@ void gridscat(Lattice *lattice, int *num)
         if (settings.SCAT_TYPE)
         {
             Lattice *initial = new Lattice(*lattice);
-            std::cout << "Single Shot Partial Lattice Mode\n";
+            std::cout << "Single Shot Partial Lattice Mode\n" << std::flush;
             //Dry run to find bounds of operation
             fire(initial, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
             delete initial;
@@ -98,23 +98,23 @@ void gridscat(Lattice *lattice, int *num)
             lattice->xyz_bounds[1] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 - dr;
             lattice->xyz_bounds[4] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 + dr;
 
-            std::cout << "Single Shot Pass 2\n";
+            std::cout << "Single Shot Pass 2\n" << std::flush;
 
             //Run to output the xyz file
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, false, true);
         }
         else
         {
-            std::cout << "Single Shot Full Lattice Mode\n";
+            std::cout << "Single Shot Full Lattice Mode\n" << std::flush;
             //Fire, log entire lattice, and also output xyz at once
             fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
         }
         if (ion.r[2] < settings.Z1)
         {
-            std::cout << "Ion buried!\n";
+            std::cout << "Ion buried!\n" << std::flush;
         }
         else
-            std::cout << "Ion Escaped!\n";
+            std::cout << "Ion Escaped!\n" << std::flush;
         n++;
     }
     else
