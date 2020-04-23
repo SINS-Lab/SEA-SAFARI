@@ -706,13 +706,39 @@ end:
     lattice->count_active++;
 
     // Log the sputtered data first, the ion's index is set as a flag in the logging process
-    if (settings.saveSputter)
+    // We do not want to save if it was discontinous, or froze!
+    if (settings.saveSputter && !discont && !froze)
     {
+        double x_0 = ion.r_0[0];
+        double y_0 = ion.r_0[1];
+
+        double x_1 = ion.r[0];
+        double y_1 = ion.r[1];
+
+        double x_min, x_max, y_min, y_max;
+
+        double dr = settings.R_MAX / 2;
+
+        x_min = std::min(x_0, x_1) - dr;
+        y_min = std::min(y_0, y_1) - dr;
+        x_max = std::max(x_0, x_1) + dr;
+        y_max = std::max(y_0, y_1) + dr;
+
         for (int i = 0; i < ion.sputtered; i++)
         {
             Site *s = ion.sputter[i];
             // Cache this value
             int oldIndex = s->index;
+
+            x_0 = s->r_0[0];
+            y_0 = s->r_0[1];
+
+            // If we are too close to the edge of the detection bounds,
+            // Just skip this particle, as is probably not valid anyway.
+            if (x_0 < x_min || x_0 > x_max)
+                continue;
+            if (y_0 < y_min || y_0 > y_max)
+                continue;
 
             // Copy some values over from the ion
             s->steps = ion.steps;
