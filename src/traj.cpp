@@ -709,6 +709,32 @@ end:
     // We do not want to save if it was discontinous, or froze!
     if (settings.saveSputter && !discont && !froze)
     {
+    	double E = 0;
+        if (stuck)
+        {
+            E = -100;
+        }
+        else if (buried)
+        {
+            E = -200;
+        }
+        else if (froze)
+        {
+            E = -300;
+        }
+        else if (off_edge)
+        {
+            E = -400;
+        }
+        else if (discont)
+        {
+            E = -500;
+        }
+        else if (ion.site_site_intersects)
+        {
+            E = -900;
+        }
+
         double x_0 = ion.r_0[0];
         double y_0 = ion.r_0[1];
 
@@ -742,7 +768,8 @@ end:
 
             // Copy some values over from the ion
             s->steps = ion.steps;
-            s->weight = ion.weight;
+            // Recorde the ion's error flag as the wieght instead
+            s->weight = E;
             s->index = ion.index;
             s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;

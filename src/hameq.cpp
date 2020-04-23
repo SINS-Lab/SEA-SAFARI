@@ -196,6 +196,7 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
     if (r < settings.R_MAX && r > 0)
     {
         ion.r_min = std::min(r, ion.r_min);
+        s->r_min = std::min(r, s->r_min);
 
         // Magnitude of force for this location.
         double dV_dr = dVr_dr(r, s->atom->index);
@@ -290,6 +291,7 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at, double ato
         goto end;
 
     r = sqrt(rr);
+    s->r_min = std::min(r, s->r_min);
 
     if (r < 0.1)
     {

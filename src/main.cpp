@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         settings.scat_started = true;
         out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
         if (settings.saveSputter)
-            sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
+            sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tion err flag\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
 
         if (settings.singleshot)
         {
