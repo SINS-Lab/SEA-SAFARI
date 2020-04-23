@@ -417,6 +417,8 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         {
             NUMCHA = 1;
             singleshot = true;
+            // We override the saving of sputter here
+            saveSputter = (lattice_potential_type & 16);
             if (SCAT_TYPE)
                 SCAT_TYPE = 666;
             //Set x-start
