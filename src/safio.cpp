@@ -180,6 +180,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                     if (o == 3)
                     {
                         NUMCHA = atoi(line_args[0].c_str());
+                        singleshot = NUMCHA == 1;
                     }
                     else if (o == 2)
                     {
@@ -211,6 +212,16 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             {
                 SCAT_FLAG = atoi(line_args[0].c_str());
                 SCAT_TYPE = atoi(line_args[1].c_str());
+
+                montecarlo = SCAT_TYPE == 666;
+                gridscat = SCAT_TYPE == 777;
+                chainscat = SCAT_TYPE == 888;
+                adaptivegrid = SCAT_TYPE < 100;
+
+                // 100 bifurcations is currently computationally infeasable, so
+                // this will never be a valid choice for this, at least until
+                // computers get many, many orders of magnitude better, when
+                // that happens, here is where this needs to be changed!
             }
             if (n == 15)
             {
@@ -230,7 +241,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 useEinsteinSprings = !(useAtomSpings || useLennardJones);
                 rigidBounds = lattice_potential_type & 4;
                 dynamicNeighbours = lattice_potential_type & 8;
-                saveSputter = lattice_potential_type & 16;
+                saveSputter = (montecarlo or gridscat) and (lattice_potential_type & 16);
             }
             if (n == 17)
             {
@@ -405,7 +416,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         if (prog_args["-s"].as_bool())
         {
             NUMCHA = 1;
-            SCAT_FLAG = 666;
+            singleshot = true;
             if (SCAT_TYPE)
                 SCAT_TYPE = 666;
             //Set x-start
@@ -433,13 +444,13 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         debug_file << "\nLoaded SAFIO" << '\n';
         std::cout << "\nLoaded SAFIO" << '\n';
 
-        if(saveSputter)
+        if (saveSputter)
         {
             sptr_file.open(output_name + ".sptr");
         }
 
         //Then we need these files.
-        if (NUMCHA == 1)
+        if (singleshot)
         {
             SCAT_FLAG = 666;
             if (SCAT_TYPE)

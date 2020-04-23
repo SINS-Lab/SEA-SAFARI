@@ -63,73 +63,72 @@ void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
 void gridscat(Lattice *lattice, int *num)
 {
     int n = 0;
-    if (settings.NUMCHA == 1)
+	for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
+		for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
+		{
+			Ion ion;
+			if (fire(lattice, ion, x, y, n, false, false))
+				n++;
+		}
+    *num = n;
+    return;
+}
+
+
+void singleshot(Lattice *lattice, int *num)
+{
+    //If we are in log mode, we only run this for the first coord
+    Ion ion;
+    //We also use the settings ion_index for single shot mode, to
+    //guarentee that any thermal effects can be repeated.
+    if (settings.SCAT_TYPE)
     {
-        //If we are in log mode, we only run this for the first coord
-        Ion ion;
-        //We also use the settings ion_index for single shot mode, to
-        //guarentee that any thermal effects can be repeated.
-        if (settings.SCAT_TYPE)
-        {
-            Lattice *initial = new Lattice(*lattice);
-            std::cout << "Single Shot Partial Lattice Mode\n" << std::flush;
-            //Dry run to find bounds of operation
-            fire(initial, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
-            delete initial;
+        Lattice *initial = new Lattice(*lattice);
+        std::cout << "Single Shot Partial Lattice Mode\n" << std::flush;
+        //Dry run to find bounds of operation
+        fire(initial, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, false);
+        delete initial;
 
-            //Set min bounds from ion positions
-            lattice->xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
-            lattice->xyz_bounds[1] = std::min(ion.r_0[1], ion.r[1]) - settings.AY;
-            lattice->xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - 2 * settings.AZ;
+        //Set min bounds from ion positions
+        lattice->xyz_bounds[0] = std::min(ion.r_0[0], ion.r[0]) - settings.AX;
+        lattice->xyz_bounds[1] = std::min(ion.r_0[1], ion.r[1]) - settings.AY;
+        lattice->xyz_bounds[2] = std::min(ion.r_0[2], ion.r[2]) - 2 * settings.AZ;
 
-            //Set max bounds from ion positions
-            lattice->xyz_bounds[3] = std::max(ion.r_0[0], ion.r[0]) + settings.AX;
-            lattice->xyz_bounds[4] = std::max(ion.r_0[1], ion.r[1]) + settings.AY;
-            lattice->xyz_bounds[5] = std::max(ion.r_0[2], ion.r[2]);
+        //Set max bounds from ion positions
+        lattice->xyz_bounds[3] = std::max(ion.r_0[0], ion.r[0]) + settings.AX;
+        lattice->xyz_bounds[4] = std::max(ion.r_0[1], ion.r[1]) + settings.AY;
+        lattice->xyz_bounds[5] = std::max(ion.r_0[2], ion.r[2]);
 
-            //Lets make this a square slab, so find midpoint of x,y
-            //and then make it equal sized.
-            double dx = lattice->xyz_bounds[3] - lattice->xyz_bounds[0];
-            double dy = lattice->xyz_bounds[4] - lattice->xyz_bounds[1];
-            double dr = std::max(dx, dy) / 2 + 5; //Add extra 5 for some padding
-            //Set x/y to avg +- dr
-            lattice->xyz_bounds[0] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 - dr;
-            lattice->xyz_bounds[3] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 + dr;
-            lattice->xyz_bounds[1] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 - dr;
-            lattice->xyz_bounds[4] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 + dr;
+        //Lets make this a square slab, so find midpoint of x,y
+        //and then make it equal sized.
+        double dx = lattice->xyz_bounds[3] - lattice->xyz_bounds[0];
+        double dy = lattice->xyz_bounds[4] - lattice->xyz_bounds[1];
+        double dr = std::max(dx, dy) / 2 + 5; //Add extra 5 for some padding
+        //Set x/y to avg +- dr
+        lattice->xyz_bounds[0] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 - dr;
+        lattice->xyz_bounds[3] = (lattice->xyz_bounds[3] + lattice->xyz_bounds[0]) / 2 + dr;
+        lattice->xyz_bounds[1] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 - dr;
+        lattice->xyz_bounds[4] = (lattice->xyz_bounds[4] + lattice->xyz_bounds[1]) / 2 + dr;
 
-            std::cout << "Single Shot Pass 2\n" << std::flush;
+        std::cout << "Single Shot Pass 2\n" << std::flush;
 
-            //Run to output the xyz file
-            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, false, true);
-        }
-        else
-        {
-            std::cout << "Single Shot Full Lattice Mode\n" << std::flush;
-            //Fire, log entire lattice, and also output xyz at once
-            fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
-        }
-        if (ion.r[2] < settings.Z1)
-        {
-            std::cout << "Ion buried!\n" << std::flush;
-        }
-        else
-            std::cout << "Ion Escaped!\n" << std::flush;
-        n++;
+        //Run to output the xyz file
+        fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, false, true);
+        *num = 2;
     }
     else
     {
-        for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
-            for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
-            {
-                Ion ion;
-                if (fire(lattice, ion, x, y, n, false, false))
-                    n++;
-            }
+        std::cout << "Single Shot Full Lattice Mode\n" << std::flush;
+        //Fire, log entire lattice, and also output xyz at once
+        fire(lattice, ion, settings.XSTART, settings.YSTART, settings.ion_index, true, true);
+        *num = 1;
     }
-
-    *num = n;
-    return;
+    if (ion.r[2] < settings.Z1)
+    {
+        std::cout << "Ion buried!\n" << std::flush;
+    }
+    else
+        std::cout << "Ion Escaped!\n" << std::flush;
 }
 
 void chainscat(Lattice *lattice, int *num)

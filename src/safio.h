@@ -89,7 +89,14 @@ struct Safio
     int SCAT_FLAG;
     // Flag controlling scat type,
     // 666 = montecarlo, 777 = gridscat 888 = chainscat
+    // This is also used as number of bifurcations for adaptive grid
     int SCAT_TYPE;
+
+    bool montecarlo = true;
+    bool gridscat = false;
+    bool chainscat = false;
+    bool singleshot = false;
+    bool adaptivegrid = false;
 
     // This is how many AX and AY
     // to build the lattice for,

@@ -23,6 +23,11 @@ void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed);
  * The number of trajectories is stuffed in *num
  */
 void gridscat(Lattice *lattice, int *num);
+/**
+ * Fires a single ion at the surface, and logs the entire trajectory to .xyz
+ * and .traj files
+ */
+void singleshot(Lattice *lattice, int *num);
 
 /**
  * Fires ions in a line, starting at XSTART, YSTART, ending at

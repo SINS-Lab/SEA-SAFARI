@@ -117,7 +117,8 @@ int main(int argc, char *argv[])
     std::ofstream crys_xyz_file;
     crys_xyz_file.open(settings.output_name + ".crys.xyz");
     debug_file << "Printing Lattice\n";
-    std::cout << "Printing Lattice\n" << std::flush;
+    std::cout << "Printing Lattice\n"
+              << std::flush;
     int num = lattice.sites.size();
     crys_xyz_file << num << "\n\n";
     for (int i = 0; i < num; i++)
@@ -152,16 +153,22 @@ int main(int argc, char *argv[])
         if (settings.saveSputter)
             sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
 
-        // 100 bifurcations is currently computationally infeasable, so
-        // this will never be a valid choice for this, at least until
-        // computers get many, many orders of magnitude better, when
-        // that happens, here is where this needs to be changed!
-        if (settings.SCAT_TYPE < 100 && settings.NUMCHA != 1)
+        if (settings.singleshot)
+        {
+            debug_file << "Running Single Shot"
+                       << "\n";
+            std::cout << "Running Single Shot"
+                      << "\n"
+                      << std::flush;
+            singleshot(&lattice, &n);
+        }
+        else if (settings.adaptivegrid)
         {
             // Otherwise this is an adaptive scat, with arguments of
             // the maximum depth to persue.
             debug_file << "Running Adaptive Grid\n";
-            std::cout << "Running Adaptive Grid\n" << std::flush;
+            std::cout << "Running Adaptive Grid\n"
+                      << std::flush;
 
             default_detector.theta = settings.detect_parameters[0];
             default_detector.dtheta = settings.detect_parameters[1];
@@ -194,30 +201,22 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else if (settings.NUMCHA == 1 || settings.SCAT_TYPE == 777)
+        else if (settings.gridscat)
         {
-            if (settings.NUMCHA == 1)
-            {
-                debug_file << "Running Single Shot"
-                           << "\n";
-                std::cout << "Running Single Shot"
-                          << "\n" << std::flush;
-            }
-            else
-            {
-                debug_file << "Running Grid Scat"
-                           << "\n";
-                std::cout << "Running Grid Scat "
-                          << "\n" << std::flush;
-            }
+            debug_file << "Running Grid Scat"
+                       << "\n";
+            std::cout << "Running Grid Scat "
+                      << "\n"
+                      << std::flush;
             gridscat(&lattice, &n);
         }
-        else if (settings.SCAT_TYPE == 666)
+        else if (settings.montecarlo)
         {
             debug_file << "Running Montecarlo "
                        << "\n";
             std::cout << "Running Montecarlo "
-                      << "\n" << std::flush;
+                      << "\n"
+                      << std::flush;
 
             double seeds[THREADCOUNT];
             std::default_random_engine rng;
@@ -235,21 +234,24 @@ int main(int argc, char *argv[])
                 int start = i * ions_per_thread;
                 //Copy the lattice
                 Lattice *toUse = new Lattice(lattice);
-                std::cout << "Starting Thread " << i << "\n" << std::flush;
+                std::cout << "Starting Thread " << i << "\n"
+                          << std::flush;
                 toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
-                std::cout << "Finished Thread " << i << "\n" << std::flush;
+                std::cout << "Finished Thread " << i << "\n"
+                          << std::flush;
                 delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;
         }
-        else if (settings.SCAT_TYPE == 888)
+        else if (settings.chainscat)
         {
             debug_file << "Running Chainscat"
                        << "\n";
             std::cout << "Running Chainscat"
-                      << "\n" << std::flush;
+                      << "\n"
+                      << std::flush;
             chainscat(&lattice, &n);
         }
 
