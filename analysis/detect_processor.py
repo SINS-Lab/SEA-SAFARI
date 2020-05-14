@@ -1,6 +1,7 @@
 import math                                          # Used for sin/cos/etc
 import numpy as np                                   # General array stuff.
 import platform                                      # Linux vs Windows Checks
+import os                                            # Path related stuff
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
@@ -11,6 +12,7 @@ import matplotlib.pyplot as plt                      # More plotting stuff
 from matplotlib.patches import Circle                # Cirlces on impact plot
 from matplotlib.collections import PatchCollection   # Also for the circles
 import subprocess                                    # For calling XYZ processor
+import time
 
 # Used for shift-click functionality
 shift_is_held = False
@@ -73,7 +75,12 @@ def loadFromText(file):
     return data
 
 def load(file):
-    return loadFromText(file+'.data')
+    filename = file
+    if not (filename.endswith('.data') or filename.endswith('.sptr')):
+        filename = file+'.data'
+        if not os.path.exists(filename):
+            filename = file+'.sptr'
+    return loadFromText(filename)
 
 def kinematicFactor(theta_final, theta_inc, massProject, massTarget):
     mu = massProject/massTarget
@@ -103,6 +110,20 @@ def sort_basis(basis):
 # x is an array containing the values to do the gaussian for.
 def gauss(x, winv):
     return np.exp(-x*x*2.*winv*winv)*winv*0.7978845608
+
+def gaussian_at(x, sigma, mu):
+    dx = x-mu
+    dx2 = dx*dx
+    s2 = 2*sigma*sigma
+    a = 0.7978845608 / sigma
+    return np.exp(-dx2/s2) * a
+
+def interp(y_b, y_a, x_b, x_a, x):
+    if y_b == y_a:
+        return y_b
+    dy_dx = (y_a-y_b)/(x_a-x_b)
+    dy = dy_dx * (x - x_b)
+    return y_b + dy
 
 def integrate(numpoints, winv, points, areas, axis):
     # Initializing the array to 0 breaks for some reason.
@@ -250,7 +271,7 @@ class Detector:
             ax2 = ax.twiny()
             ax2.set_xlim(0,self.safio.E0)
             
-            kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
+            # kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
             
             print("I_E, Detections: "+str(len(aArr)))
             
@@ -260,7 +281,7 @@ class Detector:
             ax2.tick_params(axis="x", direction="in")
 
             ax.set_ylabel('Intensity')
-            ax.legend(handles=[kplot], loc='upper left')
+            # ax.legend(handles=[kplot], loc='upper left')
             if self.plots:
                 fig.show()
             #The following saves the plot as a png file
@@ -548,8 +569,18 @@ class Spectrum:
         
         self.detector.emin = emin
         self.detector.emax = emax
+
+        self.t_min = thmin
+        self.t_max = thmax
+
+        self.e_min = emin
+        self.e_max = emax
+
+        self.p_min = phimin
+        self.p_max = phimax
         
         self.detector.clear()
+        start = time.time()
         for i in range(len(data)):
             traj = data[i]
             e = traj[3]
@@ -572,71 +603,146 @@ class Spectrum:
             if self.detector.isInDetector(t, p, e):
                 self.detector.addDetection(traj)
             self.data.append(traj)
+        end = time.time()
+        print("Time to process data: {:.3f}s".format(end - start))
 
     def plotThetaE(self):
         
-        # X Coord on graph
-        x = []
-        # Y Coord on graph
-        y = []
-        # Dot Colour, scaled by phi.
-        c = []
-        
+        size = 1024
+        img = np.zeros((size,size))
+        e_max = self.e_max
+        e_min = self.e_min
+        t_min = self.t_min
+        t_max = self.t_max
+
+        del_e = e_max-e_min
+        del_t = t_max-t_min
+
+        de = del_e/size
+        dt = del_t/size
+
+        print("bounds: {} {} {} {}".format(e_min, e_max, t_min, t_max))
+        x = 0
         for i in range(len(self.data)):
             line = self.data[i]
             e = line[3]
             t = line[4]
-            p = line[5]
-            
-            if e < 0:
-                continue
-            x.append(t)
-            y.append(e)
-            c.append(p)
-        
-       # c = np.log(c)
-        
-        if np.min(c) != np.max(c):
-            c = c - np.min(c)
-        c = c / np.max(c)
-        
-        colour = [(var,0,0) for var in c]
+            val = 0
+            i_e = 0
+            i_t = 0
+            t = t - t_min
+            e = e - e_min
+            if e >= 0 and e < del_e and t >= 0 and t < del_t:
+                i_e = math.floor(e/de)
+                i_t = math.floor(t/dt)
+                img[i_e][i_t] = img[i_e][i_t] + 1
+                x = x + 1
+
+        max_intensity = np.max(img)
+        while max_intensity < 100 and size > 2:
+            size = int(size / 2)
+            img = np.zeros((size,size))
+            de = del_e/size
+            dt = del_t/size
+            print("bounds: {} {} {} {}".format(e_min, e_max, t_min, t_max))
+            for i in range(len(self.data)):
+                line = self.data[i]
+                e = line[3]
+                t = line[4]
+                val = 0
+                i_e = 0
+                i_t = 0
+                t = t - t_min
+                e = e - e_min
+                if e >= 0 and e < del_e and t >= 0 and t < del_t:
+                    i_e = math.floor(e/de)
+                    i_t = math.floor(t/dt)
+                    img[i_e][i_t] = img[i_e][i_t] + 1
+            max_intensity = np.max(img)
         
         if self.plots:
             fig, ax = plt.subplots()
-            ax.scatter(x, y, c=colour)
-            ax.set_title("Energy vs Theta, Detections: "+str(len(x)))
-            ax.set_xlabel('Angle (Degrees)')
-            ax.set_ylabel('Energy (eV)')
-            if self.plots:
-                fig.show()
+            im = ax.imshow(img, interpolation="bicubic", extent=(t_min, t_max, e_max, e_min))
+            ax.invert_yaxis()
+            ax.set_aspect(aspect=del_t/del_e)
+            fig.colorbar(im, ax=ax)
+            ax.set_title("Energy vs Theta, Counts: {}, Size: {}".format(x, size))
+            ax.set_xlabel('Outgoing angle (Degrees)')
+            ax.set_ylabel('Outgoing Energy (eV)')
+            fig.show()
+            p_max = self.p_max
+            p_min = self.p_min
+            formatting = "{}ETheta-{}eV-{}eV_{}-{}_{}-{}_{}.png"
+            file_name = formatting.format(self.detector.outputprefix, e_min, e_max, t_min, t_max, p_min, p_max, size)
+            matplotlib.image.imsave(file_name, img)
 
     def plotPhiTheta(self):
+
+        size = 1024
+
+        img = np.zeros((size,size))
+
+        p_max = self.p_max
+        p_min = self.p_min
+        t_min = self.t_min
+        t_max = self.t_max
+
+        del_p = p_max-p_min
+        del_t = t_max-t_min
         
-        # X Coord on graph
-        x = []
-        # Y Coord on graph
-        y = []
-        # Dot Colour, scaled by energy.
-        c = []
-        
+        dp = del_p/size
+        dt = del_t/size
+
+        print("bounds: {} {} {} {}".format(t_min, t_max, p_min, p_max))
+        x = 0
         for i in range(len(self.data)):
             line = self.data[i]
-            x.append(line[5])
-            y.append(line[4])
-            c.append(line[3])
+            p = line[5]
+            t = line[4]
+            val = 0
+            i_p = 0
+            i_t = 0
+            t = t - t_min
+            p = p - p_min
+            if p >= 0 and p < del_p and t >= 0 and t < del_t:
+                i_p = math.floor(p/dp)
+                i_t = math.floor(t/dt)
+                img[i_t][i_p] = img[i_t][i_p] + 1
+                x = x + 1
+
+        max_intensity = np.max(img)
+        while max_intensity < 100 and size > 2:
+            size = int(size / 2)
+            img = np.zeros((size,size))
+            dp = del_p/size
+            dt = del_t/size
+            print("bounds: {} {} {} {}".format(t_min, t_max, p_min, p_max))
+            for i in range(len(self.data)):
+                line = self.data[i]
+                p = line[5]
+                t = line[4]
+                val = 0
+                i_p = 0
+                i_t = 0
+                t = t - t_min
+                p = p - p_min
+                if p >= 0 and p < del_p and t >= 0 and t < del_t:
+                    i_p = math.floor(p/dp)
+                    i_t = math.floor(t/dt)
+                    img[i_t][i_p] = img[i_t][i_p] + 1
+            max_intensity = np.max(img)
         
-        if np.min(c) != np.max(c):
-            c = c - np.min(c)
-        c = c / np.max(c)
+        if self.plots:
+            fig, ax = plt.subplots()
+            im = ax.imshow(img, interpolation="bicubic", extent=(p_max, p_min, t_min, t_max))
+            ax.invert_yaxis()
+            ax.set_aspect(aspect=del_p/del_t)
+            fig.colorbar(im, ax=ax)
+            ax.set_title("Theta vs Phi, Counts: {}, Size: {}".format(x, size))
+            ax.set_xlabel('Phi Angle (Degrees)')
+            ax.set_ylabel('Theta Angle (Degrees)')
+            fig.show()
+            formatting = "{}PTheta-{}eV-{}eV_{}-{}_{}.png"
+            file_name = formatting.format(self.detector.outputprefix, p_max, p_min, t_min, t_max, size)
+            matplotlib.image.imsave(file_name, img)
         
-        colour = [(var,0,0) for var in c]
-        
-        fig, ax = plt.subplots()
-        ax.scatter(x, y, c=colour)
-        ax.set_title("Theta vs Phi, Detections: "+str(len(x)))
-        ax.set_xlabel('Phi Angle (Degrees)')
-        ax.set_ylabel('Theta Angle (Degrees)')
-        fig.show()
-        #The following saves the plot as a png file
-        #fig.savefig('thetaphiplot.png')
