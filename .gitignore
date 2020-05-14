@@ -14,6 +14,7 @@ bin/Release/tests/*
 bin/Debug/tests/*
 analysis/safari.input
 *_pycache_*
+tests/*
 
 # These are generated when you run things
 *.data
