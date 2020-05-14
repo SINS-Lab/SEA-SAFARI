@@ -406,6 +406,12 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             NUMCHA = prog_args["-n"].as_int();
         }
 
+        if (prog_args["-e"])
+        {
+            E0 = prog_args["-e"].as_double();
+            debug_file << "Override of E0: " << E0 << '\n';
+        }
+
         if (prog_args["-t"])
         {
             TEMP = prog_args["-t"].as_double();
