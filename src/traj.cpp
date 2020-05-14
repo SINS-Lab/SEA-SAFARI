@@ -5,6 +5,9 @@
 #include "safio.h"      // general settings
 #include <cmath>        // trig functions and sqrt
 #include <algorithm>    // std::sort
+#include <mutex>        // for not corrupting log lines
+
+std::mutex mutx;
 
 void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {
@@ -115,6 +118,8 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int r
                     site->rr_min_find = std::min(rr, site->rr_min_find);
                     // Add the site to our tracked sites.
                     site->near_sites[site->total_near] = s;
+                    // site->near_dists[site->total_near * 6] = s->r;
+                    // site->near_dists[site->total_near * 6 + 3] = s->r_t;
                     site->total_near++;
                 }
             }
@@ -930,7 +935,9 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
                 ion.max_n, ion.r_min, ion.steps,
                 ion.Eerr_max, ion.time);
         // Then save it
+        mutx.lock();
         out_file << buffer << std::flush;
+        mutx.unlock();
     }
     // We use this as a after saving.
     ion.index = did_hit;

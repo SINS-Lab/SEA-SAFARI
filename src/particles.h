@@ -59,7 +59,7 @@ public:
     double r_u[3];
 
     // Things here for saving to data files
-    
+
     // Number of traj steps done, note that this is not
     // the same as the number of time steps, as this is
     // incremented even if it reduces timestep and tries over.
@@ -72,7 +72,6 @@ public:
     double Eerr_max = 0;
     // Number of times a site-site intersection occurs.
     int site_site_intersects = 0;
-
 
     // Used to track the last ion which has interacted with us.
     int last_ion = -1;
@@ -101,6 +100,9 @@ public:
     // This is the nearby sites when at rest, this is
     // set during the initial setting of the springs.
     Site **rest_near_sites = NULL;
+    // This is stuffed with the position pointers for
+    // the nearby sites's current and future positions
+    // double **near_dists = NULL;
     int rest_near_count = 0;
     // Maximum number of nearby atoms for this ion
     int max_n = 0;
@@ -139,7 +141,11 @@ public:
             delete near_sites;
         if (rest_near_sites != NULL)
             delete rest_near_sites;
+        // if (near_dists != NULL)
+        //     delete near_dists;
         near_sites = NULL;
+        rest_near_sites = NULL;
+        // near_dists = NULL;
     }
 
     Site(const Site &other)
