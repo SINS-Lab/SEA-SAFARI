@@ -146,7 +146,7 @@ t
 4 1 26
 
 # The parameters for the potentials
-#
+# the LJ potentials are from https://doi.org/10.1016/j.ssc.2003.12.033
 644.061 3.971 1662 13.13 -0.415 2.277
 
 # These parameters are for the image charge.

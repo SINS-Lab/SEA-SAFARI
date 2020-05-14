@@ -18,17 +18,17 @@
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
 #
-250.0 45.0 0.00 22.989 Na
+250.0 45.0 0.00 39.0983 K
 
 # Most of these are currently unused at present
 # EMIN,EMAX,ERES,ARES
 #
 # EMIN - anything below this will not count as a hit in the detector
-# ERES - if not 0, will "thermalize" the ion as well (not currently implememnted)
 # EMAX - unused
+# ERES - if not 0, will "thermalize" the ion as well (not currently implememnted)
 # ARES - unused
 #
-0.5 250 2.5 0.5
+0.5 250 10 0.5
 
 # Detector Type and optional cull flag
 #  <type> <cull flag|optional>
@@ -104,7 +104,7 @@ t
 # In adaptive grid mode, this number is how many thermal iterations
 # are run, this is only applied if the temperature is not 0
 #
-100000
+1000000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
@@ -117,10 +117,10 @@ t
 #
 # x:(min, step, max) (Optional polygon)
 #
-0 0.1 4.0786
+0 0.1 3.6147
 # y:(min, step, max) (Optional polygon)
 #
-0 0.1 4.0786
+0 0.1 3.6147
 
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
@@ -172,14 +172,14 @@ t
 #       needs additional parameters after
 #       the 4 parameters below
 #
-4 1 0
+4 1 16
 
 # The parameters for the potentials
 #
 # If the interlattice force option is 2, there then needed
 # to be additional lennard jones parameters added after these
 #
-4153.6 3.625 27017.57 7.286
+2997.336 3.437 81848.31 9.542
 
 # These parameters are for the image charge.
 # The first is how many parameters, the second is the type.
@@ -224,7 +224,7 @@ f
 #
 # These 3 values are AX, AY, AZ, the lattice constants for the basis.
 #
-4.0786 4.0786 4.0786
+3.6147 3.6147 3.6147
 
 # This line is how many sites are in the basis
 4
@@ -248,7 +248,7 @@ f
 # Atomic Mass, Atomic Number, Atomic Symbol
 # Spring Constants (kx, ky, kz)
 #
-196.967 79 Au
+63.546 29 Cu
 5.0 5.0 5.0
 
 # These control inter-atomic forces
@@ -267,7 +267,7 @@ f
 # 4. Number of nearest neighbours to consider for interaction,
 #    This defaults to 1 if the argument is not present.
 #
-t 1.5 10 2
+t 1.5 35 2
 
 # This line defines the surface face of the crystal to generate.
 # The first three parameters are nessisary, they are the 

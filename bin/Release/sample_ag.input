@@ -52,7 +52,7 @@
 # Detector Theta, Theta size, Phi size
 #
 # This is also only used during adaptive grid
-45.0 10 10.0
+45.0 45 15.0
 
 # Integration Parameters
 # time steps
@@ -104,7 +104,7 @@ t
 #
 # This value is the number of thermal iterations for this run
 #
-10
+100
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
