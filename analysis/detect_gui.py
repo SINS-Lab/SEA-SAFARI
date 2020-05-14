@@ -351,6 +351,12 @@ def addDropdownItems(directory, subdirectories, input_list):
         if filename.endswith('.input') and not filename==('safari.input')\
            and not (filename.endswith('_mod.input') or filename.endswith('_ss.input')):
             input_list.append(os.path.join(directory, filename).replace('.input', ''))
+        if filename.endswith('.dbug'):
+            hasInput = False
+            for filename2 in os.listdir(directory):
+                hasInput = hasInput or filename2.replace('.input', '') == filename.replace('.dbug', '')
+            if not hasInput:
+                input_list.append(os.path.join(directory, filename).replace('.dbug', ''))
         # Also add any input files in the next level down from here.
         newDir = os.path.join(directory, filename)
         if subdirectories and os.path.isdir(newDir):
@@ -381,7 +387,7 @@ def fileSelection(directory='.'):
         dropdown.addItem(line)
     return dropdown
         
-def run(spectrum, directory='.'):
+def run(directory='.'):
     app = QApplication([])
     window = QWidget()
     layout = QGridLayout()
@@ -401,6 +407,7 @@ def run(spectrum, directory='.'):
     #Make a button for running 
     run = QPushButton('Spectrum')
     def push():
+        spectrum = Spectrum()
         data = detect.load(filebox.currentText())
         spectrum.crystal = detect.loadCrystal(filebox.currentText())
         try:
@@ -416,7 +423,10 @@ def run(spectrum, directory='.'):
             elif file.endswith('.npy'):
                 file = file.replace('.npy', '.input')
             else:
-                file = file + '.input'
+                fileA = file + '.input'
+                if not os.path.exists(fileA):
+                    fileA = file + '.dbug'
+                file = fileA
             spectrum.safio = safari_input.SafariInput(file)
             spectrum.run(data)
             spectrum.popup.setWindowTitle(file)
@@ -437,6 +447,7 @@ def run(spectrum, directory='.'):
             try:
                 spectrum = Spectrum()
                 app.spectrums.append(spectrum)
+                spectrum.crystal = detect.loadCrystal(filebox.currentText())
                 spectrum.name = file
                 if file.endswith('.data'):
                     file = file.replace('.data', '.input')
@@ -447,7 +458,10 @@ def run(spectrum, directory='.'):
                 elif file.endswith('.npy'):
                     file = file.replace('.npy', '.input')
                 else:
-                    file = file + '.input'
+                    fileA = file + '.input'
+                    if not os.path.exists(fileA):
+                        fileA = file + '.dbug'
+                    file = fileA
                 spectrum.safio = safari_input.SafariInput(file)
                 spectrum.run(data)
                 spectrum.popup.setWindowTitle(file)
@@ -466,6 +480,9 @@ def run(spectrum, directory='.'):
     # Button to clear spectrums
     clear = QPushButton('Clear')
     def clear_func():
+        for spectrum in app.spectrums:
+            if spectrum.popup is not None:
+                spectrum.popup.close()
         app.spectrums = []
     clear.clicked.connect(clear_func)
     layout.addWidget(clear)
@@ -475,8 +492,9 @@ def run(spectrum, directory='.'):
     def done():
         plt.close("all")
         window.close()
-        if spectrum.popup is not None:
-            spectrum.popup.close()
+        for spectrum in app.spectrums:
+            if spectrum.popup is not None:
+                spectrum.popup.close()
     close.clicked.connect(done)
     layout.addWidget(close)
     window.setLayout(layout)
@@ -491,5 +509,4 @@ if __name__ == '__main__':
     directory = '.' 
     if args.directory:
         directory = args.directory
-    spectrum = Spectrum()
-    run(spectrum, directory)
+    run(directory)

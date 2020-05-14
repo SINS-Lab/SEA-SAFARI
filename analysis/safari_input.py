@@ -62,6 +62,10 @@ class SafariInput:
 
     def __init__(self, fileIn):
         self.fileIn = fileIn
+
+        self.file_type = ".input"
+        if fileIn.endswith(".dbug"):
+            self.file_type = ".dbug"
         
         # Inialize All variables
         self.E0 = 1625.0
@@ -159,7 +163,7 @@ class SafariInput:
         self.load()
         # Instead here we should check for a default file, and use that
         # if we do not have the requested input file.
-        self.fileIn = fileIn.replace('.input', '_mod.input')
+        self.fileIn = fileIn.replace(self.file_type, '_mod.input')
         # This copies stuff from the original input to the modified one.
         self.save()
         return
@@ -170,7 +174,7 @@ class SafariInput:
             fileIn = time.strftime("%Y%m%d_%H%M%S") +'.input'
         self.save(fileIn)
         saf_file = open('safari.input', 'w')
-        saf_file.write(fileIn.replace('.input', ''))
+        saf_file.write(fileIn.replace(self.file_type, ''))
         saf_file.close()
         
     def load(self):
@@ -191,6 +195,14 @@ class SafariInput:
             # This is a comment in the file
             if line.startswith("#"):
                 continue
+
+            # This file is a .dbug, and so started with this
+            if line.startswith("Loading Info From:"):
+                continue
+
+            # This file is a .dbug, anything after this is not input file anymore
+            if line.startswith("Loaded SAFIO"):
+                break
             
             args = parseLine(line)
             # Number of arguments, used for padding arrays with 0
@@ -446,13 +458,13 @@ class SafariInput:
 
     def save(self, file=None):
         if file is None:
-            output = open(self.fileIn, 'w')
+            output = open(self.fileIn.replace(self.file_type, '.input'), 'w')
         else:
             output = open(file, 'w')
             if self.load_crystal:
                 # We need to copy the crystal file over as well.
-                crys_file_in = self.fileIn.replace('.input', '.crys_in')
-                crys_file_out = file.replace('.input', '.crys_in')
+                crys_file_in = self.fileIn.replace(self.file_type, '.crys_in')
+                crys_file_out = file.replace(self.file_type, '.crys_in')
                 try:
                     shutil.copy(crys_file_in, crys_file_out)
                 except:
