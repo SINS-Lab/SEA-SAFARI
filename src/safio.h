@@ -2,6 +2,7 @@
 
 #include "particles.h"     // Atom object is in here
 #include "string_utils.h"  // helpful for argument parsing
+#include <mutex>        // for not corrupting log lines
 
 /**
  * This is the main configuration and settings header for Sea-Safari.
@@ -264,3 +265,5 @@ extern std::ofstream xyz_file;
 extern std::ofstream debug_file;
 // This is the .dbug file to lattice info in
 extern std::ofstream crystal_file;
+// Mutex for file writing use
+extern std::mutex mutx;

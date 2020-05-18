@@ -5,9 +5,7 @@
 #include "safio.h"      // general settings
 #include <cmath>        // trig functions and sqrt
 #include <algorithm>    // std::sort
-#include <mutex>        // for not corrupting log lines
 
-std::mutex mutx;
 
 void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {

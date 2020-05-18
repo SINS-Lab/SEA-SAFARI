@@ -22,6 +22,7 @@ std::ofstream traj_file;
 std::ofstream xyz_file;
 std::ofstream crystal_file;
 Detector default_detector;
+std::mutex mutx;
 
 double space_mask[3375][3];
 
@@ -238,13 +239,17 @@ int main(int argc, char *argv[])
                 int start = i * ions_per_thread;
                 //Copy the lattice
                 Lattice *toUse = new Lattice(lattice);
+                mutx.lock();
                 std::cout << "Starting Thread " << i << "\n"
                           << std::flush;
+                mutx.unlock();
                 toUse->clear_stats();
                 montecarloscat(toUse, start, ions_per_thread, seeds[i]);
                 lattice.add_stats(toUse);
+                mutx.lock();
                 std::cout << "Finished Thread " << i << "\n"
                           << std::flush;
+                mutx.unlock();
                 delete toUse;
             }
             n = ions_per_thread * THREADCOUNT;
