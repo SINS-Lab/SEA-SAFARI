@@ -817,8 +817,17 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     {
         theta = 0;
         phi = 90;
-        E = -100;
-        lattice->stuck_num++;
+
+        if(ion.r[3] > 0)
+        {
+            E = -10;
+            lattice->trapped_num++;
+        }
+        else
+        {
+            E = -100;
+            lattice->stuck_num++;
+        }
     }
     else if (buried)
     {
