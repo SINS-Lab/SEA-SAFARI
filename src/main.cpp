@@ -142,9 +142,8 @@ int main(int argc, char *argv[])
     double start = clock();
     int n = 0;
 
-    default_detector.phi = settings.PHI0;
-    default_detector.theta = 45;
-    default_detector.e_min = settings.EMIN;
+    // Initialize the detector with some wide defaults
+    default_detector.init(settings.EMIN, 45, settings.PHI0, 45, 5);
 
     if (settings.SCAT_FLAG == 666)
     {
@@ -170,9 +169,14 @@ int main(int argc, char *argv[])
             std::cout << "Running Adaptive Grid\n"
                       << std::flush;
 
-            default_detector.theta = settings.detect_parameters[0];
-            default_detector.dtheta = settings.detect_parameters[1];
-            default_detector.dphi = settings.detect_parameters[2];
+            double e_min = settings.EMIN;
+            double theta = settings.detect_parameters[0];
+            double phi = settings.PHI0;
+            double dtheta = settings.detect_parameters[1];
+            double dphi = settings.detect_parameters[2];
+
+            // Initialize the detector based on the parameters in the file
+            default_detector.init(e_min, theta, phi, dtheta, dphi);
 
             // We use numcha for the number of iterations of adaptive grid.
             // If temperature is 0, we only need 1 run.

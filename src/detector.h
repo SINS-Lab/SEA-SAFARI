@@ -13,15 +13,35 @@ public:
     double dtheta = 90;
     double dphi = 5;
 
+    int modulo = 360;
+
+    void init(double e_min_, double theta_, double phi_, double dtheta_, double dphi_)
+    {
+        e_min = e_min_;
+        theta = theta_;
+        dtheta = dtheta_;
+        dphi = dphi_;
+        if(theta - dtheta < 0)
+        {
+            modulo = 180;
+        }
+        else
+        {
+            modulo = 360;
+        }
+        phi = remainder(phi_ + 360, modulo);
+    }
+
     bool hit(double E, double theta_in, double phi_in)
     {
-        // These are originally in -180 to 180 range,
-        // +360 shift allows easier comparisons without edge cases.
-        double test = phi_in + 360;
-        double ref = phi + 360;
-        double diff_phi = fabs(test - ref);
+        // The +360 to avoid issues with negative comparisons
+        double test = remainder(phi_in + 360, modulo);
+        double diff_phi = fabs(test - phi);
         double diff_theta = fabs(theta_in - theta);
-        return E > e_min && diff_phi < dphi && diff_theta < dtheta;
+        bool inE = E > e_min;
+        bool inTheta = diff_theta < dtheta;
+        bool inPhi = diff_phi < dphi;
+        return inE && inTheta && inPhi;
     }
 
     void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
