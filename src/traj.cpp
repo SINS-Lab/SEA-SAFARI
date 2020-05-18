@@ -818,7 +818,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         theta = 0;
         phi = 90;
 
-        if(ion.r[3] > 0)
+        if(ion.r[2] > 0)
         {
             E = -10;
             lattice->trapped_num++;
