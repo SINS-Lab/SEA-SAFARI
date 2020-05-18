@@ -392,11 +392,17 @@ def plot(entry, directory, translation, calib=False, stacked=False, compound=Fal
         ax_integrated.set_ylabel('Intensity (Arbitrary)')
         fig_integrated.show()
 
-def fit_img(file):
+def fit_img(file, emin, emax, tmin, tmax):
     img = matplotlib.image.imread(file)
 
     shape = img.shape
     axis = np.arange(0,shape[0])
+
+    de = emax - emin
+    dt = tmax - tmin
+
+    de_dp = de / shape[1]
+    dt_dp = dt / shape[0]
 
     x=[]
     y=[]
@@ -415,11 +421,11 @@ def fit_img(file):
         if noerr:
             max_points = max(max_points,(len(params) - 2)/3)
             for k in range(2, len(params), 3):
-                x.append(i)
+                x.append(i * dt_dp)
                 mu = params[k+2]
                 sigma = params[k+1]
-                s.append(sigma*2)
-                y.append(mu)
+                s.append(sigma * 2)
+                y.append(mu * de_dp)
                 if vals[mu] >= img_threshold:
                     imgsig[mu][i] = imgsig[mu][i] + 1
 
@@ -428,7 +434,7 @@ def fit_img(file):
         lines.append([[],[]])
     print("Finding Lines on Fits")
 
-    theshold = 1.3
+    theshold = 10
     numlines = len(lines)
 
     next_line = 1
@@ -481,28 +487,29 @@ def fit_img(file):
 
     s = np.array(s)
 
-    # ax.imshow(img, interpolation="bicubic")
-    ax.imshow(img, interpolation="bicubic")
+    imgplot = ax.imshow(img, interpolation="bicubic", extent=(tmin, tmax, emax, emin))
+    fig.colorbar(imgplot, ax=ax)
     ax.invert_yaxis()
+    ax.set_aspect(aspect=dt/de)
 
     index = 0
     for n in range(len(lines)):
         if len(lines[n][0]) < 10:
             continue
-        x1 = np.array(lines[n][0])
-        y0 = np.array(lines[n][1])
+        # x1 = np.array(lines[n][0]) * dt_dp
+        # y0 = np.array(lines[n][1]) * de_dp
 
-        ax.plot(x1,y0, label="{} Points".format(index))
+        # ax.plot(x1,y0, label="{} Points".format(index))
 
         # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1])
         # y1 = n_poly(x1, *popt)
         # m,b,r,p,err = linregress(y0, y1)
         # ax.plot(x1,y1, label="{} 1st order R={:.4f}, {:.3e} {:.3e}".format(index, r, *popt))
 
-        popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1])
-        y1 = n_poly(x1, *popt)
-        m,b,r,p,err = linregress(y0, y1)
-        ax.plot(x1,y1, label="{} 2nd order R={:.4f}, {:.3e} {:.3e} {:.3e}".format(index, r, *popt))
+        # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1])
+        # y1 = n_poly(x1, *popt)
+        # m,b,r,p,err = linregress(y0, y1)
+        # ax.plot(x1,y1, label="{} 2nd order R={:.4f}, {:.3e} {:.3e} {:.3e}".format(index, r, *popt))
 
         # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1,1])
         # y1 = n_poly(x1, *popt)
@@ -515,19 +522,56 @@ def fit_img(file):
         # ax.plot(x1,y1, label="{} 4th order R={:.4f}".format(index, r))
 
         index = index + 1
-    ax.scatter(x,y, c="r", s=s)
-    # ax.legend()
+    ax.scatter(x,y, c="y", s=s,label="Simulation Peaks")
+
+    other = open('./tests/vals.tab', 'r')
+
+    dat_x = []
+    dat_y = []
+
+    for line in other:
+        vars = line.split()
+        dat_x.append(float(vars[0]))
+        dat_y.append(float(vars[1]))
+    ax.scatter(dat_x,dat_y, c="r", s=1,label="Data Peaks")
+
+    ax.set_xlabel('Outgoing angle (Degrees)')
+    ax.set_ylabel('Outgoing Energy (E/E0)')
+    ax.tick_params(direction="in", which='both')
+
+    ax.legend()
     fig.show()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--directory", help="Directory to run from")
+    parser.add_argument("--emin", help="Starting energy")
+    parser.add_argument("--emax", help="Final Energy")
+    parser.add_argument("--tmin", help="Starting Angle")
+    parser.add_argument("--tmax", help="Final Angle")
     args = parser.parse_args()
     directory = '.' 
     if args.directory:
         directory = args.directory
 
-    fit_img('./tests/img.png')
+
+    emin = 0
+    emax = 1
+
+    tmin = 0
+    tmax = 90
+
+    if args.emin:
+        emin = float(args.emin)
+    if args.emax:
+        emax = float(args.emax)
+
+    if args.tmin:
+        tmin = float(args.tmin)
+    if args.tmax:
+        tmax = float(args.tmax)
+
+    fit_img('./tests/img.png', emin, emax, tmin, tmax)
 
     # filetable = TansTbl()
     # filetable.load(directory)
