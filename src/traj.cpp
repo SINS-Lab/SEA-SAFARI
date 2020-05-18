@@ -892,7 +892,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
             E = psq / mx2;
 
             // calculate theta, depends on pz
-            theta = acos(pzz / p) * 180 / M_PI;
+            theta = acos(pzz / p) * RAD2DEG;
 
             if (px == 0 && py == 0)
             {
@@ -903,14 +903,13 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
             else
             {
                 // Calculate phi, depends on px, py
-                phi = atan2(py, px) * 180 / M_PI;
+                phi = atan2(py, px) * RAD2DEG;
             }
         }
     }
 
     bool did_hit = E > -10;
-    // Detectors should generally be 1 degree resolution,
-    // A difference of 10 is far outside the allowed range.
+    
     if (did_hit && !hit(E, theta, phi) && !ignore_bounds)
     {
         theta = 0;

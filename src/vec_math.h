@@ -1,5 +1,6 @@
 #pragma once
 #define M_PI           3.14159265358979323846  /* pi */
+#define RAD2DEG        57.2957795131           /* 180/pi */
 
 class Vec3d
 {
