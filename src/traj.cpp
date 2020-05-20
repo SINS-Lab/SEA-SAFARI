@@ -116,8 +116,13 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int r
                     site->rr_min_find = std::min(rr, site->rr_min_find);
                     // Add the site to our tracked sites.
                     site->near_sites[site->total_near] = s;
+
                     // site->near_dists[site->total_near * 6] = s->r;
                     // site->near_dists[site->total_near * 6 + 3] = s->r_t;
+
+                    // site->near_forces[site->total_near * 6] = s->dp_dt;
+                    // site->near_forces[site->total_near * 6 + 3] = s->dp_dt_t;
+
                     site->total_near++;
                 }
             }

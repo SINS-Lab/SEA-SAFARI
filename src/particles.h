@@ -100,9 +100,7 @@ public:
     // This is the nearby sites when at rest, this is
     // set during the initial setting of the springs.
     Site **rest_near_sites = NULL;
-    // This is stuffed with the position pointers for
-    // the nearby sites's current and future positions
-    // double **near_dists = NULL;
+    // Number nearby at rest
     int rest_near_count = 0;
     // Maximum number of nearby atoms for this ion
     int max_n = 0;
@@ -129,6 +127,13 @@ public:
     uint64_t hameq_tick = 0;
     uint64_t update_tick = 0;
 
+    // Some arrays for stuffing positions and momenta in for easier processing
+    
+    // This is stuffed with the position pointers for
+    // the nearby sites's current and future positions
+    // double **near_dists = NULL;
+    // double **near_forces = NULL;
+
     Site()
     {
         r_0 = new double[6];
@@ -143,9 +148,12 @@ public:
             delete rest_near_sites;
         // if (near_dists != NULL)
         //     delete near_dists;
+        // if (near_forces != NULL)
+        //     delete near_forces;
         near_sites = NULL;
         rest_near_sites = NULL;
         // near_dists = NULL;
+        // near_forces = NULL;
     }
 
     Site(const Site &other)

@@ -332,14 +332,19 @@ void Lattice::init_springs(int nearest)
         //Initialize large for initial search
         site->near_sites = new Site *[MAX_NEAR];
         // site->near_dists = new double *[MAX_NEAR * 6];
+        // site->near_forces = new double *[MAX_NEAR * 6];
 
         if (site->rest_near_sites != NULL)
         {
             for (int i = 0; i < site->rest_near_count; i++)
             {
                 site->near_sites[i] = site->rest_near_sites[i];
+
                 // site->near_dists[i * 6] = site->near_sites[i]->r;
                 // site->near_dists[i * 6 + 3] = site->near_sites[i]->r_t;
+            
+                // site->near_forces[i * 6] = site->near_sites[i]->dp_dt;
+                // site->near_forces[i * 6 + 3] = site->near_sites[i]->dp_dt_t;
             }
             site->near = site->rest_near_count;
             continue;
@@ -377,8 +382,12 @@ void Lattice::init_springs(int nearest)
         for (int i = 0; i < site->rest_near_count; i++)
         {
             site->rest_near_sites[i] = site->near_sites[i];
+            
             // site->near_dists[i * 6] = site->near_sites[i]->r;
             // site->near_dists[i * 6 + 3] = site->near_sites[i]->r_t;
+            
+            // site->near_forces[i * 6] = site->near_sites[i]->dp_dt;
+            // site->near_forces[i * 6 + 3] = site->near_sites[i]->dp_dt_t;
         }
 
         //We do not clean up the size of this array, as it is

@@ -27,7 +27,8 @@ public:
         // lattice springs are used.
         // So for Ion, we initialize it at this size.
         near_sites = new Site *[MAX_NEAR];
-        // near_dists = new double *[MAX_NEAR];
+        // near_dists = new double *[MAX_NEAR * 6];
+        // near_forces = new double *[MAX_NEAR * 6];
         q = 1;
     }
 
