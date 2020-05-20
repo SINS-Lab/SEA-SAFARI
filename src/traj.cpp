@@ -769,6 +769,10 @@ end:
             if (y_0 < y_min || y_0 > y_max)
                 continue;
 
+            // This means we are actually going downwards, not valid sputter!
+            if (s->p[2] < 0 or s->r[2] < settings.Z1 / 4) 
+                continue;
+
             // Copy some values over from the ion
             s->steps = ion.steps;
             // Recorde the ion's error flag as the wieght instead
