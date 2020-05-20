@@ -31,13 +31,6 @@ public:
         q = 1;
     }
 
-    ~Ion()
-    {
-        if (near_sites != NULL)
-            delete near_sites;
-        near_sites = NULL;
-    }
-
     /**
      * Overrides the reset for Site, this is more specific
      * for the ion
