@@ -58,9 +58,6 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
     // Multiplier on timestep.
     double change;
 
-    // // Used for printing output.
-    // char buffer[200];
-
     Ion &orig = *ions[0];
 
     // Reset some values before the integration loop
