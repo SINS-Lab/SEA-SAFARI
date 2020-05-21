@@ -84,6 +84,7 @@ start:
 
     // This is set back true later if needed.
     sort = false;
+    reindex = false;
     // Increment counter for how many steps we have taken
     orig.steps++;
 

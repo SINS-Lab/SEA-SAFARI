@@ -22,7 +22,10 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice,
     {
         // We need to resort this if we find new index.
         re_sort = true;
-
+        if(ion_ptr!=NULL)
+        {
+            ion_ptr->reindex = false;
+        }
         //Update last index checked.
         site->last_index = pos_hash;
 
@@ -144,6 +147,11 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice,
         std::sort(site->near_sites, site->near_sites + site->total_near, [site](Site *a, Site *b) { return site->compare_sites(a, b); });
         // Update nearby number, taking min of these two.
         site->near = std::min(site->total_near, target_num);
+
+        if(ion_ptr!=NULL)
+        {
+            ion_ptr->resort = false;
+        }
     }
 
     if (ion_ptr != NULL && settings.useLennardJones)
@@ -561,6 +569,7 @@ start:
     }
     // This is set back true later if needed.
     sort = false;
+    reindex = false;
     // Increment counter for how many steps we have taken
     ion.steps++;
 
