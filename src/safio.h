@@ -119,12 +119,13 @@ struct Safio
 
     // The following indicate as are named, and are set based
     // on the value of lattice_potential_type
-    bool useEinsteinSprings = true; // 0
+    bool useEinsteinSprings = true; // this is false if 1 or 2
     bool useAtomSpings = false;     // 1
     bool useLennardJones = false;   // 2
     bool rigidBounds = false;       // 4
     bool dynamicNeighbours = false; // 8
     bool saveSputter = false;       // 16
+    bool cascadeMode = false;       // 32
 
     // Image Potential Values
     int image_potential_type;

@@ -20,7 +20,9 @@
  * @param re_sort - whether the list needs to be re-sorted by nearest
  * @param updateCells - this determines if the cells are updated
  */ 
-int fill_nearest(Ion* ion_ptr, Site *site, Lattice *lattice, int radius, int target_number, double max_rr, bool re_sort, bool updateCells);
+int fill_nearest(Ion* ion_ptr, Site *site, Lattice *lattice, int radius, 
+                 int target_number, double max_rr, 
+                 bool re_sort, bool updateCells, bool reindex);
 
 /**
  * Sets the flags indicated by the various pointers, by checking
@@ -36,8 +38,7 @@ int fill_nearest(Ion* ion_ptr, Site *site, Lattice *lattice, int radius, int tar
  * @param left - left the surface, ie got above Z0
  * 
  */ 
-bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
-                        bool *froze, bool *left, double& E);
+bool validate(Ion &ion, double& E);
 
 /**
  * Computes the trajectory of the ion, if log, it prints extra
@@ -52,3 +53,20 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
  * @param xyz - log the xyz trajectory
  */ 
 void traj(Ion &ion, Lattice *lattice, bool& log, bool& xyz, Detector &detector);
+
+
+void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, 
+                               int radius, int target_num, double max_rr, 
+                               bool re_sort, bool updateCells, bool reindex);
+
+
+void traj(std::vector<Ion *> &ions, Lattice *lattice, bool& log, bool& xyz, Detector &detector);
+
+void update_dynamic_neighbours(std::vector<Ion *> &ions, Ion *ion_ptr, Site *site, Lattice *lattice, 
+                               int radius, int target_num, double max_rr, 
+                               bool re_sort, bool updateCells, bool reindex);
+
+int fill_nearest(std::vector<Ion *> &ions, Ion* ion_ptr,  Site *site, Lattice *lattice, 
+                 int radius, int target_num, double max_rr, 
+                 bool re_sort, bool updateCells, bool reindex);
+

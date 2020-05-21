@@ -350,7 +350,7 @@ void Lattice::init_springs(int nearest)
             continue;
         }
 
-        fill_nearest(NULL, site, this, 2, 24, max_rr, true, false);
+        fill_nearest(NULL, site, this, 2, 24, max_rr, true, false, true);
         if (site->near == 0)
         {
             site->rest_near_sites = new Site *[0];

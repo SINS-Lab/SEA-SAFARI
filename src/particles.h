@@ -124,6 +124,13 @@ public:
     // Whether we have left the surface
     bool left = false;
 
+    // This is invalidated if we are turned into a projectile via
+    // a cascade event, it is set to the ion index that invalidated us
+    int valid = -1;
+    
+    // For the ion, this is min depth z, for the sites, it is rest position
+    double log_z = 1e3;
+
     uint64_t hameq_tick = 0;
     uint64_t update_tick = 0;
 
@@ -171,6 +178,16 @@ public:
         double dist_a = diff_sqr(a->r, this->r);
         double dist_b = diff_sqr(b->r, this->r);
         return dist_a < dist_b;
+    }
+
+    void invalidate(int index)
+    {
+        valid = index;
+    }
+
+    void validate()
+    {
+        valid = -1;
     }
 
     /**

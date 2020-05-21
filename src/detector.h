@@ -7,9 +7,9 @@
 class Detector
 {
 public:
-    double e_min;
-    double theta;
-    double phi;
+    double e_min = 0;
+    double theta = 45;
+    double phi = 0;
     double dtheta = 90;
     double dphi = 5;
 

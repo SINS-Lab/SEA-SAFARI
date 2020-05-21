@@ -7,18 +7,6 @@
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
 
-/**
- * This updates the current location/momentum of
- * the particle, to the corrected values based on the
- * forces at the current and predicted locations.
- * 
- * Positions are corrected by the error in the
- * values from the two forces, but momenta are
- * updated with just the average of the two forces.
- * 
- * @param s - the particle to update
- * @param dt - time step for this update.
- */
 void update_site(Site &s, double dt)
 {
     Atom *atom = s.atom;
@@ -40,23 +28,6 @@ void update_site(Site &s, double dt)
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
 }
 
-/**
- * This updates the current location/momentum of
- * the particle, to the corrected values based on the
- * forces at the current and predicted locations.
- * 
- * Positions are corrected by the error in the
- * values from the two forces, but momenta are
- * updated with just the average of the two forces.
- * 
- * This also then updates all of the subsites for this site,
- * note that this function does not get optimized as well as
- * the one that only does a single site.
- * 
- * @param s - the particle to update
- * @param 
- * @param dt - time step for this update.
- */
 void update_sites(Site &s, int last_update, double dt)
 {
     // We have already been updated!
@@ -75,13 +46,6 @@ void update_sites(Site &s, int last_update, double dt)
     }
 }
 
-/**
- * This predicts the location of the site, assuming the
- * current value of the momentum and force.
- * 
- * @param s - the particle to predict.
- * @param dt - the time step for the prediction
- */
 void predict_site_location(Site &s, double dt)
 {
     Atom *atom = s.atom;
@@ -181,7 +145,9 @@ double compute_error(Site &site, double dt)
     return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 }
 
-void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, double ay, double az, double dt, bool predicted, double *F_ion)
+void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, 
+                       double ax, double ay, double az, 
+                       double dt, bool predicted, double *F_ion)
 {
     double dx = 0, dy = 0, dz = 0;
 
@@ -232,11 +198,16 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
     }
 }
 
-void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at, double atomk, double dt, double ax, double ay, double az,
+void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at, 
+                           double atomk, double dt, double ax, double ay, double az,
                            bool predicted, bool recoil, bool useLennardJones, bool doubleCount)
 {
     // No Self interactions here!
     if (s == s2)
+        return;
+
+    // Only apply this to the valid sites, invalid ones are ions now.
+    if (s2->valid == ion.index)
         return;
 
     // Force on target.
@@ -378,7 +349,9 @@ end:
     }
 }
 
-void apply_dynamic_lattice(Site *s, Lattice *lattice, int start, Ion &ion, double *F_at, double atomk, double dt, double ax, double ay, double az,
+void apply_dynamic_lattice(Site *s, Lattice *lattice, int start, Ion &ion, 
+                           double *F_at, double atomk, double dt, 
+                           double ax, double ay, double az,
                            bool predicted, bool recoil, bool useLennardJones)
 {
     // Use atomk as k for springs between nearest sites, or lennard jones potentials
@@ -561,7 +534,8 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     ay = s->r[1];
                     az = s->r[2];
                 }
-                apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az, predicted, recoil, useLennardJones);
+                apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az, 
+                                      predicted, recoil, useLennardJones);
             }
         }
 

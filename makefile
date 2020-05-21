@@ -13,16 +13,16 @@ _FILES_SAFARI_R = main.cpp \
                 safio.cpp string_utils.cpp \
                 vec_math.cpp space_math.cpp \
                 lattice.cpp ion.cpp \
-                potentials.cpp hameq.cpp \
-                scat.cpp traj.cpp tests.cpp temps.cpp
+                potentials.cpp hameq.cpp hameq_cascade.cpp \
+                scat.cpp traj.cpp tests.cpp temps.cpp traj_cascade.cpp
 FILES_SAFARI_R = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_R))
 
 _FILES_SAFARI_D = main.cpp \
                 safio.cpp string_utils.cpp \
                 vec_math.cpp space_math.cpp \
                 lattice.cpp ion.cpp \
-                potentials.cpp hameq.cpp \
-                scat.cpp traj.cpp tests.cpp temps.cpp
+                potentials.cpp hameq.cpp hameq_cascade.cpp \
+                scat.cpp traj.cpp tests.cpp temps.cpp traj_cascade.cpp
 FILES_SAFARI_D = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_D))
 
 _FILES_XYZ = xyz_process.cpp xyz.cpp \

@@ -79,6 +79,17 @@ void Ion::reset()
     last_index = -1;
     total_near = 0;
     V = 0;
+    done = false;
+
+    buried = false;
+    off_edge = false;
+    stuck = false;
+    froze = false;
+    left = false;
+    discont = false;
+
+    resort = true;
+    reindex = true;
 }
 
 void Site::reset()
@@ -97,6 +108,9 @@ void Site::reset()
         if (near_sites[i]->last_ion != last_ion)
             near_sites[i]->last_step = -1;
     }
+    log_z = r_0[2];
+
+    validate();
 
     //Thermalize the site
     thermaize(this);
