@@ -2,21 +2,6 @@
 
 #include "string_utils.h" //ArgValue, to_double_array, etc
 
-void findAndReplaceAll(std::string &data, std::string toSearch, std::string replaceStr)
-{
-    // Get the first occurrence
-    size_t pos = data.find(toSearch);
-
-    // Repeat till end is reached
-    while (pos != std::string::npos)
-    {
-        // Replace this occurrence of Sub String
-        data.replace(pos, toSearch.size(), replaceStr);
-        // Get the next occurrence from the current position
-        pos = data.find(toSearch, pos + replaceStr.size());
-    }
-}
-
 void Safio::load(std::map<std::string, ArgValue> &prog_args)
 {
     //This should have been included to prog_args if not originally present.
@@ -25,7 +10,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
 
     settings = *this;
     std::ifstream safio_input;
-    std::string filename = output_name + ".input";
+    std::string filename = input_name + ".input";
     safio_input.open(filename);
 
     //check if we have alternate output file name
@@ -324,11 +309,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 }
                 else
                 {
-                    Site s;
-                    s.r_0[0] = atof(line_args[0].c_str());
-                    s.r_0[1] = atof(line_args[1].c_str());
-                    s.r_0[2] = atof(line_args[2].c_str());
-                    s.index = atoi(line_args[3].c_str());
+                    Site* s = new Site();
+                    s->r_0[0] = atof(line_args[0].c_str());
+                    s->r_0[1] = atof(line_args[1].c_str());
+                    s->r_0[2] = atof(line_args[2].c_str());
+                    s->index = atoi(line_args[3].c_str());
                     BASIS.push_back(s);
                 }
             }
@@ -343,19 +328,19 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 {
                     if (o % 2 == 0)
                     {
-                        Atom a;
-                        a.mass = atof(line_args[0].c_str());
-                        a.charge = atof(line_args[1].c_str());
-                        a.symbol = line_args[2];
-                        a.index = o / 2;
+                        Atom* a = new Atom();
+                        a->mass = atof(line_args[0].c_str());
+                        a->charge = atof(line_args[1].c_str());
+                        a->symbol = line_args[2];
+                        a->index = o / 2;
                         ATOMS.push_back(a);
                     }
                     else
                     {
-                        Atom &a = ATOMS.back();
-                        a.spring[0] = atof(line_args[0].c_str());
-                        a.spring[1] = atof(line_args[1].c_str());
-                        a.spring[2] = atof(line_args[2].c_str());
+                        Atom* a = ATOMS.back();
+                        a->spring[0] = atof(line_args[0].c_str());
+                        a->spring[1] = atof(line_args[1].c_str());
+                        a->spring[2] = atof(line_args[2].c_str());
                     }
                 }
             }
@@ -398,7 +383,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         //Populate basis atoms indecies
         for (int i = 0; i < NBASIS; i++)
         {
-            BASIS[i].atom = &ATOMS[BASIS[i].index - 1];
+            BASIS[i]->atom = ATOMS[BASIS[i]->index - 1];
         }
 
         if (prog_args["-n"])
@@ -416,6 +401,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         {
             TEMP = prog_args["-t"].as_double();
             debug_file << "Override of Temperature: " << TEMP << '\n';
+        }
+
+        if(prog_args["-p"])
+        {
+            settings.ion.init_pots(input_name);
         }
 
         //check arguments for specifically enabling single-shot mode

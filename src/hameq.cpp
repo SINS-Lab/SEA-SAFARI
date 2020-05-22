@@ -59,20 +59,33 @@ void predict_site_location(Site &s, double dt)
     s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
 }
 
-void check_sputter(Ion &ion, Site *s)
+bool check_sputter(Ion &ion, Site *s)
 {
     if (settings.saveSputter and not s->left)
     {
-        double pz = s->p[2];
-        double rz = s->r[2];
-        // TODO better conditions for leaving surface
-        if (pz > 0 and rz > settings.Z1 / 4)
+        if (settings.cascadeMode)
         {
-            s->left = true;
-            ion.sputter[ion.sputtered] = s;
-            ion.sputtered++;
+            double diffR = diff_sqr(s->r_0, s->r);
+            if (diffR > settings.AX / 2)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            double pz = s->p[2];
+            double rz = s->r[2];
+            // TODO better conditions for leaving surface
+            if (pz > 0 and rz > settings.Z1 / 4)
+            {
+                s->left = true;
+                ion.sputter[ion.sputtered] = s;
+                ion.sputtered++;
+                return true;
+            }
         }
     }
+    return false;
 }
 
 void apply_hameq(Ion &ion, Lattice *lattice, double dt)
@@ -145,8 +158,8 @@ double compute_error(Site &site, double dt)
     return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 }
 
-void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, 
-                       double ax, double ay, double az, 
+void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
+                       double ax, double ay, double az,
                        double dt, bool predicted, double *F_ion)
 {
     double dx = 0, dy = 0, dz = 0;
@@ -165,12 +178,12 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
         s->r_min = std::min(r, s->r_min);
 
         // Magnitude of force for this location.
-        double dV_dr = dVr_dr(r, s->atom->index);
+        double dV_dr = dVr_dr(r, ion.atom->index, s->atom->index);
 
         // Potential for this location.
         if (predicted)
         {
-            ion.V += Vr_r(r, s->atom->index);
+            ion.V += Vr_r(r, ion.atom->index, s->atom->index);
         }
         // Scaled by 1/r for converting to cartesian
         dV_dr /= r;
@@ -198,7 +211,7 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
     }
 }
 
-void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at, 
+void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
                            double atomk, double dt, double ax, double ay, double az,
                            bool predicted, bool recoil, bool useLennardJones, bool doubleCount)
 {
@@ -349,8 +362,8 @@ end:
     }
 }
 
-void apply_dynamic_lattice(Site *s, Lattice *lattice, int start, Ion &ion, 
-                           double *F_at, double atomk, double dt, 
+void apply_dynamic_lattice(Site *s, Lattice *lattice, int start, Ion &ion,
+                           double *F_at, double atomk, double dt,
                            double ax, double ay, double az,
                            bool predicted, bool recoil, bool useLennardJones)
 {
@@ -534,7 +547,7 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     ay = s->r[1];
                     az = s->r[2];
                 }
-                apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az, 
+                apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az,
                                       predicted, recoil, useLennardJones);
             }
         }

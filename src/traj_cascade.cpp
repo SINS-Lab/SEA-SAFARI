@@ -306,6 +306,7 @@ end:
     }
     int index = ion.index;
     num = ions.size();
+    lattice->total_hits++;
     for (int i = 0; i < num; i++)
     {
         ion = *ions[i];
@@ -317,6 +318,4 @@ end:
                      ion.stuck, ion.buried, ion.froze,
                      ion.off_edge, ion.discont, false);
     }
-
-    return;
 }

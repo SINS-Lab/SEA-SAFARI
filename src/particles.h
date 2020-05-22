@@ -4,8 +4,9 @@
 
 #define MAX_NEAR 2048
 
-struct Atom
+class Atom
 {
+public:
     double mass = 1;
     double charge = 0;
     int index = -1;
@@ -16,19 +17,8 @@ struct Atom
     double dev_r[3];
     // Std deviations in px,py,pz for the current temperature
     double dev_p[3];
-
-    //Lennard Jones potential related
-    /**
-     * These are pairs of parameters, 
-     * for each sub-array,
-     * index 0 is ε, index 1 is σ
-     * 
-     * The index in the main array is the atom index,
-     * ie L_J_params[atom.index] is for a like pair.
-     * 
-     * TODO actually implement it this way later.
-     */
-    //double** L_J_params;
+    
+    void init_pots(std::string &filename);
 };
 
 class Site

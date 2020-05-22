@@ -28,7 +28,17 @@ bool fire(Lattice *lattice, Ion &ion, double x, double y, int index, bool log, b
     ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
     ion.index = index;
     ion.thermal_seed = index;
-    traj(ion, lattice, log, xyz, default_detector);
+
+    if(settings.cascadeMode)
+    {
+        std::vector<Ion*> ions;
+        ions.push_back(&ion);
+        traj(ions, lattice, log, xyz, default_detector);
+    }
+    else
+    {
+        traj(ion, lattice, log, xyz, default_detector);
+    }
     return true;
 }
 

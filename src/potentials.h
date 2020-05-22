@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ion.h"      // for the Ion object
-#include "lattice.h"  // for the Lattice object
+#include "ion.h"     // for the Ion object
+#include "lattice.h" // for the Lattice object
 
 #define eqsr 14.398
 
@@ -16,6 +16,7 @@ void init_potentials();
  * @return the value of the potential
  */
 double Vr_r(double r, int n);
+double Vr_r(double r, int a, int b);
 //version of ^ that doesn't use table
 double Vr_r_init(double r, int n);
 
@@ -29,6 +30,7 @@ double Vr_r_init(double r, int n);
  * @return the derivative of the potential
  */
 double dVr_dr(double r, int n);
+double dVr_dr(double r, int a, int b);
 //version of ^ that doesn't use table
 double dVr_dr_init(double r, int n);
 

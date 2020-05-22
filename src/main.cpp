@@ -266,14 +266,15 @@ int main(int argc, char *argv[])
         }
 
         // Log some debug info from the lattice
-        debug_file << "Total Out of Phi  (-5): " << lattice.undetectable_num << "\n";
-        debug_file << "Total Trapped     (-10): " << lattice.trapped_num << "\n";
+        debug_file << "Total Out of Phi    (-5): " << lattice.undetectable_num << "\n";
+        debug_file << "Total Trapped      (-10): " << lattice.trapped_num << "\n";
         debug_file << "Total Stuck       (-100): " << lattice.stuck_num << "\n";
         debug_file << "Total Buried      (-200): " << lattice.buried_num << "\n";
         debug_file << "Total Froze       (-300): " << lattice.froze_num << "\n";
         debug_file << "Total OOB         (-400): " << lattice.left_num << "\n";
         debug_file << "Total Errored     (-500): " << lattice.err_num << "\n";
         debug_file << "Total Intersected (-600): " << lattice.intersections << "\n";
+        debug_file << "Total Considered for hit: " << lattice.total_hits << "\n\n";
         debug_file << "Total Out of Mask: " << lattice.out_of_mask << "\n";
 
         if (settings.dynamicNeighbours)

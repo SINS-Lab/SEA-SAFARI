@@ -9,7 +9,7 @@
 
 void Lattice::rotate_sites(Vec3d &dir, Vec3d &face, Vec3d &ex_basis, Vec3d &ey_basis, Vec3d &ez_basis,
                            Vec3d *ex, Vec3d *ey, Vec3d *ez, bool scale_basis,
-                           std::vector<Site> *sites_out, std::vector<Site> &sites_in, int *maxZI)
+                           std::vector<Site*> &sites_out, std::vector<Site*> &sites_in, int *maxZI)
 {
     //Rotation matrix for lattice
     Mat3d R;
@@ -27,15 +27,15 @@ void Lattice::rotate_sites(Vec3d &dir, Vec3d &face, Vec3d &ex_basis, Vec3d &ey_b
 
     double maxZ = -1e20;
     int num = sites_in.size();
-    sites_out->resize(num);
+    sites_out.resize(num);
 
     for (int i = 0; i < num; i++)
     {
-        Site s;
-        Site &old = sites_in[i];
+        Site *s = new Site();
+        Site *old = sites_in[i];
         Vec3d tmp;
         //Make basis of correct size.
-        tmp.set(old.r_0);
+        tmp.set(old->r_0);
         if (scale_basis)
         {
             tmp[0] *= settings.AX;
@@ -43,12 +43,12 @@ void Lattice::rotate_sites(Vec3d &dir, Vec3d &face, Vec3d &ex_basis, Vec3d &ey_b
             tmp[2] *= settings.AZ;
         }
         Vec3d v = R * tmp;
-        s.r_0[0] = v[0];
-        s.r_0[1] = v[1];
-        s.r_0[2] = v[2];
-        s.atom = old.atom;
-        s.index = sites_in[i].index;
-        (*sites_out)[i] = s;
+        s->r_0[0] = v[0];
+        s->r_0[1] = v[1];
+        s->r_0[2] = v[2];
+        s->atom = old->atom;
+        s->index = old->index;
+        sites_out[i] = s;
         double dot = v * dir;
         if (dot > maxZ)
         {
@@ -68,7 +68,7 @@ void Lattice::build_lattice()
     //Set the bottom of the slab to buried distance plus some lattice constants
     double zBottom = -settings.BDIST - 2 * settings.AZ;
     //Basis for the lattice.
-    std::vector<Site> basis;
+    std::vector<Site*> basis;
 
     Vec3d dir;
     //We this is 001 if not specified
@@ -96,7 +96,7 @@ void Lattice::build_lattice()
     //Populate the basis vectors
     rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
                  &ex, &ey, &ez, true,
-                 &basis, settings.BASIS, &maxZI);
+                 basis, settings.BASIS, &maxZI);
 
     Vec3d cell_pos;
 
@@ -115,7 +115,7 @@ void Lattice::build_lattice()
             {
                 cell_pos[2] = ez[0] * x + ez[1] * y + ez[2] * z;
                 //Check if entire basis cell will fit
-                if (cell_pos[2] + basis[maxZI].r_0[2] > zTop)
+                if (cell_pos[2] + basis[maxZI]->r_0[2] > zTop)
                     continue;
 
                 cell_pos[0] = ex[0] * x + ex[1] * y + ex[2] * z;
@@ -123,27 +123,27 @@ void Lattice::build_lattice()
 
                 for (int i = 0; i < settings.NBASIS; i++)
                 {
-                    Site old = basis[i];
-                    pz = cell_pos[2] + old.r_0[2];
+                    Site* old = basis[i];
+                    pz = cell_pos[2] + old->r_0[2];
 
                     //Cut off bottom of the crystal at some point.
                     if (pz < zBottom)
                         continue;
 
-                    px = cell_pos[0] + old.r_0[0];
+                    px = cell_pos[0] + old->r_0[0];
 
                     //Out of bounds in x
                     if (px > x_max || px < -x_max)
                         continue;
 
-                    py = cell_pos[1] + old.r_0[1];
+                    py = cell_pos[1] + old->r_0[1];
 
                     //Out of bounds in y
                     if (py > y_max || py < -y_max)
                         continue;
 
                     //This is the atom for this site.
-                    Atom *a = &settings.ATOMS[old.index - 1];
+                    Atom *a = settings.ATOMS[old->index - 1];
                     add_site(a, px, py, pz);
                 }
             }
@@ -197,7 +197,7 @@ void Lattice::load_lattice(std::ifstream &input)
 {
     std::string line;
     double *values;
-    std::vector<Site> loaded_sites;
+    std::vector<Site*> loaded_sites;
     std::cout << "Loading lattice" << std::endl;
     while (getline(input, line))
     {
@@ -209,15 +209,15 @@ void Lattice::load_lattice(std::ifstream &input)
         Atom *atom;
         bool found = false;
         //Lookup the atom
-        for (Atom &a : settings.ATOMS)
+        for (Atom* a : settings.ATOMS)
         {
             //Assume it is this one, TODO account for isotopes
-            double diff = a.charge - charge;
+            double diff = a->charge - charge;
             //Use this as the floating point errors might make
             //an == check fail.
             if (fabs(diff) < 1)
             {
-                atom = &a;
+                atom = a;
                 found = true;
                 break;
             }
@@ -228,13 +228,13 @@ void Lattice::load_lattice(std::ifstream &input)
             //Assume it is default atom, and log an error.
             debug_file << "No Atom found for charge " << charge;
             //TODO maybe make a new atom for it instead?
-            atom = &settings.ATOMS[0];
+            atom = settings.ATOMS[0];
             debug_file << " setting to: " << atom->symbol << ", " << atom->charge << std::endl;
         }
         //Make a new site
         Site *s = make_site(atom, values[0], values[1], values[2]);
         //Add it to our list
-        loaded_sites.push_back(*s);
+        loaded_sites.push_back(s);
         //Cleanup the values array.
         delete[] values;
     }
@@ -262,7 +262,7 @@ void Lattice::load_lattice(std::ifstream &input)
     //Index of topmost site in the basis
     int maxZI = 0;
 
-    std::vector<Site> processed_sites;
+    std::vector<Site*> processed_sites;
 
     if (dir * face.normalize() != 1)
     {
@@ -270,7 +270,7 @@ void Lattice::load_lattice(std::ifstream &input)
         //Populate the rotated vectors
         rotate_sites(dir, face, ex_basis, ey_basis, ez_basis,
                      &ex, &ey, &ez, false,
-                     &processed_sites, loaded_sites, &maxZI);
+                     processed_sites, loaded_sites, &maxZI);
     }
     else
     {
@@ -284,10 +284,10 @@ void Lattice::load_lattice(std::ifstream &input)
     for (int i = 0; i < num; i++)
     {
         //We want a copy to add, rather than the original
-        Site site = processed_sites[i];
+        Site* site = processed_sites[i];
         //Add the site
-        add_site(&settings.ATOMS[site.atom->index - 1],
-                 site.r_0[0], site.r_0[1], site.r_0[2]);
+        add_site(settings.ATOMS[site->atom->index - 1],
+                 site->r_0[0], site->r_0[1], site->r_0[2]);
     }
     debug_file << "Loaded " << sites.size() << " sites from file" << std::endl;
 }

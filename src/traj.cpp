@@ -802,10 +802,11 @@ end:
             s->index = oldIndex;
         }
     }
-
+    lattice->total_hits++;
     // Output data
-    detector.log(out_file, ion, lattice, ion.stuck, ion.buried, ion.froze, ion.off_edge, ion.discont, false);
-    return;
+    detector.log(out_file, ion, lattice,
+                 ion.stuck, ion.buried, ion.froze,
+                 ion.off_edge, ion.discont, false);
 }
 
 void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
@@ -937,8 +938,8 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     if (did_hit || settings.save_errored)
     {
         /**
-             * This uses the default saving behaviour
-             */
+         * This uses the default saving behaviour
+         */
         char buffer[200];
         // first stuff it in the buffer
         sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\t%d\t%s\n",

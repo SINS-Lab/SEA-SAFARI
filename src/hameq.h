@@ -28,7 +28,7 @@ void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt);
  * Checks if this site sputtered for this ion, if so, 
  * it will add it to the list of sputter for the ion.
  */ 
-void check_sputter(Ion &ion, Site *s);
+bool check_sputter(Ion &ion, Site *s);
 
 /**
  * This updates the current location/momentum of

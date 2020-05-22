@@ -7,10 +7,27 @@
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
 
-void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt)
+Ion* makeIonFromSite(Site* s)
+{
+    Ion* ion = new Ion();
+
+    ion->r[0] = s->r[0];
+    ion->r[1] = s->r[1];
+    ion->r[2] = s->r[2];
+
+    ion->p[0] = s->p[0];
+    ion->p[1] = s->p[1];
+    ion->p[2] = s->p[2];
+
+    ion->atom = s->atom;
+
+    return ion;
+}
+
+void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
 {
     int num = ions.size();
-    for(int i = 0; i<num; i++)
+    for (int i = 0; i < num; i++)
     {
         Ion &ion = *ions[i];
         if (!settings.useEinsteinSprings)
@@ -24,8 +41,13 @@ void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt)
                 {
                     Site *s = lattice->active_sites[i];
                     update_site(*s, dt);
-                    check_sputter(ion, s);
+                    bool newIon = check_sputter(ion, s);
                     s->last_update = ion.steps;
+
+                    if (newIon)
+                    {
+                        ions.push_back(makeIonFromSite(s));
+                    }
                 }
             }
             else
@@ -43,7 +65,11 @@ void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt)
                             if (s2->last_update != ion.steps)
                             {
                                 update_site(*s2, dt);
-                                check_sputter(ion, s);
+                                bool newIon = check_sputter(ion, s);
+                                if (newIon)
+                                {
+                                    ions.push_back(makeIonFromSite(s));
+                                }
                             }
                             s2->last_update = ion.steps;
                         }
@@ -57,7 +83,11 @@ void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt)
             {
                 Site *s = ion.near_sites[i];
                 update_site(*s, dt);
-                check_sputter(ion, s);
+                bool newIon = check_sputter(ion, s);
+                if (newIon)
+                {
+                    ions.push_back(makeIonFromSite(s));
+                }
             }
         }
     }
@@ -65,5 +95,4 @@ void apply_hameq(std::vector<Ion*> &ions, Lattice *lattice, double dt)
 
 void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predicted, double *dr_max)
 {
-
 }
