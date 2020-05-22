@@ -22,7 +22,7 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice,
     {
         // We need to resort this if we find new index.
         re_sort = true;
-        if(ion_ptr!=NULL)
+        if (ion_ptr != NULL)
         {
             ion_ptr->reindex = false;
         }
@@ -148,7 +148,7 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice,
         // Update nearby number, taking min of these two.
         site->near = std::min(site->total_near, target_num);
 
-        if(ion_ptr!=NULL)
+        if (ion_ptr != NULL)
         {
             ion_ptr->resort = false;
         }
@@ -197,7 +197,7 @@ int fill_nearest(Ion *ion_ptr, Site *site, Lattice *lattice, int radius,
     //New site, so we need to re-calculate things
     if (pos_hash != site->last_index || reindex)
     {
-        if(ion_ptr!=NULL)
+        if (ion_ptr != NULL)
         {
             ion_ptr->reindex = false;
         }
@@ -306,7 +306,7 @@ end:
         // Update nearby number, taking min of these two.
         site->near = std::min(site->total_near, target_number);
 
-        if(ion_ptr!=NULL)
+        if (ion_ptr != NULL)
         {
             ion_ptr->resort = false;
         }
@@ -815,9 +815,14 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     double psq = sqr(ion.p);
     double mx2 = ion.atom->mass * 2;
     double E = psq / mx2;
-    double err = 0;
+    int err = 0;
     // z-momentum squared, exit theta, exit phi
     double pzz = 0, theta = 90, phi = 0;
+
+    double px = ion.p[0];
+    double py = ion.p[1];
+    double pz = ion.p[2];
+
     /**
      * Checks failure flags, and sets energy accordingly
      * 
@@ -873,65 +878,62 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         err = -900;
         lattice->intersections++;
     }
+
+    // Find the momentum at infinity
+    if (settings.use_image and ion.q != 0)
+    {
+        // Image charge would pull it towards surface, this accounts
+        // for that effect.
+        pzz = (pz * pz) + (mx2 * Vi_z(settings.Z1, ion.q));
+        pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
+        // Recalulate this, as pz has changed
+        // We are fine with pzz being -ve, as that case
+        // will be dropped due to ion not escaping.
+        psq = pzz * pzz + px * px + py * py;
+
+        // Recalculate E, incase image affected it
+        E = psq / mx2;
+    }
     else
     {
-        double px = ion.p[0];
-        double py = ion.p[1];
-        double pz = ion.p[2];
-        // Find the momentum at infinity
-        if (settings.use_image and ion.q != 0)
-        {
-            // Image charge would pull it towards surface, this accounts
-            // for that effect.
-            pzz = (pz * pz) + (mx2 * Vi_z(settings.Z1, ion.q));
-            pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
-            // Recalulate this, as pz has changed
-            // We are fine with pzz being -ve, as that case
-            // will be dropped due to ion not escaping.
-            psq = pzz * pzz + px * px + py * py;
-        }
-        else
-        {
-            // No image, so this is the same as it was.
-            pzz = pz;
-        }
-        double p = sqrt(psq);
-        // Ion is not escaping.
-        if (pzz <= 0 || p <= 0)
-        {
-            err = -10;
-            lattice->trapped_num++;
-        }
-        else
-        {
-            // Recalculate E, incase image affected it
-            E = psq / mx2;
-
-            // calculate theta, depends on pz
-            theta = acos(pzz / p) * RAD2DEG;
-
-            if (px == 0 && py == 0)
-            {
-                // phi isn't well defined here,
-                // so just set it as same as incoming
-                phi = settings.PHI0;
-            }
-            else
-            {
-                // Calculate phi, depends on px, py
-                phi = atan2(py, px) * RAD2DEG;
-            }
-        }
+        // No image, so this is the same as it was.
+        pzz = pz;
     }
 
-    bool did_hit = err != 0;
+    double p = sqrt(psq);
+    // Ion is not escaping.
+    if (not err and pzz < 0)
+    {
+        err = -10;
+        lattice->trapped_num++;
+    }
+
+    // calculate theta, depends on pz
+    theta = acos(pzz / p) * RAD2DEG;
+
+    if (px == 0 && py == 0)
+    {
+        // phi isn't well defined here,
+        // so just set it as same as incoming
+        phi = settings.PHI0;
+    }
+    else
+    {
+        // Calculate phi, depends on px, py
+        phi = atan2(py, px) * RAD2DEG;
+    }
+
+    bool did_hit = not err;
 
     if (did_hit && !hit(E, theta, phi) && !ignore_bounds)
     {
         err = -5;
         lattice->undetectable_num++;
-        did_hit = false;
     }
+
+    // This is true iff err is 0
+    did_hit = not err;
+
     if (did_hit || settings.save_errored)
     {
         /**
@@ -939,12 +941,13 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
              */
         char buffer[200];
         // first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\t%.2f\n",
+        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\t%d\t%s\n",
                 ion.r_0[0], ion.r_0[1], ion.r_0[2],
                 E, theta, phi,
                 ion.index, ion.weight,
                 ion.max_n, ion.r_min, ion.steps,
-                ion.Eerr_max, ion.time, err);
+                ion.Eerr_max, ion.time, err,
+                ion.atom->symbol.c_str());
         // Then save it
         mutx.lock();
         out_file << buffer << std::flush;

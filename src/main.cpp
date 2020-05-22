@@ -149,7 +149,8 @@ int main(int argc, char *argv[])
     if (settings.SCAT_FLAG == 666)
     {
         settings.scat_started = true;
-        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time\terr flag" << std::endl;
+        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\t";
+        out_file << "min_r\tsteps\tMax Error\ttotal time\terr flag\tatom" << std::endl;
         if (settings.saveSputter)
             sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tion err flag\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
 
