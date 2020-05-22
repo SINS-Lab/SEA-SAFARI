@@ -30,6 +30,9 @@ void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
     for (int i = 0; i < num; i++)
     {
         Ion &ion = *ions[i];
+
+        if(ion.done) continue;
+
         if (!settings.useEinsteinSprings)
         {
             update_site(ion, dt);

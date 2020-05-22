@@ -577,10 +577,10 @@ start:
     dt = std::min(std::max(dt, dt_low), dt_high);
 
     // check if we are still in a good state to run.
-    validate(ion, E1);
+    ion.done = !validate(ion, E1);
 
     // These are our standard exit conditions
-    if (ion.froze || ion.buried || ion.stuck || ion.left || ion.off_edge)
+    if (ion.done)
     {
         if (log)
             debug_file << "Exited " << ion.froze

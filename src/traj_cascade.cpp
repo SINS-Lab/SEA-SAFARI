@@ -112,14 +112,7 @@ start:
                          false, reindex or ion.reindex);
         }
         // check if we are still in a good state to run.
-        validate(ion, E1);
-
-        // These are our standard exit conditions
-        if (ion.froze || ion.buried || ion.stuck || ion.left || ion.off_edge)
-        {
-            ion.done = true;
-            continue;
-        }
+        ion.done = !validate(ion, E1);
     }
 
     // Find the forces at the current location
