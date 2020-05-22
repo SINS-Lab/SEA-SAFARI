@@ -76,5 +76,5 @@ if __name__ == '__main__':
         template = template.replace('Sea-Safari.exe', './Sea-Safari')
 
     test_montecarlo(template)
-    test_adaptive_grid(template)
-    test_chainscat(template)
+    # test_adaptive_grid(template)
+    # test_chainscat(template)
