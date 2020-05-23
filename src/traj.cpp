@@ -579,6 +579,9 @@ start:
     // check if we are still in a good state to run.
     ion.done = !validate(ion, E1);
 
+    // Update some parameters for saving.
+    ion.log_z = fmin(ion.r[2], ion.log_z);
+
     // These are our standard exit conditions
     if (ion.done)
     {
@@ -613,7 +616,9 @@ start:
     }
 
     // Find the forces at the current location
+    ion.hameq_tick++;
     run_hameq(ion, lattice, dt, false, &dr_max);
+    ion.hameq_tick++;
     // Find the forces at the next location
     run_hameq(ion, lattice, dt, true, &dr_max);
 
@@ -937,13 +942,17 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
 
     if (did_hit || settings.save_errored)
     {
+        if (not settings.adaptivegrid)
+        {
+            ion.weight = ion.r[2];
+        }
         /**
          * This uses the default saving behaviour
          */
         char buffer[200];
         // first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\t%d\t%s\n",
-                ion.r_0[0], ion.r_0[1], ion.r_0[2],
+        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.4e\t%d\t%.4e\t%d\t%.4e\t%.4e\t%d\t%s\n",
+                ion.r_0[0], ion.r_0[1], ion.log_z,
                 E, theta, phi,
                 ion.index, ion.weight,
                 ion.max_n, ion.r_min, ion.steps,

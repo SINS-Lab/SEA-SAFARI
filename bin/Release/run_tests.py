@@ -8,6 +8,11 @@ def test_montecarlo(template):
     command = template.format('sample', 'tests/sample')
     print("Running Test of Montecarlo\n\n")
     subprocess.run(command, shell=True)
+
+def test_cascade(template):
+    command = template.format('sample_cascade', 'tests/sample_cascade')
+    print("Running Test of Cascades\n\n")
+    subprocess.run(command, shell=True)
     
 def test_adaptive_grid(template):
     command = template.format('sample_ag', 'tests/sample_ag')
@@ -76,5 +81,6 @@ if __name__ == '__main__':
         template = template.replace('Sea-Safari.exe', './Sea-Safari')
 
     test_montecarlo(template)
+    test_cascade(template)
     # test_adaptive_grid(template)
     # test_chainscat(template)

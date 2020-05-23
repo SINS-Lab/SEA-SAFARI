@@ -102,13 +102,13 @@ start:
         if (settings.dynamicNeighbours)
         {
             update_dynamic_neighbours(&ion, &ion, lattice, d_search, n_parts,
-                                      settings.rr_max, sort or ion.resort, 
+                                      settings.rr_max, sort or ion.resort,
                                       false, reindex or ion.reindex);
         }
         else
         {
             fill_nearest(&ion, &ion, lattice, d_search, n_parts,
-                         settings.rr_max, sort or ion.resort, 
+                         settings.rr_max, sort or ion.resort,
                          false, reindex or ion.reindex);
         }
         // check if we are still in a good state to run.
@@ -119,6 +119,15 @@ start:
     run_hameq(ions, lattice, dt, false, &dr_max);
     // Find the forces at the next location
     run_hameq(ions, lattice, dt, true, &dr_max);
+
+    int new_num = ions.size();
+    if (new_num != num)
+    {
+        reindex = true;
+        sort = true;
+        // Return back to start of traj run.
+        goto start;
+    }
 
     // Now we do some checks to see if the timestep needs to be adjusted
     if (dr_max != 0)
@@ -182,7 +191,7 @@ start:
             rs.push_back(r);
         }
         dr = *r - ion.r;
-        
+
         diff = sqr(dr.v);
 
         // Reset at either 1/10 of the search distance, or 1/3 the distance to nearest, whichever is larger.
@@ -217,6 +226,9 @@ start:
     goto start;
 
 end:
+
+    int size = ions.size();
+    lattice->max_active = std::max(lattice->max_active, size);
 
     Ion &ion = *ions[0];
 
@@ -297,18 +309,28 @@ end:
             s->index = oldIndex;
         }
     }
+
     int index = ion.index;
     num = ions.size();
-    lattice->total_hits++;
     for (int i = 0; i < num; i++)
     {
         ion = *ions[i];
         ion.index = index;
         lattice->sum_active += ion.max_active;
         lattice->count_active++;
+        lattice->total_hits++;
         // Output data
-        detector.log(out_file, ion, lattice,
-                     ion.stuck, ion.buried, ion.froze,
-                     ion.off_edge, ion.discont, false);
+        if (ion.atom->index == settings.ion.index)
+        {
+            detector.log(out_file, ion, lattice,
+                         ion.stuck, ion.buried, ion.froze,
+                         ion.off_edge, ion.discont, false);
+        }
+        else
+        {
+            detector.log(sptr_file, ion, lattice,
+                         ion.stuck, ion.buried, ion.froze,
+                         ion.off_edge, ion.discont, false);
+        }
     }
 }

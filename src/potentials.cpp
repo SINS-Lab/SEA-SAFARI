@@ -128,7 +128,7 @@ void init_potentials()
     }
 
     //Initialize Lennard Jones potentials here
-    if (settings.lattice_potential_type)
+    if (settings.useLennardJones)
     {
         debug_file << "Initializing Lennard Jones Potentials" << std::endl;
         //We should have been given 2 parameters for each lattice atom.

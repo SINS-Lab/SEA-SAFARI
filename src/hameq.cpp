@@ -26,6 +26,16 @@ void update_site(Site &s, double dt)
     s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
     s.p[1] += dt * (s.dp_dt_t[1] + s.dp_dt[1]);
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
+
+    // clear the force arrays for next update
+    s.dp_dt[0] = 0;
+    s.dp_dt[1] = 0;
+    s.dp_dt[2] = 0;
+
+    // clear the force arrays for next update
+    s.dp_dt_t[0] = 0;
+    s.dp_dt_t[1] = 0;
+    s.dp_dt_t[2] = 0;
 }
 
 void update_sites(Site &s, int last_update, double dt)
@@ -61,28 +71,30 @@ void predict_site_location(Site &s, double dt)
 
 bool check_sputter(Ion &ion, Site *s)
 {
-    if (settings.saveSputter and not s->left)
+    // we are already marked!
+    if (s->left)
+        return false;
+    if (settings.cascadeMode)
     {
-        if (settings.cascadeMode)
+        double diffR = diff_sqr(s->r_0, s->r);
+        if (diffR > settings.AX / 2)
         {
-            double diffR = diff_sqr(s->r_0, s->r);
-            if (diffR > settings.AX / 2)
-            {
-                return true;
-            }
+            s->left = true;
+            return true;
         }
-        else
+    }
+    else if (settings.saveSputter)
+    {
+
+        double pz = s->p[2];
+        double rz = s->r[2];
+        // TODO better conditions for leaving surface
+        if (pz > 0 and rz > settings.Z1 / 4)
         {
-            double pz = s->p[2];
-            double rz = s->r[2];
-            // TODO better conditions for leaving surface
-            if (pz > 0 and rz > settings.Z1 / 4)
-            {
-                s->left = true;
-                ion.sputter[ion.sputtered] = s;
-                ion.sputtered++;
-                return true;
-            }
+            s->left = true;
+            ion.sputter[ion.sputtered] = s;
+            ion.sputtered++;
+            return true;
         }
     }
     return false;
@@ -164,6 +176,10 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
 {
     double dx = 0, dy = 0, dz = 0;
 
+    // Only apply this to the valid sites, invalid ones are ions now.
+    if (s->valid == ion.index)
+        return;
+
     // Distances from site to atom
     dx = ax - r_i[0];
     dy = ay - r_i[1];
@@ -191,9 +207,9 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
         // Convert from magnitude to components of vector
         // Note, fx = -dV_dr * 2dx, however,
         // we set the force to half of this.
-        F_at[0] = -dV_dr * dx;
-        F_at[1] = -dV_dr * dy;
-        F_at[2] = -dV_dr * dz;
+        F_at[0] -= dV_dr * dx;
+        F_at[1] -= dV_dr * dy;
+        F_at[2] -= dV_dr * dz;
 
         // Add force components to net force.
         F_ion[0] -= F_at[0];
@@ -221,6 +237,10 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
 
     // Only apply this to the valid sites, invalid ones are ions now.
     if (s2->valid == ion.index)
+        return;
+
+    // Only apply this to the valid sites, invalid ones are ions now.
+    if (s->valid == ion.index)
         return;
 
     // Force on target.
@@ -253,15 +273,6 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
     {
         F_at2 = s2->dp_dt;
         r2 = s2->r;
-    }
-
-    // Reset the sites forces
-    if (s2->last_step != ion.last_step)
-    {
-        s2->last_step = ion.last_step;
-        F_at2[0] = 0;
-        F_at2[1] = 0;
-        F_at2[2] = 0;
     }
 
     // Compute lattice site separation here.
@@ -414,11 +425,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
     // Reset V
     ion.V = 0;
 
-    // Reset the force array.
-    F[0] = 0;
-    F[1] = 0;
-    F[2] = 0;
-
     // This was set earlier when looking for nearby sites.
     if (ion.near)
     {
@@ -433,6 +439,9 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
         {
             // Site near us.
             Site *s = ion.near_sites[i];
+
+            if (s->valid == ion.index)
+                continue;
 
             if (predicted)
             {
@@ -459,12 +468,12 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
             // forces if needed.
             if (s->last_step != ion.last_step)
             {
-                s->last_step = ion.last_step;
-                F_at[0] = 0;
-                F_at[1] = 0;
-                F_at[2] = 0;
                 apply_ion_lattice(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
             }
+
+            if (s->hameq_tick == ion.hameq_tick)
+                continue;
+            s->hameq_tick = ion.hameq_tick;
 
             // Here we consider lattice-lattice correlations.
             // In the dynamic neighbours case, they will apply to

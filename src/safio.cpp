@@ -227,6 +227,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 rigidBounds = lattice_potential_type & 4;
                 dynamicNeighbours = lattice_potential_type & 8;
                 saveSputter = (montecarlo or gridscat) and (lattice_potential_type & 16);
+                cascadeMode = lattice_potential_type & 32;
             }
             if (n == 17)
             {
@@ -309,7 +310,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 }
                 else
                 {
-                    Site* s = new Site();
+                    Site *s = new Site();
                     s->r_0[0] = atof(line_args[0].c_str());
                     s->r_0[1] = atof(line_args[1].c_str());
                     s->r_0[2] = atof(line_args[2].c_str());
@@ -328,7 +329,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 {
                     if (o % 2 == 0)
                     {
-                        Atom* a = new Atom();
+                        Atom *a = new Atom();
                         a->mass = atof(line_args[0].c_str());
                         a->charge = atof(line_args[1].c_str());
                         a->symbol = line_args[2];
@@ -337,7 +338,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                     }
                     else
                     {
-                        Atom* a = ATOMS.back();
+                        Atom *a = ATOMS.back();
                         a->spring[0] = atof(line_args[0].c_str());
                         a->spring[1] = atof(line_args[1].c_str());
                         a->spring[2] = atof(line_args[2].c_str());
@@ -403,9 +404,17 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             debug_file << "Override of Temperature: " << TEMP << '\n';
         }
 
-        if(prog_args["-p"])
+        if (prog_args["-p"])
         {
             settings.ion.init_pots(input_name);
+            debug_file << "Loading from override Potentials" << '\n';
+            std::cout << "Loading from override Potentials" << std::endl;
+        }
+
+        if (cascadeMode)
+        {
+            debug_file << "Running Cascade Mode!" << '\n';
+            std::cout << "Running Cascade Mode!" << std::endl;
         }
 
         //check arguments for specifically enabling single-shot mode
@@ -442,7 +451,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         debug_file << "\nLoaded SAFIO" << '\n';
         std::cout << "\nLoaded SAFIO" << '\n';
 
-        if (saveSputter)
+        if (saveSputter or cascadeMode)
         {
             sptr_file.open(output_name + ".sptr");
         }

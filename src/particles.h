@@ -121,8 +121,7 @@ public:
     // For the ion, this is min depth z, for the sites, it is rest position
     double log_z = 1e3;
 
-    uint64_t hameq_tick = 0;
-    uint64_t update_tick = 0;
+    int hameq_tick = -1;
 
     // Some arrays for stuffing positions and momenta in for easier processing
     

@@ -144,15 +144,25 @@ int main(int argc, char *argv[])
     int n = 0;
 
     // Initialize the detector with some wide defaults
-    default_detector.init(settings.EMIN, 45, settings.PHI0, 45, 5);
+    double e_min = settings.EMIN;
+    double theta = settings.detect_parameters[0];
+    double phi = settings.PHI0;
+    double dtheta = settings.detect_parameters[1];
+    double dphi = settings.detect_parameters[2];
+
+    // Initialize the detector based on the parameters in the file
+    default_detector.init(e_min, theta, phi, dtheta, dphi);
 
     if (settings.SCAT_FLAG == 666)
     {
         settings.scat_started = true;
         out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\t";
         out_file << "min_r\tsteps\tMax Error\ttotal time\terr flag\tatom" << std::endl;
-        if (settings.saveSputter)
-            sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tion err flag\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
+        if (settings.saveSputter or settings.cascadeMode)
+        {
+            sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\t";
+            sptr_file << "min_r\tsteps\tMax Error\ttotal time\terr flag\tatom" << std::endl;
+        }
 
         if (settings.singleshot)
         {
@@ -170,15 +180,6 @@ int main(int argc, char *argv[])
             debug_file << "Running Adaptive Grid\n";
             std::cout << "Running Adaptive Grid\n"
                       << std::flush;
-
-            double e_min = settings.EMIN;
-            double theta = settings.detect_parameters[0];
-            double phi = settings.PHI0;
-            double dtheta = settings.detect_parameters[1];
-            double dphi = settings.detect_parameters[2];
-
-            // Initialize the detector based on the parameters in the file
-            default_detector.init(e_min, theta, phi, dtheta, dphi);
 
             // We use numcha for the number of iterations of adaptive grid.
             // If temperature is 0, we only need 1 run.
@@ -277,7 +278,7 @@ int main(int argc, char *argv[])
         debug_file << "Total Considered for hit: " << lattice.total_hits << "\n\n";
         debug_file << "Total Out of Mask: " << lattice.out_of_mask << "\n";
 
-        if (settings.dynamicNeighbours)
+        if (settings.dynamicNeighbours or settings.cascadeMode)
         {
             debug_file << "\nMax active sites: " << lattice.max_active << "\n";
             debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";

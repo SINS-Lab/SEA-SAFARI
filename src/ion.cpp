@@ -80,6 +80,7 @@ void Ion::reset()
     total_near = 0;
     V = 0;
     done = false;
+    hameq_tick = -1;
 
     buried = false;
     off_edge = false;
@@ -90,6 +91,16 @@ void Ion::reset()
 
     resort = true;
     reindex = true;
+
+    // clear the force arrays
+    dp_dt[0] = 0;
+    dp_dt[1] = 0;
+    dp_dt[2] = 0;
+
+    // clear the force arrays
+    dp_dt_t[0] = 0;
+    dp_dt_t[1] = 0;
+    dp_dt_t[2] = 0;
 }
 
 void Site::reset()
@@ -101,6 +112,18 @@ void Site::reset()
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
     left = false;
+
+    // clear the force arrays
+    dp_dt[0] = 0;
+    dp_dt[1] = 0;
+    dp_dt[2] = 0;
+
+    // clear the force arrays
+    dp_dt_t[0] = 0;
+    dp_dt_t[1] = 0;
+    dp_dt_t[2] = 0;
+
+    hameq_tick = -1;
 
     //Reset our tracked sites last steps too.
     for (int i = 0; i < near; i++)
