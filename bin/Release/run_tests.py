@@ -74,13 +74,13 @@ if __name__ == '__main__':
     # Run a single shot safari for this run,
     # assuming the input file 
     # was already configured properly.
-    template = 'Sea-Safari.exe -i {} -o {}'
+    template = 'Sea-Safari.exe -i {} -o {} -p'
 
     #Change command accordingly for linux
     if platform.system() == 'Linux':
         template = template.replace('Sea-Safari.exe', './Sea-Safari')
 
-    test_montecarlo(template)
-    # test_cascade(template)
+    # test_montecarlo(template)
+    test_cascade(template)
     # test_adaptive_grid(template)
     # test_chainscat(template)
