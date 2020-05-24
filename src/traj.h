@@ -62,11 +62,3 @@ void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice,
 
 void traj(std::vector<Ion *> &ions, Lattice *lattice, bool& log, bool& xyz, Detector &detector);
 
-void update_dynamic_neighbours(std::vector<Ion *> &ions, Ion *ion_ptr, Site *site, Lattice *lattice, 
-                               int radius, int target_num, double max_rr, 
-                               bool re_sort, bool updateCells, bool reindex);
-
-int fill_nearest(std::vector<Ion *> &ions, Ion* ion_ptr,  Site *site, Lattice *lattice, 
-                 int radius, int target_num, double max_rr, 
-                 bool re_sort, bool updateCells, bool reindex);
-

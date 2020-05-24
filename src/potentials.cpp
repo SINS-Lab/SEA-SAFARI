@@ -444,6 +444,8 @@ void Atom::init_pots(std::string &filename)
     {
         Vr_r_all_cache[m + n * num_atoms] = potI->V[b->symbol];
         dVr_dr_all_cache[m + n * num_atoms] = potI->F[b->symbol];
+        Vr_r_all_cache[n + m * num_atoms] = potI->V[b->symbol];
+        dVr_dr_all_cache[n + m * num_atoms] = potI->F[b->symbol];
         n++;
     }
     m = 1;

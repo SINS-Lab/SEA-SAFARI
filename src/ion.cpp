@@ -92,15 +92,7 @@ void Ion::reset()
     resort = true;
     reindex = true;
 
-    // clear the force arrays
-    dp_dt[0] = 0;
-    dp_dt[1] = 0;
-    dp_dt[2] = 0;
-
-    // clear the force arrays
-    dp_dt_t[0] = 0;
-    dp_dt_t[1] = 0;
-    dp_dt_t[2] = 0;
+    reset_forces();
 }
 
 void Site::reset()
@@ -113,15 +105,7 @@ void Site::reset()
     last_step = -1;
     left = false;
 
-    // clear the force arrays
-    dp_dt[0] = 0;
-    dp_dt[1] = 0;
-    dp_dt[2] = 0;
-
-    // clear the force arrays
-    dp_dt_t[0] = 0;
-    dp_dt_t[1] = 0;
-    dp_dt_t[2] = 0;
+    reset_forces();
 
     hameq_tick = -1;
 

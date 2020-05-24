@@ -17,7 +17,7 @@ public:
     double dev_r[3];
     // Std deviations in px,py,pz for the current temperature
     double dev_p[3];
-    
+
     void init_pots(std::string &filename);
 };
 
@@ -117,14 +117,14 @@ public:
     // This is invalidated if we are turned into a projectile via
     // a cascade event, it is set to the ion index that invalidated us
     int valid = -1;
-    
+
     // For the ion, this is min depth z, for the sites, it is rest position
     double log_z = 1e3;
 
     int hameq_tick = -1;
 
     // Some arrays for stuffing positions and momenta in for easier processing
-    
+
     // This is stuffed with the position pointers for
     // the nearby sites's current and future positions
     // double **near_dists = NULL;
@@ -186,6 +186,17 @@ public:
      * that willl be used for seeding the RNG
      */
     void reset();
+
+    void reset_forces()
+    {
+        dp_dt[0] = 0;
+        dp_dt[1] = 0;
+        dp_dt[2] = 0;
+
+        dp_dt_t[0] = 0;
+        dp_dt_t[1] = 0;
+        dp_dt_t[2] = 0;
+    }
 
     /**
      * Prints some info for this site to debug_file

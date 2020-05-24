@@ -572,6 +572,8 @@ start:
     reindex = false;
     // Increment counter for how many steps we have taken
     ion.steps++;
+    
+    ion.reset_forces();
 
     // Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);

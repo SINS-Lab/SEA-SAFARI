@@ -27,15 +27,7 @@ void update_site(Site &s, double dt)
     s.p[1] += dt * (s.dp_dt_t[1] + s.dp_dt[1]);
     s.p[2] += dt * (s.dp_dt_t[2] + s.dp_dt[2]);
 
-    // clear the force arrays for next update
-    s.dp_dt[0] = 0;
-    s.dp_dt[1] = 0;
-    s.dp_dt[2] = 0;
-
-    // clear the force arrays for next update
-    s.dp_dt_t[0] = 0;
-    s.dp_dt_t[1] = 0;
-    s.dp_dt_t[2] = 0;
+    s.reset_forces();
 }
 
 void update_sites(Site &s, int last_update, double dt)
@@ -76,8 +68,9 @@ bool check_sputter(Ion &ion, Site *s)
         return false;
     if (settings.cascadeMode)
     {
-        double diffR = diff_sqr(s->r_0, s->r);
-        if (diffR > settings.AX / 2)
+        bool isHot = (sqr(s->p) * 0.5 / s->atom->mass) > 1;
+        double dr = diff_sqr(s->r_0, s->r);
+        if (isHot and dr > settings.AX / 2)
         {
             s->left = true;
             return true;
@@ -175,6 +168,7 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
                        double dt, bool predicted, double *F_ion)
 {
     double dx = 0, dy = 0, dz = 0;
+    double fx = 0, fy = 0, fz = 0;
 
     // Only apply this to the valid sites, invalid ones are ions now.
     if (s->valid == ion.index)
@@ -207,14 +201,19 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
         // Convert from magnitude to components of vector
         // Note, fx = -dV_dr * 2dx, however,
         // we set the force to half of this.
-        F_at[0] -= dV_dr * dx;
-        F_at[1] -= dV_dr * dy;
-        F_at[2] -= dV_dr * dz;
+        fx = -dV_dr * dx;
+        fy = -dV_dr * dy;
+        fz = -dV_dr * dz;
 
-        // Add force components to net force.
-        F_ion[0] -= F_at[0];
-        F_ion[1] -= F_at[1];
-        F_ion[2] -= F_at[2];
+        // Apply to object 1
+        F_at[0] += fx;
+        F_at[1] += fy;
+        F_at[2] += fz;
+
+        // Apply to object 2
+        F_ion[0] -= fx;
+        F_ion[1] -= fy;
+        F_ion[2] -= fz;
         // These are -=, as are opposite direction from on atom
     }
     // No force if ion is on an atom.

@@ -5,15 +5,6 @@
 #include <cmath>        // trig functions and sqrt
 #include <algorithm>    // std::sort
 
-void update_dynamic_neighbours(std::vector<Ion *> &ions, Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
-{
-}
-
-int fill_nearest(std::vector<Ion *> &ions, Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
-{
-    return 0;
-}
-
 void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Detector &detector)
 {
     if (!settings.useEinsteinSprings)
@@ -63,6 +54,7 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
     // Reset some values before the integration loop
     r.set(orig.r);
     orig.last_step = 0;
+    orig.steps = 0;
     orig.max_active = 0;
     orig.site_site_intersects = 0;
 
@@ -97,6 +89,9 @@ start:
         Ion &ion = *ions[i];
         if (ion.done)
             continue;
+
+        ion.steps = orig.steps;
+        ion.reset_forces();
 
         // Find nearby lattice atoms
         if (settings.dynamicNeighbours)
