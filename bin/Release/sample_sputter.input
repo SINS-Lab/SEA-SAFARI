@@ -50,8 +50,7 @@
 #
 # Detector Theta, Theta size, Phi size
 #
-# This is also only used during adaptive grid
-45.0 10 10.0
+45.0 45.0 5.0
 
 # Integration Parameters
 # time steps
