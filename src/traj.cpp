@@ -334,12 +334,12 @@ end:
     return site->near;
 }
 
-bool validate(Ion &ion, double &E)
+bool validate(Ion *ion, double &E)
 {
     // left crystal
-    if (ion.r[2] > settings.Z1)
+    if (ion->r[2] > settings.Z1)
     {
-        ion.left = true;
+        ion->left = true;
         return false;
     }
 
@@ -348,28 +348,28 @@ bool validate(Ion &ion, double &E)
     double y_max = settings.AY * settings.RAY;
 
     // Fell of the edge
-    if (ion.r[0] > x_max || ion.r[0] < -x_max ||
-        ion.r[1] > y_max || ion.r[1] < -y_max)
+    if (ion->r[0] > x_max || ion->r[0] < -x_max ||
+        ion->r[1] > y_max || ion->r[1] < -y_max)
     {
-        ion.off_edge = true;
+        ion->off_edge = true;
         return false;
     }
     // Buried
-    if (ion.r[2] < -settings.BDIST)
+    if (ion->r[2] < -settings.BDIST)
     {
-        ion.buried = true;
+        ion->buried = true;
         return false;
     }
     // Too many steps
-    if (ion.steps > settings.MAX_STEPS)
+    if (ion->steps > settings.MAX_STEPS)
     {
-        ion.froze = true;
+        ion->froze = true;
         return false;
     }
     // Stuck in surface
     if (E < settings.SENRGY)
     {
-        ion.stuck = true;
+        ion->stuck = true;
         return false;
     }
     return true;
@@ -572,14 +572,14 @@ start:
     reindex = false;
     // Increment counter for how many steps we have taken
     ion.steps++;
-    
+
     ion.reset_forces();
 
     // Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);
 
     // check if we are still in a good state to run.
-    ion.done = !validate(ion, E1);
+    ion.done = !validate(&ion, E1);
 
     // Update some parameters for saving.
     ion.log_z = fmin(ion.r[2], ion.log_z);

@@ -18,7 +18,7 @@
 # Beam Parameters:
 # E0, Theta0, Phi0, atomic mass, atomic symbol
 #
-250.0 0.0 0.00 22.989 Na
+500.0 0.0 0.00 22.989 Na
 
 # Most of these are currently unused at present
 # EMIN,EMAX,ERES,ARES

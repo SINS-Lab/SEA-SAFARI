@@ -183,6 +183,7 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
     Ion *orig = ions[0];
     int num = ions.size();
     int tick = orig->hameq_tick;
+    int hameqstep = orig->last_step;
     for (int i = 0; i < num; i++)
     {
         Ion &ion = *ions[i];
@@ -242,6 +243,8 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
             }
             apply_ion_ion(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
         }
+        ion.last_step = hameqstep++;
         run_hameq(ion, lattice, dt, predicted, dr_max);
     }
+    orig->last_step = hameqstep;
 }

@@ -31,14 +31,8 @@ int fill_nearest(Ion* ion_ptr, Site *site, Lattice *lattice, int radius,
  * @param ion - the ion to validate
  * @param E - total energy of the ion
  * 
- * @param buried - deeper than BDIST into the surface
- * @param off_edge - ran off the edge of the crystal
- * @param stuck - has less energy than SENRGY
- * @param froze - took too many steps to compute
- * @param left - left the surface, ie got above Z0
- * 
  */ 
-bool validate(Ion &ion, double& E);
+bool validate(Ion *ion, double& E);
 
 /**
  * Computes the trajectory of the ion, if log, it prints extra

@@ -18,7 +18,7 @@ public:
     // neighbour tracking mode.
     int max_active = 0;
     // Things with might sputtur off the surface
-    Site** sputter = NULL;
+    Site **sputter = NULL;
     int sputtered = 0;
 
     bool done = false;
@@ -37,10 +37,10 @@ public:
     bool discont = false;
     // Above Z1
     bool left = false;
-    
+
     bool resort = true;
     bool reindex = true;
-    
+
     Ion()
     {
         // In the parent class, this is left null, unless
@@ -54,9 +54,12 @@ public:
 
     ~Ion()
     {
-        if(sputter!=NULL)
+        if (near_sites != NULL)
+            delete near_sites;
+        if (sputter != NULL)
             delete sputter;
         sputter = NULL;
+        near_sites = NULL;
     }
 
     /**

@@ -77,8 +77,6 @@ start:
     // This is set back true later if needed.
     sort = false;
     reindex = false;
-    // Increment counter for how many steps we have taken
-    orig.steps++;
 
     // Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);
@@ -86,28 +84,29 @@ start:
     int num = ions.size();
     for (int i = 0; i < num; i++)
     {
-        Ion &ion = *ions[i];
-        if (ion.done)
+        Ion *ion = ions[i];
+        if (ion->done)
             continue;
 
-        ion.steps = orig.steps;
-        ion.reset_forces();
+        // Increment counter for how many steps we have taken
+        ion->steps++;
+        ion->reset_forces();
 
         // Find nearby lattice atoms
         if (settings.dynamicNeighbours)
         {
-            update_dynamic_neighbours(&ion, &ion, lattice, d_search, n_parts,
-                                      settings.rr_max, sort or ion.resort,
-                                      false, reindex or ion.reindex);
+            update_dynamic_neighbours(ion, ion, lattice, d_search, n_parts,
+                                      settings.rr_max, sort or ion->resort,
+                                      false, reindex or ion->reindex);
         }
         else
         {
-            fill_nearest(&ion, &ion, lattice, d_search, n_parts,
-                         settings.rr_max, sort or ion.resort,
-                         false, reindex or ion.reindex);
+            fill_nearest(ion, ion, lattice, d_search, n_parts,
+                         settings.rr_max, sort or ion->resort,
+                         false, reindex or ion->reindex);
         }
         // check if we are still in a good state to run.
-        ion.done = !validate(ion, E1);
+        ion->done = !validate(ion, E1);
     }
 
     // Find the forces at the current location
@@ -172,8 +171,8 @@ start:
     num = ions.size();
     for (int i = 0; i < num; i++)
     {
-        Ion &ion = *ions[i];
-        if (ion.done)
+        Ion *ion = ions[i];
+        if (ion->done)
             continue;
 
         Vec3d *r = NULL;
@@ -185,28 +184,28 @@ start:
             r = new Vec3d();
             rs.push_back(r);
         }
-        dr = *r - ion.r;
+        dr = *r - ion->r;
 
         diff = sqr(dr.v);
 
         // Reset at either 1/10 of the search distance, or 1/3 the distance to nearest, whichever is larger.
-        r_reset = std::max(0.1 * d_search, ion.rr_min_find / 9.0);
+        r_reset = std::max(0.1 * d_search, ion->rr_min_find / 9.0);
         if (diff > r_reset)
         {
             // Update ion location for last check
-            r->set(ion.r);
+            r->set(ion->r);
             // We need to re-sort the lists.
-            ion.resort = true;
+            ion->resort = true;
         }
 
         ion_count++;
         // Update some parameters for saving.
-        ion.log_z = fmin(ion.r[2], ion.log_z);
+        ion->log_z = fmin(ion->r[2], ion->log_z);
 
         // Increment the time step for the ion
-        ion.time = orig.time;
+        ion->time = orig.time;
 
-        orig.site_site_intersects = orig.site_site_intersects or ion.site_site_intersects;
+        orig.site_site_intersects = orig.site_site_intersects or ion->site_site_intersects;
     }
 
     if (orig.site_site_intersects)
@@ -225,107 +224,31 @@ end:
     int size = ions.size();
     lattice->max_active = std::max(lattice->max_active, size);
 
-    Ion &ion = *ions[0];
+    Ion *ion = ions[0];
 
-    // Log the sputtered data first, the ion's index is set as a flag in the logging process
-    // We do not want to save if it was discontinous, or froze!
-    if (settings.saveSputter && !ion.discont && !ion.froze)
-    {
-        double E = 0;
-        if (ion.stuck)
-        {
-            E = -100;
-        }
-        else if (ion.buried)
-        {
-            E = -200;
-        }
-        else if (ion.froze)
-        {
-            E = -300;
-        }
-        else if (ion.off_edge)
-        {
-            E = -400;
-        }
-        else if (ion.discont)
-        {
-            E = -500;
-        }
-        else if (ion.site_site_intersects)
-        {
-            E = -900;
-        }
-
-        double x_0 = ion.r_0[0];
-        double y_0 = ion.r_0[1];
-
-        double x_1 = ion.r[0];
-        double y_1 = ion.r[1];
-
-        double x_min, x_max, y_min, y_max;
-
-        double dr = settings.R_MAX / 2;
-
-        x_min = std::min(x_0, x_1) - dr;
-        y_min = std::min(y_0, y_1) - dr;
-        x_max = std::max(x_0, x_1) + dr;
-        y_max = std::max(y_0, y_1) + dr;
-
-        for (int i = 0; i < ion.sputtered; i++)
-        {
-            Site *s = ion.sputter[i];
-            // Cache this value
-            int oldIndex = s->index;
-
-            x_0 = s->r_0[0];
-            y_0 = s->r_0[1];
-
-            // If we are too close to the edge of the detection bounds,
-            // Just skip this particle, as is probably not valid anyway.
-            if (x_0 < x_min || x_0 > x_max)
-                continue;
-            if (y_0 < y_min || y_0 > y_max)
-                continue;
-
-            // This means we are actually going downwards, not valid sputter!
-            if (s->p[2] < 0 or s->r[2] < settings.Z1 / 4)
-                continue;
-
-            // Copy some values over from the ion
-            s->steps = ion.steps;
-            // Recorde the ion's error flag as the wieght instead
-            s->weight = E;
-            s->index = ion.index;
-            s->Eerr_max = ion.Eerr_max;
-            s->time = ion.time;
-            detector.log(sptr_file, *s, lattice, false, false, false, false, false, true);
-            // Revert the change to index.
-            s->index = oldIndex;
-        }
-    }
-
-    int index = ion.index;
+    int index = ion->index;
     num = ions.size();
     for (int i = 0; i < num; i++)
     {
-        ion = *ions[i];
-        ion.index = index;
-        lattice->sum_active += ion.max_active;
+        ion = ions[i];
+        ion->index = index;
+        lattice->sum_active += ion->max_active;
         lattice->count_active++;
         lattice->total_hits++;
         // Output data
-        if (ion.atom->index == settings.ion.index)
+        if (ion->atom->index == settings.ion.index)
         {
-            detector.log(out_file, ion, lattice,
-                         ion.stuck, ion.buried, ion.froze,
-                         ion.off_edge, ion.discont, false);
+            detector.log(out_file, *ion, lattice,
+                         ion->stuck, ion->buried, ion->froze,
+                         ion->off_edge, ion->discont, false);
         }
         else
         {
-            detector.log(sptr_file, ion, lattice,
-                         ion.stuck, ion.buried, ion.froze,
-                         ion.off_edge, ion.discont, false);
+            detector.log(sptr_file, *ion, lattice,
+                         ion->stuck, ion->buried, ion->froze,
+                         ion->off_edge, ion->discont, false);
         }
+        if (i > 0)
+            delete ion;
     }
 }
