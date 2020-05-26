@@ -68,7 +68,7 @@ bool check_sputter(Ion &ion, Site *s)
         return false;
     if (settings.cascadeMode)
     {
-        bool isHot = (sqr(s->p) * 0.5 / s->atom->mass) > 1;
+        bool isHot = (sqr(s->p) * 0.5 / s->atom->mass) > 0.5;
         double dr = diff_sqr(s->r_0, s->r);
         if (isHot and dr > settings.AX / 2)
         {

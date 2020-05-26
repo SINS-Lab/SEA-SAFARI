@@ -40,6 +40,8 @@ public:
 
     bool resort = true;
     bool reindex = true;
+    
+    double r_check[3];
 
     Ion()
     {

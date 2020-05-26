@@ -30,7 +30,6 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
 
     // Parameters for checking if things need re-calculating
     // Location of last nearby update
-    std::vector<Vec3d *> rs;
     Vec3d r;
     // change in location since last nearby update
     Vec3d dr;
@@ -49,27 +48,37 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
     // Multiplier on timestep.
     double change;
 
-    Ion &orig = *ions[0];
+    Ion *orig = ions[0];
 
     // Reset some values before the integration loop
-    r.set(orig.r);
-    orig.last_step = 0;
-    orig.steps = 0;
-    orig.max_active = 0;
-    orig.site_site_intersects = 0;
+    std::copy(orig->r, orig->r + 3, orig->r_check);
+    orig->last_step = 0;
+    orig->steps = 0;
+    orig->max_active = 0;
+    orig->site_site_intersects = 0;
 
     // Only bother to call clear if we will use this
     if (settings.saveSputter)
     {
-        if (orig.sputter != NULL)
-            delete orig.sputter;
-        orig.sputter = new Site *[1024];
-        orig.sputtered = 0;
+        if (orig->sputter != NULL)
+            delete orig->sputter;
+        orig->sputter = new Site *[1024];
+        orig->sputtered = 0;
     }
     int ion_count = 1;
     double E1 = 0;
+    int num = 0;
+    int new_num = 0;
+
+    int total_steps = 0;
+    int total_threshold = 20 * settings.MAX_STEPS;
 
 start:
+
+    if (total_steps++ >= total_threshold)
+    {
+        goto end;
+    }
 
     // Reset this to 0.
     dr_max = 0;
@@ -81,7 +90,7 @@ start:
     // Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);
 
-    int num = ions.size();
+    num = ions.size();
     for (int i = 0; i < num; i++)
     {
         Ion *ion = ions[i];
@@ -114,7 +123,7 @@ start:
     // Find the forces at the next location
     run_hameq(ions, lattice, dt, true, &dr_max);
 
-    int new_num = ions.size();
+    new_num = ions.size();
     if (new_num != num)
     {
         reindex = true;
@@ -166,7 +175,7 @@ start:
 
     ion_count = 0;
 
-    orig.time += dt;
+    orig->time += dt;
 
     num = ions.size();
     for (int i = 0; i < num; i++)
@@ -175,16 +184,8 @@ start:
         if (ion->done)
             continue;
 
-        Vec3d *r = NULL;
-        int rsc = rs.size();
-        if (rsc < i)
-            r = rs[i];
-        else
-        {
-            r = new Vec3d();
-            rs.push_back(r);
-        }
-        dr = *r - ion->r;
+        r.set(ion->r_check);
+        dr = r - ion->r;
 
         diff = sqr(dr.v);
 
@@ -193,7 +194,7 @@ start:
         if (diff > r_reset)
         {
             // Update ion location for last check
-            r->set(ion->r);
+            std::copy(ion->r, ion->r + 3, ion->r_check);
             // We need to re-sort the lists.
             ion->resort = true;
         }
@@ -203,12 +204,12 @@ start:
         ion->log_z = fmin(ion->r[2], ion->log_z);
 
         // Increment the time step for the ion
-        ion->time = orig.time;
+        ion->time = orig->time;
 
-        orig.site_site_intersects = orig.site_site_intersects or ion->site_site_intersects;
+        orig->site_site_intersects = orig->site_site_intersects or ion->site_site_intersects;
     }
 
-    if (orig.site_site_intersects)
+    if (orig->site_site_intersects)
     {
         goto end;
     }
@@ -223,18 +224,23 @@ end:
 
     int size = ions.size();
     lattice->max_active = std::max(lattice->max_active, size);
+    lattice->sum_active += size;
+    lattice->count_active++;
 
-    Ion *ion = ions[0];
-
-    int index = ion->index;
+    int index = orig->index;
     num = ions.size();
     for (int i = 0; i < num; i++)
     {
-        ion = ions[i];
+        Ion *ion = ions[i];
         ion->index = index;
-        lattice->sum_active += ion->max_active;
-        lattice->count_active++;
         lattice->total_hits++;
+
+        if (total_steps >= total_threshold)
+        {
+            ion->froze = true;
+            ion->steps = total_steps;
+        }
+
         // Output data
         if (ion->atom->index == settings.ion.index)
         {
@@ -251,4 +257,5 @@ end:
         if (i > 0)
             delete ion;
     }
+    ions.clear();
 }

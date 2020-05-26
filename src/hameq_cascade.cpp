@@ -186,14 +186,14 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
     int hameqstep = orig->last_step;
     for (int i = 0; i < num; i++)
     {
-        Ion &ion = *ions[i];
-        ion.steps = orig->steps;
+        Ion *ion = ions[i];
+        ion->steps = orig->steps;
 
-        if (ion.done)
+        if (ion->done)
             continue;
-        ion.hameq_tick = tick;
+        ion->hameq_tick = tick;
         // Find the forces at the current location
-        ion.hameq_tick++;
+        ion->hameq_tick++;
 
         // Run for the ion-ion interaction
         // Force on the target.
@@ -201,19 +201,19 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
 
         // Coordinate of the Ion
         double *r_i;
-        r_i = ion.r;
+        r_i = ion->r;
 
         // Relevant force for this run
         double *F;
-        F = ion.dp_dt;
+        F = ion->dp_dt;
 
         // if not 0, we are computing for the predicted location.
         if (predicted)
         {
             // Use the one for next time step
-            F = ion.dp_dt_t;
+            F = ion->dp_dt_t;
             // Use predictions
-            r_i = ion.r_t;
+            r_i = ion->r_t;
         }
 
         // Lattice atom coordintates.
@@ -241,10 +241,10 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
                 ay = s->r[1];
                 az = s->r[2];
             }
-            apply_ion_ion(ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
+            apply_ion_ion(*ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
         }
-        ion.last_step = hameqstep++;
-        run_hameq(ion, lattice, dt, predicted, dr_max);
+        ion->last_step = hameqstep++;
+        run_hameq(*ion, lattice, dt, predicted, dr_max);
     }
     orig->last_step = hameqstep;
 }
