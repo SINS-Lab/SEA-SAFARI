@@ -80,7 +80,7 @@ if __name__ == '__main__':
     if platform.system() == 'Linux':
         template = template.replace('Sea-Safari.exe', './Sea-Safari')
 
-    # test_montecarlo(template)
-    test_cascade(template)
+    test_montecarlo(template)
+    # test_cascade(template)
     # test_adaptive_grid(template)
     # test_chainscat(template)

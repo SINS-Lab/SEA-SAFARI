@@ -52,7 +52,7 @@ def loadFromText(file):
                 # Skip, this is header line
                 pass
             else:
-                if len(arr) != 13:
+                if len(arr) <= 12:
                 #   print("Error on line {}".format(n))
                     errors = errors + 1
                     continue
