@@ -1,5 +1,6 @@
 #pragma once
 #include "particles.h" // for Site
+#include "lattice.h"   // For lattice pointer
 
 /**
  * This is a particle which can fly by the lattice.
@@ -12,14 +13,16 @@ class Ion : public Site
 public:
     // The initial energy of this ion
     double E0 = 0;
-    // potential energy the particle is in.
-    double V = 0;
     // Used to track maximum number of active sites when in dynamic
     // neighbour tracking mode.
     int max_active = 0;
     // Things with might sputtur off the surface
     Site **sputter = NULL;
     int sputtered = 0;
+
+    // The lattice we are scattering off, this is here so we
+    // can do things like update its total energy, etc
+    Lattice* lattice = NULL;
 
     bool done = false;
 
@@ -52,6 +55,7 @@ public:
         // near_dists = new double *[MAX_NEAR * 6];
         // near_forces = new double *[MAX_NEAR * 6];
         q = 1;
+        left_origin = true;
     }
 
     ~Ion()

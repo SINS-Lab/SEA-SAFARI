@@ -76,7 +76,7 @@ t
 
 # Number of allowed integration steps before failing.
 #
-4000
+8000
 
 # These are search related, max distances and table steps
 #
@@ -95,7 +95,7 @@ t
 # The energy change error for each hit is listed in the data file, this
 # can be used to determine a good value for this second parameter
 #
-2 5
+2 .05
 
 # This is how many runs to do for Montecarlo or Chainscat modes.
 # If this is 1, it will run a single shot run at x:min y:min.

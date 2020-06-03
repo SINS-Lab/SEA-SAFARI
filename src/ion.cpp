@@ -31,7 +31,7 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
     theta0 = theta0 * M_PI / 180;
     phi0 = phi0 * M_PI / 180;
 
-    double p0 = sqrt(2 * atom->mass * E0);
+    double p0 = sqrt(atom->two_mass * E0);
     double p_trans = p0 * sin(theta0);
 
     //This is the initial momentum, before surface effects.
@@ -53,18 +53,22 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
     r_0[1] = y;
     r_0[2] = settings.Z1;
 
+    V = 0;
     //If we have image effect, account for that here.
     if (settings.use_image)
     {
+        V = Vi_z(settings.Z1, q);
         //The image part is subtracted here, as we have already assigned
         //the sign outside the sqrt function, the output of Vi_z is negative.
-        p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom->mass * Vi_z(settings.Z1, q)));
+        p_z0 = -sqrt((p_z0 * p_z0) - (atom->two_mass * V));
     }
 
     //Set the initial momentum of the ion
     p[0] = p_x0;
     p[1] = p_y0;
     p[2] = p_z0;
+
+    T = sqr(p) * atom->mass_inv_2;
 }
 
 void Ion::reset()
@@ -80,7 +84,9 @@ void Ion::reset()
     total_near = 0;
     V = 0;
     done = false;
+    left_origin = true;
     hameq_tick = -1;
+    sputter_tick = 0;
 
     buried = false;
     off_edge = false;
@@ -103,7 +109,9 @@ void Site::reset()
     std::copy(r_0, r_0 + 3, r_u);
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
-    left = false;
+    left_origin = false;
+    unbound = false;
+    sputter_tick = -1;
 
     reset_forces();
 
@@ -132,5 +140,5 @@ void Site::write_info()
     debug_file << "r_t: " << r_t[0] << " " << r_t[1] << " " << r_t[2] << std::endl;
     debug_file << "F  : " << dp_dt[0] << " " << dp_dt[1] << " " << dp_dt[2] << std::endl;
     debug_file << "F_t: " << dp_dt_t[0] << " " << dp_dt_t[1] << " " << dp_dt_t[2] << std::endl;
-    debug_file << "pnt: " << r << " " << p << " " << r_0 << " " << last_ion << " " << last_step << " " << last_update << std::endl;
+    debug_file << "pnt: " << index << " "<< last_ion << " " << last_step << " " << last_update  << " " << valid << std::endl;
 }

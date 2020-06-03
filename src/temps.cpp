@@ -35,7 +35,7 @@ void init_temps()
                 //dx = sqrt(2E/k)
                 a->dev_r[i] = sqrt(2.0*energy/a->spring[i]);
                 //dp = sqrt(2mE)
-                a->dev_p[i] = sqrt(2.0*a->mass*energy);
+                a->dev_p[i] = sqrt(a->two_mass*energy);
             }
         }
         else

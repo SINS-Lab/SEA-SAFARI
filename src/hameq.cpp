@@ -7,20 +7,18 @@
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
 
-void update_site(Site &s, double dt)
+void update_site(Lattice *lattice, Site &s, double dt)
 {
     Atom *atom = s.atom;
-    double mass = atom->mass;
-
     // We use averaged forces everywhere, so just cut
     // this in half here for 6 less * operations
     dt *= 0.5;
 
     // New Location, adjusted by error in corrected positions
     // corrected positon is 0.25*dt^2*(F_t - F)/mass
-    s.r[0] = s.r_t[0] - dt * dt * (s.dp_dt_t[0] - s.dp_dt[0]) / mass;
-    s.r[1] = s.r_t[1] - dt * dt * (s.dp_dt_t[1] - s.dp_dt[1]) / mass;
-    s.r[2] = s.r_t[2] - dt * dt * (s.dp_dt_t[2] - s.dp_dt[2]) / mass;
+    s.r[0] = s.r_t[0] - dt * dt * (s.dp_dt_t[0] - s.dp_dt[0]) * atom->mass_inv;
+    s.r[1] = s.r_t[1] - dt * dt * (s.dp_dt_t[1] - s.dp_dt[1]) * atom->mass_inv;
+    s.r[2] = s.r_t[2] - dt * dt * (s.dp_dt_t[2] - s.dp_dt[2]) * atom->mass_inv;
 
     // New Momentum, not corrected, just using averages
     s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
@@ -30,61 +28,54 @@ void update_site(Site &s, double dt)
     s.reset_forces();
 }
 
-void update_sites(Site &s, int last_update, double dt)
-{
-    // We have already been updated!
-    if (s.last_update != last_update)
-    {
-        // Flag us as updated, so we don't get this done again.
-        s.last_update = last_update;
-        // Site near us.
-        update_site(s, dt);
-        // Update each nearby site as well
-        for (int i = 0; i < s.near; i++)
-        {
-            Site &s2 = *s.near_sites[i];
-            update_sites(s2, last_update, dt);
-        }
-    }
-}
-
-void predict_site_location(Site &s, double dt)
+void predict_site_location(Lattice *lattice, Ion &ion, Site &s, double dt)
 {
     Atom *atom = s.atom;
-    double mass = atom->mass;
 
     // v = p/m
     // a = F/m, F = dp/dt
     // r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m
-    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5 * s.dp_dt[0] * dt) / mass;
-    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5 * s.dp_dt[1] * dt) / mass;
-    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
+    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5 * s.dp_dt[0] * dt) * atom->mass_inv;
+    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5 * s.dp_dt[1] * dt) * atom->mass_inv;
+    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) * atom->mass_inv;
+
+    s.p_t[0] = s.p[0] + dt * s.dp_dt[0];
+    s.p_t[1] = s.p[1] + dt * s.dp_dt[1];
+    s.p_t[2] = s.p[2] + dt * s.dp_dt[2];
+
+    s.T_t = sqr(s.p_t) * atom->mass_inv_2;
+    lattice->T_t += s.T_t;
+
+    s.T = sqr(s.p) * s.atom->mass_inv_2;
+    lattice->T += s.T;
+
+    check_sputter(ion, &s);
 }
 
 bool check_sputter(Ion &ion, Site *s)
 {
     // we are already marked!
-    if (s->left)
+    if (s->left_origin)
         return false;
     if (settings.cascadeMode)
     {
-        bool isHot = (sqr(s->p) * 0.5 / s->atom->mass) > 0.5;
-        double dr = diff_sqr(s->r_0, s->r);
-        if (isHot and dr > settings.AX / 2)
+        bool isHot = s->T > settings.max_spring_V;
+        if (isHot or s->unbound)
         {
-            s->left = true;
+            s->left_origin = true;
+            s->sputter_tick = ion.sputter_tick;
+            ion.sputtered++;
             return true;
         }
     }
     else if (settings.saveSputter)
     {
-
         double pz = s->p[2];
         double rz = s->r[2];
         // TODO better conditions for leaving surface
         if (pz > 0 and rz > settings.Z1 / 4)
         {
-            s->left = true;
+            s->left_origin = true;
             ion.sputter[ion.sputtered] = s;
             ion.sputtered++;
             return true;
@@ -97,7 +88,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
 {
     if (!settings.useEinsteinSprings)
     {
-        update_site(ion, dt);
+        update_site(lattice, ion, dt);
         // In this case, we update all of the sites
         if (settings.dynamicNeighbours)
         {
@@ -105,8 +96,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
             for (int i = 0; i < num; i++)
             {
                 Site *s = lattice->active_sites[i];
-                update_site(*s, dt);
-                check_sputter(ion, s);
+                update_site(lattice, *s, dt);
                 s->last_update = ion.steps;
             }
         }
@@ -116,7 +106,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
             for (int i = 0; i < ion.near; i++)
             {
                 Site *s = ion.near_sites[i];
-                update_site(*s, dt);
+                update_site(lattice, *s, dt);
                 s->last_update = ion.steps;
                 if (!settings.rigidBounds)
                     for (int j = 0; j < s->near; j++)
@@ -124,8 +114,7 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
                         Site *s2 = s->near_sites[j];
                         if (s2->last_update != ion.steps)
                         {
-                            update_site(*s2, dt);
-                            check_sputter(ion, s);
+                            update_site(lattice, *s2, dt);
                         }
                         s2->last_update = ion.steps;
                     }
@@ -134,12 +123,11 @@ void apply_hameq(Ion &ion, Lattice *lattice, double dt)
     }
     else
     {
-        update_site(ion, dt);
+        update_site(lattice, ion, dt);
         for (int i = 0; i < ion.near; i++)
         {
             Site *s = ion.near_sites[i];
-            update_site(*s, dt);
-            check_sputter(ion, s);
+            update_site(lattice, *s, dt);
         }
     }
 }
@@ -156,9 +144,9 @@ double compute_error(Site &site, double dt)
     dpz = site.dp_dt[2] - site.dp_dt_t[2];
 
     // Error in positions between the two forces.
-    dxp = 0.25 * dt * dt * dpx / site.atom->mass;
-    dyp = 0.25 * dt * dt * dpy / site.atom->mass;
-    dzp = 0.25 * dt * dt * dpz / site.atom->mass;
+    dxp = 0.25 * dt * dt * dpx * site.atom->mass_inv;
+    dyp = 0.25 * dt * dt * dpy * site.atom->mass_inv;
+    dzp = 0.25 * dt * dt * dpz * site.atom->mass_inv;
 
     return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 }
@@ -189,12 +177,22 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
 
         // Magnitude of force for this location.
         double dV_dr = dVr_dr(r, ion.atom->index, s->atom->index);
+        double V_r = Vr_r(r, ion.atom->index, s->atom->index);
 
         // Potential for this location.
         if (predicted)
         {
-            ion.V += Vr_r(r, ion.atom->index, s->atom->index);
+            ion.V_t += V_r;
+            s->V_t += V_r;
+            ion.lattice->V_t += V_r;
         }
+        else
+        {
+            ion.V += V_r;
+            s->V += V_r;
+            ion.lattice->V += V_r;
+        }
+
         // Scaled by 1/r for converting to cartesian
         dV_dr /= r;
 
@@ -217,10 +215,12 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i,
         // These are -=, as are opposite direction from on atom
     }
     // No force if ion is on an atom.
-    if (r == 0)
+    if (r < 0.1)
     {
-        debug_file << "Ion intersected with atom?: " << std::endl;
+        debug_file << "Ion intersected with atom?: " << r << std::endl;
+        debug_file << "Ion: " << std::endl;
         ion.write_info();
+        debug_file << "Site: " << std::endl;
         s->write_info();
         ion.site_site_intersects++;
     }
@@ -242,6 +242,12 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
     if (s->valid == ion.index)
         return;
 
+    if (s2->force_reset_tick != ion.force_reset_tick)
+    {
+        s2->force_reset_tick = ion.force_reset_tick;
+        s2->reset_forces();
+    }
+
     // Force on target.
     double *F_at2;
     double *r2;
@@ -253,6 +259,7 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
 
     // This will be the magnitude of the force.
     double dV_dr = 0;
+    double V_r = 0;
 
     if (s2->last_ion != ion.index)
     {
@@ -299,7 +306,8 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
     if (useLennardJones)
     {
         // In here we use Lennard Jones forces
-        dV_dr = L_J_dV_dr(r, s2->atom->index, s->atom->index);
+        dV_dr = dVr_dr(r, s2->atom->index, s->atom->index);
+        V_r = Vr_r(r, s2->atom->index, s->atom->index);
         if (fabs(dV_dr) > 1e20)
         {
             debug_file << "Somehow large lattice force: "
@@ -323,22 +331,34 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at,
 
         double dl = r - l_eq;
 
+        // V = 0.5*k*x^2
+        double V_r = 0.5 * atomk * dl * dl;
+
         // Check for spring breaking if dl > 0
         if (dl > 0)
         {
-            // V = 0.5*k*x^2
-            double V_s = 0.5 * atomk * dl * dl;
 
             // Scale by 1/r^2, this accounts for
             // differences in bond breaking by distance
-            V_s /= l_eq * l_eq;
+            V_r /= l_eq * l_eq;
 
             // Break the spring if too far.
-            if (V_s > settings.max_spring_V)
+            if (V_r > settings.max_spring_V)
                 goto end;
         }
         // F = -kx
         dV_dr = -atomk * dl;
+    }
+
+    if (predicted)
+    {
+        ion.lattice->V_t += V_r;
+        s->V_t += V_r;
+    }
+    else
+    {
+        ion.lattice->V += V_r;
+        s->V += V_r;
     }
 
     // This is divided by 2, as the other site will also then apply this.
@@ -367,8 +387,10 @@ end:
     if (recoil)
     {
         if (!predicted)
+        {
             // set the predictions
-            predict_site_location(*s2, dt);
+            predict_site_location(ion.lattice, ion, *s2, dt);
+        }
     }
 }
 
@@ -421,9 +443,6 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
     // Update "last integration step" for ion
     ion.last_step++;
 
-    // Reset V
-    ion.V = 0;
-
     // This was set earlier when looking for nearby sites.
     if (ion.near)
     {
@@ -441,6 +460,15 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
 
             if (s->valid == ion.index)
                 continue;
+
+            if (settings.cascadeMode and s->left_origin)
+                continue;
+
+            if (s->force_reset_tick != ion.force_reset_tick)
+            {
+                s->force_reset_tick = ion.force_reset_tick;
+                s->reset_forces();
+            }
 
             if (predicted)
             {
@@ -501,14 +529,31 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                     double V_s_z = 0.5 * s->atom->spring[2] * dz_sq;
 
                     double V_s = V_s_x + V_s_y + V_s_z;
-                    // Check if too much spring energy
-                    if (settings.max_spring_V > V_s)
+
+                    // This is a binding energy, so subtract the base from it.
+                    // If we are above zero for this, we break the springs, as are unbound.
+                    V_s = V_s - settings.max_spring_V;
+
+                    // Only apply if bound
+                    if (V_s < 0)
                     {
+                        if (predicted)
+                        {
+                            s->V_t += V_s;
+                            lattice->V_t += V_s;
+                        }
+                        else
+                        {
+                            s->V += V_s;
+                            lattice->V += V_s;
+                        }
                         // F = -kx
                         F_at[0] -= s->atom->spring[0] * dx;
                         F_at[1] -= s->atom->spring[1] * dy;
                         F_at[2] -= s->atom->spring[2] * dz;
                     }
+                    else
+                        s->unbound = true;
                     // These springs are only applied if the site is still "near" the original location.
                 }
                 else
@@ -523,66 +568,80 @@ void run_hameq(Ion &ion, Lattice *lattice, double dt, bool predicted, double *dr
                 }
             }
 
+            if (springs && settings.dynamicNeighbours)
+            {
+                for (auto s : lattice->active_sites)
+                {
+                    if (predicted)
+                    {
+                        // Get predicted force array.
+                        F_at = s->dp_dt_t;
+                        // Get predicted loctation array.
+                        ax = s->r_t[0];
+                        ay = s->r_t[1];
+                        az = s->r_t[2];
+                    }
+                    else
+                    {
+                        // Get current force array.
+                        F_at = s->dp_dt;
+                        // Get current location array.
+                        ax = s->r[0];
+                        ay = s->r[1];
+                        az = s->r[2];
+                    }
+                    apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az,
+                                          predicted, recoil, useLennardJones);
+                }
+            }
+
             if (recoil)
             {
                 if (!predicted)
+                {
                     // set the predictions
-                    predict_site_location(*s, dt);
+                    predict_site_location(lattice, ion, *s, dt);
+                }
                 else
+                {
                     //set account for site errors
                     *dr_max = std::max(compute_error(*s, dt), *dr_max);
+                }
             }
+            // We have now exited the lattice considerations.
         }
-        if (springs && settings.dynamicNeighbours)
+
+        if (settings.use_image)
         {
-            for (auto s : lattice->active_sites)
+            F[2] -= dVi_dz(r_i[2], ion.q);
+            double V_z = ion.q * Vi_z(r_i[2], ion.q);
+            if (predicted)
             {
-                if (predicted)
-                {
-                    // Get predicted force array.
-                    F_at = s->dp_dt_t;
-                    // Get predicted loctation array.
-                    ax = s->r_t[0];
-                    ay = s->r_t[1];
-                    az = s->r_t[2];
-                }
-                else
-                {
-                    // Get current force array.
-                    F_at = s->dp_dt;
-                    // Get current location array.
-                    ax = s->r[0];
-                    ay = s->r[1];
-                    az = s->r[2];
-                }
-                apply_dynamic_lattice(s, lattice, 0, ion, F_at, atomk, dt, ax, ay, az,
-                                      predicted, recoil, useLennardJones);
+                ion.V_t += V_z;
+                lattice->V_t += V_z;
+            }
+            else
+            {
+                ion.V += V_z;
+                lattice->V += V_z;
             }
         }
 
-        // We have now exited the lattice considerations.
-    }
+        if (settings.F_a > 0)
+        {
+            ion.V += apply_friction(lattice, ion, F, dt, predicted);
+        }
 
-    if (settings.use_image)
-    {
-        F[2] -= dVi_dz(r_i[2], ion.q);
-        if (predicted)
-            ion.V += ion.q * Vi_z(r_i[2], ion.q);
-    }
+        if (!predicted)
+        {
+            // set the predictions
+            predict_site_location(lattice, ion, ion, dt);
+        }
+        else
+        {
 
-    if (settings.F_a > 0)
-    {
-        ion.V += apply_friction(lattice, ion, F, dt, predicted);
-    }
-
-    if (!predicted)
-    {
-        // set the predictions
-        predict_site_location(ion, dt);
-    }
-    else
-    {
-        // Compute error
-        *dr_max = std::max(compute_error(ion, dt), *dr_max);
+            //set account for site errors
+            *dr_max = std::max(compute_error(ion, dt), *dr_max);
+        }
     }
 }

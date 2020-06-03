@@ -7,17 +7,26 @@
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
 
-Ion *makeIonFromSite(Site *s, int index)
+Ion *makeIonFromSite(Site *s, Ion *orig)
 {
     Ion *ion = new Ion();
 
     std::copy(s->r_0, s->r_0 + 3, ion->r_0);
     std::copy(s->r, s->r + 3, ion->r);
     std::copy(s->p, s->p + 3, ion->p);
+    std::copy(s->r_t, s->r_t + 3, ion->r_t);
+    std::copy(s->p_t, s->p_t + 3, ion->p_t);
 
-    s->invalidate(index);
-    ion->index = index;
+    s->invalidate(orig->index);
+    ion->index = orig->index;
     ion->atom = s->atom;
+    ion->V = s->V;
+    ion->V_t = s->V_t;
+    ion->T = s->T;
+    ion->T_t = s->T_t;
+    ion->valid = s->index;
+    ion->lattice = orig->lattice;
+    ion->reset_forces();
 
     return ion;
 }
@@ -36,7 +45,7 @@ void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
 
         if (!settings.useEinsteinSprings)
         {
-            update_site(ion, dt);
+            update_site(lattice, ion, dt);
             // In this case, we update all of the sites
             if (settings.dynamicNeighbours)
             {
@@ -49,31 +58,21 @@ void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
                     if (s->last_update == steps)
                         continue;
                     s->last_update = steps;
-                    update_site(*s, dt);
-                    bool newIon = check_sputter(ion, s);
-                    if (newIon)
-                    {
-                        ions.push_back(makeIonFromSite(s, orig->index));
-                    }
+                    update_site(lattice, *s, dt);
                 }
             }
             else
             {
                 // Otherwise, just consider ones tracked by the ion
-                for (int i = 0; i < ion.near; i++)
+                for (int k = 0; k < ion.near; k++)
                 {
-                    Site *s = ion.near_sites[i];
+                    Site *s = ion.near_sites[k];
                     if (s->valid == ion.index)
                         continue;
                     if (s->last_update == steps)
                         continue;
                     s->last_update = steps;
-                    update_site(*s, dt);
-                    bool newIon = check_sputter(ion, s);
-                    if (newIon)
-                    {
-                        ions.push_back(makeIonFromSite(s, orig->index));
-                    }
+                    update_site(lattice, *s, dt);
                     if (!settings.rigidBounds)
                         for (int j = 0; j < s->near; j++)
                         {
@@ -83,12 +82,7 @@ void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
                             if (s2->last_update != steps)
                             {
                                 s2->last_update = steps;
-                                update_site(*s2, dt);
-                                bool newIon = check_sputter(ion, s2);
-                                if (newIon)
-                                {
-                                    ions.push_back(makeIonFromSite(s2, orig->index));
-                                }
+                                update_site(lattice, *s2, dt);
                             }
                         }
                 }
@@ -96,21 +90,16 @@ void apply_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt)
         }
         else
         {
-            update_site(ion, dt);
-            for (int i = 0; i < ion.near; i++)
+            update_site(lattice, ion, dt);
+            for (int j = 0; j < ion.near; j++)
             {
-                Site *s = ion.near_sites[i];
+                Site *s = ion.near_sites[j];
                 if (s->valid == ion.index)
                     continue;
                 if (s->last_update == steps)
                     continue;
                 s->last_update = steps;
-                update_site(*s, dt);
-                bool newIon = check_sputter(ion, s);
-                if (newIon)
-                {
-                    ions.push_back(makeIonFromSite(s, orig->index));
-                }
+                update_site(lattice, *s, dt);
             }
         }
     }
@@ -122,9 +111,6 @@ void apply_ion_ion(Ion &ion, Ion *s, double *F_at, double *r_i,
 {
     double dx = 0, dy = 0, dz = 0;
     double fx = 0, fy = 0, fz = 0;
-
-    if (s->done || ion.done)
-        return;
 
     // Distances from site to atom
     dx = ax - r_i[0];
@@ -141,12 +127,20 @@ void apply_ion_ion(Ion &ion, Ion *s, double *F_at, double *r_i,
 
         // Magnitude of force for this location.
         double dV_dr = dVr_dr(r, ion.atom->index, s->atom->index);
+        double V_r = Vr_r(r, ion.atom->index, s->atom->index);
 
         // Potential for this location.
         if (predicted)
         {
-            ion.V += Vr_r(r, ion.atom->index, s->atom->index);
+            ion.V += V_r;
+            ion.lattice->V += V_r;
         }
+        else
+        {
+            ion.V_t += V_r;
+            ion.lattice->V_t += V_r;
+        }
+
         // Scaled by 1/r for converting to cartesian
         dV_dr /= r;
 
@@ -171,10 +165,15 @@ void apply_ion_ion(Ion &ion, Ion *s, double *F_at, double *r_i,
     // No force if ion is on an atom.
     if (r < 0.1)
     {
-        debug_file << "Ion intersected with atom?: " << std::endl;
+        debug_file << "Ion intersected with atom?: " << r << std::endl;
+        debug_file << "Ion A: " << std::endl;
         ion.write_info();
+        debug_file << "Ion B: " << std::endl;
         s->write_info();
         ion.site_site_intersects++;
+        s->site_site_intersects++;
+        ion.done = true;
+        s->done = true;
     }
 }
 
@@ -183,17 +182,17 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
     Ion *orig = ions[0];
     int num = ions.size();
     int tick = orig->hameq_tick;
-    int hameqstep = orig->last_step;
     for (int i = 0; i < num; i++)
     {
         Ion *ion = ions[i];
-        ion->steps = orig->steps;
+        ion->force_reset_tick = orig->force_reset_tick;
+        if (i > 0)
+            ion->steps++;
+        ion->hameq_tick = tick;
+        ion->sputter_tick = orig->sputter_tick;
 
         if (ion->done)
             continue;
-        ion->hameq_tick = tick;
-        // Find the forces at the current location
-        ion->hameq_tick++;
 
         // Run for the ion-ion interaction
         // Force on the target.
@@ -223,6 +222,12 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
             // Site near us.
             Ion *s = ions[j];
 
+            if (s->done)
+                continue;
+
+            s->force_reset_tick = orig->force_reset_tick;
+            s->hameq_tick = tick;
+
             if (predicted)
             {
                 // Get predicted force array.
@@ -243,8 +248,20 @@ void run_hameq(std::vector<Ion *> &ions, Lattice *lattice, double dt, bool predi
             }
             apply_ion_ion(*ion, s, F_at, r_i, ax, ay, az, dt, predicted, F);
         }
-        ion->last_step = hameqstep++;
+        ion->last_step = orig->last_step++;
+        ion->sputtered = 0;
         run_hameq(*ion, lattice, dt, predicted, dr_max);
+        if (ion->sputtered != 0)
+        {
+            for (int j = 0; j < ion->near; j++)
+            {
+                // Site near us.
+                Site *s = ion->near_sites[j];
+                if (s->sputter_tick == ion->sputter_tick)
+                {
+                    ions.push_back(makeIonFromSite(s, orig));
+                }
+            }
+        }
     }
-    orig->last_step = hameqstep;
 }

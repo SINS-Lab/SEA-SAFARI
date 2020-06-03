@@ -26,6 +26,7 @@ bool fire(Lattice *lattice, Ion &ion, double x, double y, int index, bool log, b
         return false;
     }
     ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
+    ion.lattice = lattice;
     ion.index = index;
     ion.thermal_seed = index;
 
@@ -190,6 +191,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
             {
                 Ion ion;
                 ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
+                ion.lattice = lattice;
                 ion.index = (*index) + 1;
                 *index = ion.index;
                 ion.weight = current_depth;

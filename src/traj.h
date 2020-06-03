@@ -32,7 +32,7 @@ int fill_nearest(Ion* ion_ptr, Site *site, Lattice *lattice, int radius,
  * @param E - total energy of the ion
  * 
  */ 
-bool validate(Ion *ion, double& E);
+bool validate(Ion *ion, double E);
 
 /**
  * Computes the trajectory of the ion, if log, it prints extra

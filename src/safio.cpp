@@ -83,10 +83,9 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 SYMION = &line_args[4][0];
 
                 //initialize the atom for this ion.
-                ion.mass = MASS;
-                ion.symbol = SYMION;
                 ion.index = 0;
                 //a.charge = TODO lookup
+                ion.init(MASS, 0, SYMION);
 
                 // Ensure phi is in correct range
                 while (PHI0 > 180)
@@ -154,7 +153,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 if (o <= 0)
                 {
                     DIST_SEARCH = atoi(line_args[0].c_str());
-                    FAILED_DE = atoi(line_args[1].c_str());
+                    FAILED_DE = atof(line_args[1].c_str());
 
                     //Since we re-purposed the above, we always
                     //have the 4 successive arguments.
@@ -330,9 +329,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                     if (o % 2 == 0)
                     {
                         Atom *a = new Atom();
-                        a->mass = atof(line_args[0].c_str());
-                        a->charge = atof(line_args[1].c_str());
-                        a->symbol = line_args[2];
+                        a->init(atof(line_args[0].c_str()), atof(line_args[1].c_str()), line_args[2]);
                         a->index = o / 2;
                         ATOMS.push_back(a);
                     }

@@ -17,7 +17,7 @@ double r_max;
 double dr_min;
 double z_max;
 double z_min;
-int n_rmax;
+int n_rmax = -1;
 int num_atoms = 0;
 
 std::vector<double> **Vr_r_all_cache = NULL;
@@ -78,6 +78,13 @@ double L_J_dV_dr_init(double r, int a, int b)
 
 void print_pots()
 {
+    dr_min = settings.DR_MIN_TAB;
+    r_max = settings.R_MAX;
+    if (dr_min == 0)
+        return;
+    if (n_rmax == -1)
+        n_rmax = r_max / dr_min;
+
     std::ofstream pots_file;
     std::string filename = settings.output_name + ".pots";
     pots_file.open(filename);
@@ -96,12 +103,8 @@ void print_pots()
             pots_file << buffer << std::flush;
             if (settings.lattice_potential_type)
             {
-                F = -L_J_dV_dr(r, n + 1, n + 1);
-                int start = settings.lattice_potential_start;
-                double epsilon = settings.binary_potential_parameters[start + 2 * n + 0];
-                double sigma = settings.binary_potential_parameters[start + 2 * n + 1];
-                double sigma_r = sigma / r;
-                double V = 4 * epsilon * (pow(sigma_r, 12) - pow(sigma_r, 6));
+                F = -dVr_dr(r, n + 1, n + 1);
+                V = Vr_r(r, n + 1, n + 1);
                 sprintf(buffer, "%s\t%s\t%.5f\t%.5f\n",
                         a->symbol.c_str(), a->symbol.c_str(), V, F);
                 pots_file << buffer << std::flush;
@@ -118,12 +121,12 @@ void init_potentials()
     r_max = settings.R_MAX;
     if (dr_min == 0)
         return;
-    n_rmax = r_max / dr_min;
+    if (n_rmax == -1)
+        n_rmax = r_max / dr_min;
 
     // Already was initialized earlier, we don't want to do this again.
     if (Vr_r_cache != NULL)
     {
-        print_pots();
         return;
     }
 
@@ -328,6 +331,9 @@ struct Pots
 
 void Atom::init_pots(std::string &filename)
 {
+    debug_file << "Loading provided potential tables" << std::endl;
+    std::cout << "Loading provided potential tables" << std::endl;
+
     std::ifstream input;
     filename = filename + ".pots";
     input.open(filename);
@@ -386,6 +392,8 @@ void Atom::init_pots(std::string &filename)
         Pots *potA = pots[a->symbol];
         for (auto b : settings.ATOMS)
         {
+            if (b == a)
+                continue;
             Pots *potB = pots[b->symbol];
             potB->V[potA->A] = potA->V[b->symbol];
             potB->F[potA->A] = potA->F[b->symbol];
@@ -462,6 +470,14 @@ void Atom::init_pots(std::string &filename)
         }
         m++;
     }
+    n_rmax = Vr_r_all_cache[0]->size();
+    for(int i = 1; i< num_atoms * num_atoms; i++)
+    {
+        std::vector<double>* arr = Vr_r_all_cache[i];
+        int size = arr->size();
+        n_rmax = std::min(n_rmax, size);
+    }
+    print_pots();
 }
 
 double electron_density(Lattice *lattice, Ion &ion, bool predicted)
@@ -473,9 +489,9 @@ double electron_density(Lattice *lattice, Ion &ion, bool predicted)
 
 double apply_friction(Lattice *lattice, Ion &ion, double *F, double dt, bool predicted)
 {
-    double vx = ion.p[0] / ion.atom->mass;
-    double vy = ion.p[1] / ion.atom->mass;
-    double vz = ion.p[2] / ion.atom->mass;
+    double vx = ion.p[0] * ion.atom->mass_inv;
+    double vy = ion.p[1] * ion.atom->mass_inv;
+    double vz = ion.p[2] * ion.atom->mass_inv;
 
     double v_sq = vx * vx + vy * vy + vz * vz;
     double v = sqrt(v_sq);

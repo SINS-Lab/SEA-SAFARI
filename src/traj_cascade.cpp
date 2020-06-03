@@ -14,6 +14,7 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
         lattice->init_springs(settings.neighbour_count);
     }
 
+    Ion *orig = ions[0];
     // Get some constants for the loop
 
     // Radius of atom search
@@ -24,9 +25,20 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
     const double dt_low = settings.DELLOW;
     // Highest allowed time step
     const double dt_high = settings.DELT0;
+    // Energy difference to consider a failure
+    const double de_fail = settings.FAILED_DE;
 
-    // Time step, initialized at 0.1
-    double dt = 0.1;
+    double vx = orig->p[0] * orig->atom->mass_inv;
+    double vy = orig->p[1] * orig->atom->mass_inv;
+    double vz = orig->p[2] * orig->atom->mass_inv;
+
+    double v_sq = vx * vx + vy * vy + vz * vz;
+    double v = sqrt(v_sq);
+
+    // Time step, initialized at whatever goes 0.5 Angstroms
+    double dt = .5 / v;
+    // Current total time
+    double t = 0;
 
     // Parameters for checking if things need re-calculating
     // Location of last nearby update
@@ -37,6 +49,7 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
     double diff = 0;
     // Maximum error on displacment during integration.
     double dr_max = 0;
+    double dE = 0;
 
     // Distance in angstroms to consider far enough moved.
     // After it moves this far, it will re-calculate nearest.
@@ -47,8 +60,6 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
 
     // Multiplier on timestep.
     double change;
-
-    Ion *orig = ions[0];
 
     // Reset some values before the integration loop
     std::copy(orig->r, orig->r + 3, orig->r_check);
@@ -66,12 +77,16 @@ void traj(std::vector<Ion *> &ions, Lattice *lattice, bool &log, bool &xyz, Dete
         orig->sputtered = 0;
     }
     int ion_count = 1;
-    double E1 = 0;
     int num = 0;
     int new_num = 0;
 
     int total_steps = 0;
-    int total_threshold = 20 * settings.MAX_STEPS;
+    int total_threshold = settings.MAX_STEPS;
+
+    orig->valid = orig->index;
+
+    lattice->max_dE = 0;
+    lattice->total_dE = 0;
 
 start:
 
@@ -83,24 +98,24 @@ start:
     // Reset this to 0.
     dr_max = 0;
 
-    // This is set back true later if needed.
-    sort = false;
-    reindex = false;
-
     // Verify time step is in range.
     dt = std::min(std::max(dt, dt_low), dt_high);
 
+    ion_count = 0;
     num = ions.size();
+
     for (int i = 0; i < num; i++)
     {
         Ion *ion = ions[i];
         if (ion->done)
             continue;
-
+        ion_count++;
         // Increment counter for how many steps we have taken
         ion->steps++;
         ion->reset_forces();
 
+        int backup = ion->steps;
+        ion->steps = total_steps;
         // Find nearby lattice atoms
         if (settings.dynamicNeighbours)
         {
@@ -114,14 +129,24 @@ start:
                          settings.rr_max, sort or ion->resort,
                          false, reindex or ion->reindex);
         }
+        ion->steps = backup;
         // check if we are still in a good state to run.
-        ion->done = !validate(ion, E1);
+        ion->done = !validate(ion, ion->T + ion->V);
     }
 
+    // This is set back true later if needed.
+    sort = false;
+    reindex = false;
+
+    if (ion_count == 0)
+        goto end;
+
+    // Reset the trackers for the lattice
+    lattice->T_t = lattice->V = lattice->V_t = lattice->T = 0;
     // Find the forces at the current location
+    orig->force_reset_tick++;
+    orig->hameq_tick++;
     run_hameq(ions, lattice, dt, false, &dr_max);
-    // Find the forces at the next location
-    run_hameq(ions, lattice, dt, true, &dr_max);
 
     new_num = ions.size();
     if (new_num != num)
@@ -129,6 +154,19 @@ start:
         reindex = true;
         sort = true;
         // Return back to start of traj run.
+        goto start;
+    }
+
+    // Find the forces at the next location
+    orig->hameq_tick++;
+    orig->sputter_tick++;
+    run_hameq(ions, lattice, dt, true, &dr_max);
+
+    dE = (lattice->T + lattice->V) - (lattice->T_t + lattice->V_t);
+    if (fabs(dE) > de_fail and dt > dt_low)
+    {
+        change = 0.1;
+        dt *= change;
         goto start;
     }
 
@@ -167,7 +205,8 @@ start:
         // This ensures things speed up again after leaving.
         change = 2;
     }
-
+    lattice->total_dE += dE;
+    lattice->max_dE = std::max(fabs(dE), lattice->max_dE);
     apply_hameq(ions, lattice, dt);
 
     // Apply differences to timestep for the next loop
@@ -175,12 +214,14 @@ start:
 
     ion_count = 0;
 
-    orig->time += dt;
+    t += dt;
 
     num = ions.size();
     for (int i = 0; i < num; i++)
     {
         Ion *ion = ions[i];
+        if (ion->site_site_intersects)
+            ion->done = true;
         if (ion->done)
             continue;
 
@@ -204,14 +245,7 @@ start:
         ion->log_z = fmin(ion->r[2], ion->log_z);
 
         // Increment the time step for the ion
-        ion->time = orig->time;
-
-        orig->site_site_intersects = orig->site_site_intersects or ion->site_site_intersects;
-    }
-
-    if (orig->site_site_intersects)
-    {
-        goto end;
+        ion->time = t;
     }
 
     if (ion_count == 0)
@@ -238,7 +272,6 @@ end:
         if (total_steps >= total_threshold)
         {
             ion->froze = true;
-            ion->steps = total_steps;
         }
 
         // Output data

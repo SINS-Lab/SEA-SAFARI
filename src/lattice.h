@@ -56,6 +56,14 @@ struct Lattice
 
     int id = 1;
 
+    double V = 0;
+    double V_t = 0;
+    double T = 0;
+    double T_t = 0;
+
+    double max_dE = 0;
+    double total_dE = 0;
+
     // If relevant, this is used to determine
     // the range of locations used for the
     // xyz trajectories, the 6 entries are:

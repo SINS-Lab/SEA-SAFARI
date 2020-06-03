@@ -334,7 +334,7 @@ end:
     return site->near;
 }
 
-bool validate(Ion *ion, double &E)
+bool validate(Ion *ion, double E)
 {
     // left crystal
     if (ion->r[2] > settings.Z1)
@@ -448,21 +448,21 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
     // Max atoms to find in the search
     const int n_parts = settings.NPART;
     // Energy difference to consider a failure
-    const int de_fail = settings.FAILED_DE;
+    const double de_fail = settings.FAILED_DE;
     // Lowest allowed time step
     const double dt_low = settings.DELLOW;
     // Highest allowed time step
     const double dt_high = settings.DELT0;
-    // Ion mass
-    const double mass = ion.atom->mass;
 
-    // Time step, initialized at 0.1
-    double dt = 0.1;
-    // Magnitude squared of the ion momentum
-    double psq;
+    double vx = ion.p[0] * ion.atom->mass_inv;
+    double vy = ion.p[1] * ion.atom->mass_inv;
+    double vz = ion.p[2] * ion.atom->mass_inv;
 
-    // Kinetic Energy
-    double T;
+    double v_sq = vx * vx + vy * vy + vz * vz;
+    double v = sqrt(v_sq);
+
+    // Time step, initialized at whatever goes 0.5 Angstroms
+    double dt = .5 / v;
 
     // Parameters for checking if things need re-calculating
     // Location of last nearby update
@@ -473,9 +473,10 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
     double diff = 0;
     // Maximum error on displacment during integration.
     double dr_max = 0;
+    double dE = 0;
 
-    // Energy now and up to 2 steps previously
-    double E1, E2, E3;
+    // Used to cache the potential for the ion for saving to the .traj file
+    double V = 0;
 
     // Distance in angstroms to consider far enough moved.
     // After it moves this far, it will re-calculate nearest.
@@ -493,11 +494,6 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
     // Used for printing output.
     char buffer[200];
 
-    // Some initial conditions.
-    psq = sqr(ion.p);
-    T = psq * 0.5 / mass;
-    E1 = E2 = E3 = T;
-
     if (log)
     {
         debug_file << "\n\nStarting Ion Trajectory Output\n\n";
@@ -508,7 +504,7 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
         // Log initial state
         sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
                 ion.r[0], ion.r[1], ion.r[2], ion.p[0], ion.p[1], ion.p[2],
-                ion.time, ion.steps, T, ion.V, (T + ion.V), ion.near, dt, dr_max);
+                ion.time, ion.steps, ion.T, ion.V, (ion.T + ion.V), ion.near, dt, dr_max);
         traj_file << buffer;
     }
 
@@ -553,6 +549,9 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
         ion.sputtered = 0;
     }
 
+    lattice->max_dE = 0;
+    lattice->total_dE = 0;
+
 start:
     // Reset this to 0.
     dr_max = 0;
@@ -579,7 +578,7 @@ start:
     dt = std::min(std::max(dt, dt_low), dt_high);
 
     // check if we are still in a good state to run.
-    ion.done = !validate(&ion, E1);
+    ion.done = !validate(&ion, ion.T + ion.V);
 
     // Update some parameters for saving.
     ion.log_z = fmin(ion.r[2], ion.log_z);
@@ -601,27 +600,14 @@ start:
         goto end;
     }
 
-    // Check our energy trackers for discontinuities
-    // This essentially gives the value of the second derivative,
-    // Showing any major jumps in energy of the particle.
-    // This value should average around 0.01, so if larger than 50,
-    // Then we have a major jump.
-    ion.Eerr_max = std::max(ion.Eerr_max, fabs(E3 - 2 * E2 + E1));
-    if (ion.Eerr_max > de_fail)
-    {
-        ion.discont = true;
-        if (xyz)
-        {
-            log_xyz(ion, lattice, lattice_num, buffer);
-        }
-        goto end;
-    }
-
+    // Reset the trackers for the lattice
+    lattice->T_t = lattice->V = lattice->V_t = lattice->T = 0;
     // Find the forces at the current location
     ion.hameq_tick++;
+    ion.force_reset_tick++;
     run_hameq(ion, lattice, dt, false, &dr_max);
-    ion.hameq_tick++;
     // Find the forces at the next location
+    ion.hameq_tick++;
     run_hameq(ion, lattice, dt, true, &dr_max);
 
     if (ion.site_site_intersects)
@@ -631,6 +617,14 @@ start:
             log_xyz(ion, lattice, lattice_num, buffer);
         }
         goto end;
+    }
+
+    dE = (lattice->T + lattice->V) - (lattice->T_t + lattice->V_t);
+    if (fabs(dE) > de_fail and dt > dt_low)
+    {
+        change = 0.1;
+        dt *= change;
+        goto start;
     }
 
     // Now we do some checks to see if the timestep needs to be adjusted
@@ -644,7 +638,7 @@ start:
             change = 2;
 
         // Large change in energy, try to reduce timestep.
-        if (change < .2 && dt > dt_low)
+        if (change < .2 and dt > dt_low)
         {
             dt *= change;
             // Make sure it is still at least dt_low.
@@ -668,7 +662,11 @@ start:
         // This ensures things speed up again after leaving.
         change = 2;
     }
+    lattice->total_dE += dE;
+    lattice->max_dE = std::max(fabs(dE), lattice->max_dE);
 
+    // This gets reset in apply_hameq, but we need it for the log below
+    V = ion.V;
     // Apply changes, this updates lattice loctations.
     apply_hameq(ion, lattice, dt);
 
@@ -691,22 +689,13 @@ start:
     // Increment the time step for the ion
     ion.time += dt;
 
-    // Update kinetic energy.
-    psq = sqr(ion.p);
-    T = psq * 0.5 / mass;
-
-    // Update energy trackers, propogate them backwards.
-    E3 = E2;
-    E2 = E1;
-    E1 = T + ion.V;
-
     // Log things if needed
     if (log)
     {
         // This log file is just the ion itself, not the full xyz including the lattice
         sprintf(buffer, "%f\t%f\t%f\t%.3f\t%.3f\t%.3f\t%f\t%d\t%.3f\t%.3f\t%.3f\t%d\t%f\t%.3f\n",
                 ion.r[0], ion.r[1], ion.r[2], ion.p[0], ion.p[1], ion.p[2],
-                ion.time, ion.steps, T, ion.V, (T + ion.V), ion.near, dt, dr_max);
+                ion.time, ion.steps, ion.T, V, (ion.T + V), ion.near, dt, dE);
         traj_file << buffer;
     }
     if (xyz)
@@ -802,7 +791,6 @@ end:
             // Recorde the ion's error flag as the wieght instead
             s->weight = E;
             s->index = ion.index;
-            s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;
             detector.log(sptr_file, *s, lattice, false, false, false, false, false, true);
             // Revert the change to index.
@@ -810,6 +798,7 @@ end:
         }
     }
     lattice->total_hits++;
+
     // Output data
     detector.log(out_file, ion, lattice,
                  ion.stuck, ion.buried, ion.froze,
@@ -821,8 +810,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
                    bool ignore_bounds)
 {
     double psq = sqr(ion.p);
-    double mx2 = ion.atom->mass * 2;
-    double E = psq / mx2;
+    double E = psq * ion.atom->mass_inv_2;
     int err = 0;
     // z-momentum squared, exit theta, exit phi
     double pzz = 0, theta = 90, phi = 0;
@@ -892,7 +880,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     {
         // Image charge would pull it towards surface, this accounts
         // for that effect.
-        pzz = (pz * pz) + (mx2 * Vi_z(settings.Z1, ion.q));
+        pzz = (pz * pz) + (ion.atom->two_mass * Vi_z(settings.Z1, ion.q));
         pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
         // Recalulate this, as pz has changed
         // We are fine with pzz being -ve, as that case
@@ -900,7 +888,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         psq = pzz * pzz + px * px + py * py;
 
         // Recalculate E, incase image affected it
-        E = psq / mx2;
+        E = psq * ion.atom->mass_inv_2;
     }
     else
     {
@@ -953,12 +941,12 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
          */
         char buffer[200];
         // first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.4e\t%d\t%.4e\t%d\t%.4e\t%.4e\t%d\t%s\n",
+        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.2f\t%d\t%.3f\t%d\t%.4f\t%.4f\t%.2f\t%d\t%s\n",
                 ion.r_0[0], ion.r_0[1], ion.log_z,
                 E, theta, phi,
                 ion.index, ion.weight,
                 ion.max_n, ion.r_min, ion.steps,
-                ion.Eerr_max, ion.time, err,
+                lattice->max_dE, lattice->total_dE, ion.time, err,
                 ion.atom->symbol.c_str());
         // Then save it
         mutx.lock();

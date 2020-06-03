@@ -156,12 +156,12 @@ int main(int argc, char *argv[])
     if (settings.SCAT_FLAG == 666)
     {
         settings.scat_started = true;
-        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\t";
-        out_file << "min_r\tsteps\tMax Error\ttotal time\terr flag\tatom" << std::endl;
+        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tfinal Z\tmax_n\t";
+        out_file << "min_r\tsteps\tMax dE\tTotal dE\ttotal time\terr flag\tatom" << std::endl;
         if (settings.saveSputter or settings.cascadeMode)
         {
             sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\t";
-            sptr_file << "min_r\tsteps\tMax Error\ttotal time\terr flag\tatom" << std::endl;
+            sptr_file << "min_r\tsteps\tMax dE\tTotal dE\ttotal time\terr flag\tatom" << std::endl;
         }
 
         if (settings.singleshot)

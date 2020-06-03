@@ -84,7 +84,7 @@ struct Safio
     // Radial distance from the ion to search for cells of lattice sites
     int DIST_SEARCH;
     // Average change in energy over last 3 steps to consider a failure
-    int FAILED_DE;
+    double FAILED_DE;
 
     // Flag controlling whether scat or test mode, scat mode is 666
     int SCAT_FLAG;
