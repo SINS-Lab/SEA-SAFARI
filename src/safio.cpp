@@ -418,6 +418,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             debug_file << "Override of Temperature: " << TEMP << '\n';
         }
 
+        if(prog_args["--seed"])
+        {
+            ion_index = prog_args["--seed"].as_int();
+        }
+
         //check arguments for specifically enabling single-shot mode
         if (prog_args["-s"].as_bool())
         {

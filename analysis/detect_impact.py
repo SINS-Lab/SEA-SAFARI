@@ -11,22 +11,23 @@ parser.add_argument("-x", "--x_coord", help="x - impact coordinate")
 parser.add_argument("-y", "--y_coord", help="y - impact coordinate")
 parser.add_argument("-r", "--restricted", help="whether the xyz is only nearish particles", action='store_true')
 parser.add_argument("-c", "--colour", help="Colour parameter for xyz")
+parser.add_argument("-s", "--seed", help="Ion index/thermal seed for replicating the thermalization of the surface")
 args = parser.parse_args()
 
 # Run a single shot safari for this run,
 # assuming the input file 
 # was already configured properly.
-command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {}'
+command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {} --seed {}'
 
 if args.restricted:
-    command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {} -r'
+    command = 'Sea-Safari.exe -i {} -o {} -s -x {} -y {} --seed {} -r'
 
 #Change command accordingly for linux
 if platform.system() == 'Linux':
     command = command.replace('Sea-Safari.exe', './Sea-Safari')
 
 #Format the command
-command = command.format(args.input, args.output, args.x_coord, args.y_coord)
+command = command.format(args.input, args.output, args.x_coord, args.y_coord, args.seed)
 
 subprocess.run(command, shell=True)
 

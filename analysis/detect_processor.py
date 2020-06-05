@@ -305,7 +305,7 @@ class Detector:
         input_file = self.safio.fileIn.replace('.input', '')
         output_file = self.safio.fileIn.replace('.input', '') + \
                         '{}_{}'.format(imp_x, imp_y)
-        cmd = [args.format(input_file, output_file, close[0], close[1])]
+        cmd = [args.format(input_file, output_file, close[0], close[1], index)]
         if platform.system() != 'Linux':
             cmd = cmd[0] #Not sure why this was needed on windows...
         subprocess.Popen(cmd, shell=True)
@@ -412,19 +412,19 @@ class Detector:
                 print("Setting up a safari run for a single shot")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -s {} -r')
             if event.dblclick and event.button == 3:
                 # Setup a single run safari using nearness colored data
                 print("Setting up a safari run for a nearness colored dataset")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r -c nearby')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -s {} -r -c nearby')
             if event.button == 1 and shift_is_held:
                 # Setup a single run safari using velocity colored data
                 print("Setting up a safari run for a velocity colored dataset")
                 # Setup a single run safari for this.
                 self.run_single_shot(close, ion_index,\
-                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -r -c velocity')
+                                'python3 detect_impact.py -i {} -o {} -x {} -y {} -s {} -r -c velocity')
             
             close[0] = round(close[0], 5)
             close[1] = round(close[1], 5)
