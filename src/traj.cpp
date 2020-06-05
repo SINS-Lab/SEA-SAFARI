@@ -946,7 +946,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
                 ion.r_0[0], ion.r_0[1], ion.r_0[2],
                 E, theta, phi,
-                ion.index, ion.weight,
+                ion.thermal_seed, ion.weight,
                 ion.max_n, ion.r_min, ion.steps,
                 ion.Eerr_max, ion.time);
         // Then save it
