@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # Run a single shot safari for this run,
     # assuming the input file 
     # was already configured properly.
-    template = 'Sea-Safari.exe -i {} -o {} -p'
+    template = 'Sea-Safari.exe -i {} -o {}'
 
     #Change command accordingly for linux
     if platform.system() == 'Linux':

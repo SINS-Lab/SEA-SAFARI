@@ -64,6 +64,42 @@ def process(num, axis_orig, areas, size, filename):
     for i in range(len(points)):
         output.write('{}\t{}\n'.format(str(axis[i]),str(points[i])))
 
+def esa_spectra(dir, theta, size=1):
+    if dir != '.':
+        dir = os.path.join('.',dir)
+    phimin = 400
+    phimax = -400
+    datafiles = []
+
+    for filename in os.listdir(dir):
+        if filename.endswith('.data') and not '_ss' in filename:
+            datafiles.append(filename.replace('.data',''))
+
+    datafiles.sort(key=cmp_to_key(compare_file_name))
+
+    for filename in datafiles:
+        file = os.path.join(dir, '{}.data'.format(filename))
+        safio = safari_input.SafariInput(file.replace('.data', '.input'))
+        print('loading: '+filename)
+        data = detect.load(file.replace('.data',''))
+        print('data loaded')
+
+        # Setup the spectrum object for this file
+        spectrum = detect.Spectrum()
+        spectrum.plots = False
+        spectrum.name = filename
+        spectrum.pics = True
+        spectrum.safio = safio
+        spectrum.safio.DTECTPAR[0] = theta
+        spectrum.detector = None
+        phi = safio.PHI0
+        spectrum.detector = detect.SpotDetector(theta, phi, size)
+        spectrum.clean(data, emin=0.5, emax=safio.E0)
+        spectrum.detector.outputprefix=os.path.join(dir, filename+'-')
+        spectrum.detector.spectrum(res=safio.E0/100.0)
+        
+    input('Press Enter to exit')
+
 def azimuthal_spectrum(dir, theta, size=3, emin=0, emin_rel=0):
     if dir != '.':
         dir = os.path.join('.',dir)
@@ -156,7 +192,7 @@ parser.add_argument("-f", "--filename", help="Used for post processing mode")
 parser.add_argument("-s", "--size", help="Angular size of spot detector")
 parser.add_argument("-t", "--theta", help="Theta angle for detector")
 parser.add_argument("-e", "--emin", help="Minimum energy to consider")
-parser.add_argument("-m", "--mode", help="run mode (a,p,t)")
+parser.add_argument("-m", "--mode", help="run mode (a,p,t,e)")
 parser.add_argument("-r", "--emin_rel", help="Relative Minimum energy to consider")
 args = parser.parse_args()
 
@@ -171,9 +207,13 @@ if mode == 'a':
     emin = float(input('Minimum Energy: ')) if not args.emin else float(args.emin)
     emin_rel = 0 if not args.emin_rel else float(args.emin_rel)
     dir = input('Input Directory: ') if not args.directory else args.directory
-    azimuthal_spectrum(dir, theta, size, emin, emin_rel);
+    azimuthal_spectrum(dir, theta, size, emin, emin_rel)
 
 if mode == 'p':
     filename = args.filename
     process_from_file(filename, size)
 
+if mode == 'e':
+    theta = float(input('Detector Theta: ')) if not args.theta else float(args.theta)
+    dir = input('Input Directory: ') if not args.directory else args.directory
+    esa_spectra(dir, theta, size)

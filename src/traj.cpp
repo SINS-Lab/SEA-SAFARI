@@ -944,7 +944,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.2f\t%d\t%.3f\t%d\t%.4f\t%.4f\t%.2f\t%d\t%s\n",
                 ion.r_0[0], ion.r_0[1], ion.log_z,
                 E, theta, phi,
-                ion.index, ion.weight,
+                ion.thermal_seed, ion.weight,
                 ion.max_n, ion.r_min, ion.steps,
                 lattice->max_dE, lattice->total_dE, ion.time, err,
                 ion.atom->symbol.c_str());
