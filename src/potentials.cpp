@@ -255,7 +255,11 @@ double electron_density(Lattice *lattice, Ion &ion, bool predicted)
 {
     //TODO see https://github.com/SINS-Lab/SAFARI/blob/10305e6f9ee597e89a6df7acfede3554371f42bc/src/hameqinel.f
     // it has calculations for electron density.
-    return 0;
+    double z = predicted ? ion.r_t[2] : ion.r[2];
+    double z0 = 0.755;
+    if (z < 0.2)
+        return 0.0847;
+    return 0.104 * exp(-z / z0);
 }
 
 double apply_friction(Lattice *lattice, Ion &ion, double* F, double dt, bool predicted)
