@@ -26,16 +26,16 @@ void init_temps()
     //Convert from temperature to energy.
     double energy = boltz * settings.TEMP;
     debug_file << "Initializing Temperature" << std::endl;
-    for(Atom &a : settings.ATOMS)
+    for(Atom *a : settings.ATOMS)
     {
         if(settings.TEMP > 0)
         {
             for(int i = 0; i<3; i++)
             {
                 //dx = sqrt(2E/k)
-                a.dev_r[i] = sqrt(2.0*energy/a.spring[i]);
+                a->dev_r[i] = sqrt(2.0*energy/a->spring[i]);
                 //dp = sqrt(2mE)
-                a.dev_p[i] = sqrt(2.0*a.mass*energy);
+                a->dev_p[i] = sqrt(a->two_mass*energy);
             }
         }
         else
@@ -43,8 +43,8 @@ void init_temps()
             for(int i = 0; i<3; i++)
             {
                 //Both 0 at 0K
-                a.dev_p[i] = 0;
-                a.dev_r[i] = 0;
+                a->dev_p[i] = 0;
+                a->dev_r[i] = 0;
             }
         }
     }

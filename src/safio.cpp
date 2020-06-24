@@ -2,21 +2,6 @@
 
 #include "string_utils.h" //ArgValue, to_double_array, etc
 
-void findAndReplaceAll(std::string &data, std::string toSearch, std::string replaceStr)
-{
-    // Get the first occurrence
-    size_t pos = data.find(toSearch);
-
-    // Repeat till end is reached
-    while (pos != std::string::npos)
-    {
-        // Replace this occurrence of Sub String
-        data.replace(pos, toSearch.size(), replaceStr);
-        // Get the next occurrence from the current position
-        pos = data.find(toSearch, pos + replaceStr.size());
-    }
-}
-
 void Safio::load(std::map<std::string, ArgValue> &prog_args)
 {
     //This should have been included to prog_args if not originally present.
@@ -25,7 +10,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
 
     settings = *this;
     std::ifstream safio_input;
-    std::string filename = output_name + ".input";
+    std::string filename = input_name + ".input";
     safio_input.open(filename);
 
     //check if we have alternate output file name
@@ -98,10 +83,9 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 SYMION = &line_args[4][0];
 
                 //initialize the atom for this ion.
-                ion.mass = MASS;
-                ion.symbol = SYMION;
                 ion.index = 0;
                 //a.charge = TODO lookup
+                ion.init(MASS, 0, SYMION);
 
                 // Ensure phi is in correct range
                 while (PHI0 > 180)
@@ -169,7 +153,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 if (o <= 0)
                 {
                     DIST_SEARCH = atoi(line_args[0].c_str());
-                    FAILED_DE = atoi(line_args[1].c_str());
+                    FAILED_DE = atof(line_args[1].c_str());
 
                     //Since we re-purposed the above, we always
                     //have the 4 successive arguments.
@@ -242,6 +226,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 rigidBounds = lattice_potential_type & 4;
                 dynamicNeighbours = lattice_potential_type & 8;
                 saveSputter = (montecarlo or gridscat) and (lattice_potential_type & 16);
+                cascadeMode = lattice_potential_type & 32;
             }
             if (n == 17)
             {
@@ -324,11 +309,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 }
                 else
                 {
-                    Site s;
-                    s.r_0[0] = atof(line_args[0].c_str());
-                    s.r_0[1] = atof(line_args[1].c_str());
-                    s.r_0[2] = atof(line_args[2].c_str());
-                    s.index = atoi(line_args[3].c_str());
+                    Site *s = new Site();
+                    s->r_0[0] = atof(line_args[0].c_str());
+                    s->r_0[1] = atof(line_args[1].c_str());
+                    s->r_0[2] = atof(line_args[2].c_str());
+                    s->index = atoi(line_args[3].c_str());
                     BASIS.push_back(s);
                 }
             }
@@ -343,19 +328,17 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
                 {
                     if (o % 2 == 0)
                     {
-                        Atom a;
-                        a.mass = atof(line_args[0].c_str());
-                        a.charge = atof(line_args[1].c_str());
-                        a.symbol = line_args[2];
-                        a.index = o / 2;
+                        Atom *a = new Atom();
+                        a->init(atof(line_args[0].c_str()), atof(line_args[1].c_str()), line_args[2]);
+                        a->index = o / 2;
                         ATOMS.push_back(a);
                     }
                     else
                     {
-                        Atom &a = ATOMS.back();
-                        a.spring[0] = atof(line_args[0].c_str());
-                        a.spring[1] = atof(line_args[1].c_str());
-                        a.spring[2] = atof(line_args[2].c_str());
+                        Atom *a = ATOMS.back();
+                        a->spring[0] = atof(line_args[0].c_str());
+                        a->spring[1] = atof(line_args[1].c_str());
+                        a->spring[2] = atof(line_args[2].c_str());
                     }
                 }
             }
@@ -398,7 +381,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         //Populate basis atoms indecies
         for (int i = 0; i < NBASIS; i++)
         {
-            BASIS[i].atom = &ATOMS[BASIS[i].index - 1];
+            BASIS[i]->atom = ATOMS[BASIS[i]->index - 1];
         }
 
         if (prog_args["-n"])
@@ -421,6 +404,19 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         if(prog_args["--seed"])
         {
             ion_index = prog_args["--seed"].as_int();
+        }
+
+        if (prog_args["-p"])
+        {
+            settings.ion.init_pots(input_name);
+            debug_file << "Loading from override Potentials" << '\n';
+            std::cout << "Loading from override Potentials" << std::endl;
+        }
+
+        if (cascadeMode)
+        {
+            debug_file << "Running Cascade Mode!" << '\n';
+            std::cout << "Running Cascade Mode!" << std::endl;
         }
 
         //check arguments for specifically enabling single-shot mode
@@ -457,7 +453,7 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         debug_file << "\nLoaded SAFIO" << '\n';
         std::cout << "\nLoaded SAFIO" << '\n';
 
-        if (saveSputter)
+        if (saveSputter or cascadeMode)
         {
             sptr_file.open(output_name + ".sptr");
         }

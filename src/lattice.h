@@ -56,6 +56,14 @@ struct Lattice
 
     int id = 1;
 
+    double V = 0;
+    double V_t = 0;
+    double T = 0;
+    double T_t = 0;
+
+    double max_dE = 0;
+    double total_dE = 0;
+
     // If relevant, this is used to determine
     // the range of locations used for the
     // xyz trajectories, the 6 entries are:
@@ -76,6 +84,10 @@ struct Lattice
     int err_num = 0;          // Code -500
     int intersections = 0;    // Code -600
     int out_of_mask = 0;      // No code for this.
+
+    // Total number considered for detection, this can be different from number
+    // fired at the surface, due to cascade events.
+    int total_hits = 0;
 
     // Default constructor
     Lattice() {}
@@ -122,6 +134,7 @@ struct Lattice
         max_active = 0;
         count_active = 0;
         sum_active = 0;
+        total_hits = 0;
     }
 
     void add_stats(Lattice *other)
@@ -135,6 +148,7 @@ struct Lattice
         err_num += other->err_num;
         out_of_mask += other->out_of_mask;
         intersections += other->intersections;
+        total_hits += other->total_hits;
 
         max_active = std::max(max_active, other->max_active);
         count_active += other->count_active;
@@ -173,7 +187,7 @@ struct Lattice
      */
     void rotate_sites(Vec3d &dir, Vec3d &face, Vec3d &ex_basis, Vec3d &ey_basis, Vec3d &ez_basis,
                       Vec3d *ex, Vec3d *ey, Vec3d *ez, bool scale_basis,
-                      std::vector<Site> *sites_out, std::vector<Site> &sites_in, int *maxZI);
+                      std::vector<Site*> &sites_out, std::vector<Site*> &sites_in, int *maxZI);
 };
 
 void moveSite(Site *site, Cell *from, Cell *to);

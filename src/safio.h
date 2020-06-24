@@ -84,7 +84,7 @@ struct Safio
     // Radial distance from the ion to search for cells of lattice sites
     int DIST_SEARCH;
     // Average change in energy over last 3 steps to consider a failure
-    int FAILED_DE;
+    double FAILED_DE;
 
     // Flag controlling whether scat or test mode, scat mode is 666
     int SCAT_FLAG;
@@ -119,12 +119,13 @@ struct Safio
 
     // The following indicate as are named, and are set based
     // on the value of lattice_potential_type
-    bool useEinsteinSprings = true; // 0
+    bool useEinsteinSprings = true; // this is false if 1 or 2
     bool useAtomSpings = false;     // 1
     bool useLennardJones = false;   // 2
     bool rigidBounds = false;       // 4
     bool dynamicNeighbours = false; // 8
     bool saveSputter = false;       // 16
+    bool cascadeMode = false;       // 32
 
     // Image Potential Values
     int image_potential_type;
@@ -157,7 +158,7 @@ struct Safio
     // Number in the basis
     int NBASIS;
     // Sites in the basis (need scaling by AX,AY,AZ before use)
-    std::vector<Site> BASIS;
+    std::vector<Site*> BASIS;
 
     // Surface face
     double *face;
@@ -171,7 +172,7 @@ struct Safio
     // Number of types of atoms in basis
     int NTYPES;
     // Atoms in the basis
-    std::vector<Atom> ATOMS;
+    std::vector<Atom*> ATOMS;
     // Whether the lattice sites are springy
     bool CORR;
 
@@ -240,6 +241,8 @@ struct Safio
      *      -o [outputfile] - optional, uses input file value if not found.
      *      -t [temperature] - the temperature for this run
      *      -n [number] - replaces the value for numcha
+     *      -e [energy] - replaces the value for E0
+     *      -p [filename] - loads potentials and forces from [filename].pots
      *      -f - if present, will open crys and data files
      *      -s - Enables single shot mode (NUMCHA=1, SCAT_FLAG=666)
      *         -x [value] - sets x-start (if -s is present)

@@ -6,7 +6,6 @@
 #include <cmath>        // trig functions and sqrt
 #include <algorithm>    // std::sort
 
-
 void update_dynamic_neighbours(Ion *ion_ptr, Site *site, Lattice *lattice, int radius, int target_num, double max_rr, bool re_sort, bool updateCells)
 {
     // Initial locations are where ion is.
@@ -431,7 +430,7 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
     // Highest allowed time step
     const double dt_high = settings.DELT0;
     // Ion mass
-    const double mass = ion.atom->mass;
+    const double mass_inv_2 = ion.atom->mass_inv_2;
 
     // Time step, initialized at 0.1
     double dt = 0.1;
@@ -486,7 +485,7 @@ void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
 
     // Some initial conditions.
     psq = sqr(ion.p);
-    T = psq * 0.5 / mass;
+    T = psq * mass_inv_2;
     E1 = E2 = E3 = T;
 
     if (log)
@@ -674,7 +673,7 @@ start:
 
     // Update kinetic energy.
     psq = sqr(ion.p);
-    T = psq * 0.5 / mass;
+    T = psq * mass_inv_2;
 
     // Update energy trackers, propogate them backwards.
     E3 = E2;
@@ -717,7 +716,7 @@ end:
     // We do not want to save if it was discontinous, or froze!
     if (settings.saveSputter && !discont && !froze)
     {
-    	double E = 0;
+        double E = 0;
         if (stuck)
         {
             E = -100;
@@ -775,7 +774,7 @@ end:
                 continue;
 
             // This means we are actually going downwards, not valid sputter!
-            if (s->p[2] < 0 or s->r[2] < settings.Z1 / 4) 
+            if (s->p[2] < 0 or s->r[2] < settings.Z1 / 4)
                 continue;
 
             // Copy some values over from the ion
@@ -801,7 +800,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
                    bool ignore_bounds)
 {
     double psq = sqr(ion.p);
-    double mx2 = ion.atom->mass * 2;
+    double mx2 = ion.atom->two_mass;
     double E = psq / mx2;
     // z-momentum squared, exit theta, exit phi
     double pzz = 0, theta, phi;
@@ -827,7 +826,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         theta = 0;
         phi = 90;
 
-        if(ion.r[2] > 0)
+        if (ion.r[2] > 0)
         {
             E = -10;
             lattice->trapped_num++;
@@ -927,7 +926,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     }
 
     bool did_hit = E > -10;
-    
+
     if (did_hit && !hit(E, theta, phi) && !ignore_bounds)
     {
         theta = 0;

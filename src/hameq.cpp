@@ -22,7 +22,7 @@
 void update_site(Site &s, double dt)
 {
     Atom *atom = s.atom;
-    double mass = atom->mass;
+    double mass_inv = atom->mass_inv;
 
     // We use averaged forces everywhere, so just cut
     // this in half here for 6 less * operations
@@ -30,9 +30,9 @@ void update_site(Site &s, double dt)
 
     // New Location, adjusted by error in corrected positions
     // corrected positon is 0.25*dt^2*(F_t - F)/mass
-    s.r[0] = s.r_t[0] - dt * dt * (s.dp_dt_t[0] - s.dp_dt[0]) / mass;
-    s.r[1] = s.r_t[1] - dt * dt * (s.dp_dt_t[1] - s.dp_dt[1]) / mass;
-    s.r[2] = s.r_t[2] - dt * dt * (s.dp_dt_t[2] - s.dp_dt[2]) / mass;
+    s.r[0] = s.r_t[0] - dt * dt * (s.dp_dt_t[0] - s.dp_dt[0]) * mass_inv;
+    s.r[1] = s.r_t[1] - dt * dt * (s.dp_dt_t[1] - s.dp_dt[1]) * mass_inv;
+    s.r[2] = s.r_t[2] - dt * dt * (s.dp_dt_t[2] - s.dp_dt[2]) * mass_inv;
 
     // New Momentum, not corrected, just using averages
     s.p[0] += dt * (s.dp_dt_t[0] + s.dp_dt[0]);
@@ -97,14 +97,14 @@ void predict_site_location(Site &s, double dt)
 
 void check_sputter(Ion &ion, Site *s)
 {
-    if (settings.saveSputter and not s->left)
+    if (settings.saveSputter and not s->left_origin)
     {
         double pz = s->p[2];
         double rz = s->r[2];
         // TODO better conditions for leaving surface
         if (pz > 0 and rz > settings.Z1 / 4)
         {
-            s->left = true;
+            s->left_origin = true;
             ion.sputter[ion.sputtered] = s;
             ion.sputtered++;
         }
@@ -174,9 +174,9 @@ double compute_error(Site &site, double dt)
     dpz = site.dp_dt[2] - site.dp_dt_t[2];
 
     // Error in positions between the two forces.
-    dxp = 0.25 * dt * dt * dpx / site.atom->mass;
-    dyp = 0.25 * dt * dt * dpy / site.atom->mass;
-    dzp = 0.25 * dt * dt * dpz / site.atom->mass;
+    dxp = 0.25 * dt * dt * dpx * site.atom->mass_inv;
+    dyp = 0.25 * dt * dt * dpy * site.atom->mass_inv;
+    dzp = 0.25 * dt * dt * dpz * site.atom->mass_inv;
 
     return std::max(fabs(dxp), std::max(fabs(dyp), fabs(dzp)));
 }

@@ -75,3 +75,6 @@ bool starts_with(std::string string, const char* start);
  * if no value is given, the value is taken to be "t", ie a boolean flag
  */ 
 std::map<std::string, ArgValue> get_arguments(int argc, char* argv[]);
+
+
+void findAndReplaceAll(std::string &data, std::string toSearch, std::string replaceStr);

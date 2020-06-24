@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import subprocess   # used to run safari and vmd
 import argparse     # parses command line arguments
 import platform     # Linux vs Windows check

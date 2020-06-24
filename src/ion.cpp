@@ -31,7 +31,7 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
     theta0 = theta0 * M_PI / 180;
     phi0 = phi0 * M_PI / 180;
 
-    double p0 = sqrt(2 * atom->mass * E0);
+    double p0 = sqrt(atom->two_mass * E0);
     double p_trans = p0 * sin(theta0);
 
     //This is the initial momentum, before surface effects.
@@ -58,7 +58,7 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
     {
         //The image part is subtracted here, as we have already assigned
         //the sign outside the sqrt function, the output of Vi_z is negative.
-        p_z0 = -sqrt((p_z0 * p_z0) - (2 * atom->mass * Vi_z(settings.Z1, q)));
+        p_z0 = -sqrt((p_z0 * p_z0) - (atom->two_mass * Vi_z(settings.Z1, q)));
     }
 
     //Set the initial momentum of the ion
@@ -89,7 +89,13 @@ void Site::reset()
     std::copy(r_0, r_0 + 3, r_u);
     std::copy(p_0, p_0 + 3, p);
     last_step = -1;
-    left = false;
+    left_origin = false;
+    unbound = false;
+    sputter_tick = -1;
+
+    reset_forces();
+
+    hameq_tick = -1;
 
     //Reset our tracked sites last steps too.
     for (int i = 0; i < near; i++)
@@ -97,6 +103,9 @@ void Site::reset()
         if (near_sites[i]->last_ion != last_ion)
             near_sites[i]->last_step = -1;
     }
+    log_z = r_0[2];
+
+    validate();
 
     //Thermalize the site
     thermaize(this);

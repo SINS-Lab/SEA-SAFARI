@@ -4,9 +4,13 @@
 
 #define MAX_NEAR 2048
 
-struct Atom
+class Atom
 {
+public:
     double mass = 1;
+    double mass_inv = 1;
+    double two_mass = 2;
+    double mass_inv_2 = 0.5;
     double charge = 0;
     int index = -1;
     std::string symbol = "n";
@@ -17,18 +21,17 @@ struct Atom
     // Std deviations in px,py,pz for the current temperature
     double dev_p[3];
 
-    //Lennard Jones potential related
-    /**
-     * These are pairs of parameters, 
-     * for each sub-array,
-     * index 0 is ε, index 1 is σ
-     * 
-     * The index in the main array is the atom index,
-     * ie L_J_params[atom.index] is for a like pair.
-     * 
-     * TODO actually implement it this way later.
-     */
-    //double** L_J_params;
+    void init(double mass, double charge, std::string symbol)
+    {
+        this->mass = mass;
+        this->mass_inv = 1 / mass;
+        this->two_mass = mass * 2;
+        this->mass_inv_2 = 1 / two_mass;
+        this->charge = charge;
+        this->symbol = symbol;
+    }
+
+    void init_pots(std::string &filename);
 };
 
 class Site
@@ -52,11 +55,23 @@ public:
 
     // position after time dt
     double r_t[3];
+    // momentum after dt
+    double p_t[3];
     // forces after dt
     double dp_dt_t[3];
 
     // Position during last neighbour check
     double r_u[3];
+
+    // potential the particle is in.
+    double V = 0;
+    // Kinetic energy of the particle
+    double T = 0;
+
+    // potential the particle is in, at next time step
+    double V_t = 0;
+    // Kinetic energy of the particle, at next time step
+    double T_t = 0;
 
     // Things here for saving to data files
 
@@ -83,9 +98,9 @@ public:
     int index = -1;
     // this is used for xyz output of nearest.
     bool near_check = 0;
-    // This is last integration step performed, this
-    // allows for faster checks of whether force needs
-    // to be reset.
+    // This is last integration step performed, 
+    // if this is the same for a lattice site and an ion, 
+    // that ion will not be considered for force calculations
     int last_step = -1;
     // This is the last tick that the particle positions were updated.
     // This is used only for the more complex updating when considering
@@ -121,14 +136,28 @@ public:
     // This is where in the cell's array we are.
     int cell_index = -1;
 
-    // Whether we have left the surface
-    bool left = false;
+    // Whether we have left our original location
+    bool left_origin = false;
+    bool unbound = false;
+    int sputter_tick = -1;
 
-    uint64_t hameq_tick = 0;
-    uint64_t update_tick = 0;
+
+    // This is invalidated if we are turned into a projectile via
+    // a cascade event, it is set to the ion index that invalidated us
+    int valid = -1;
+
+    // For the ion, this is min depth z, for the sites, it is rest position
+    double log_z = 1e3;
+
+    // This is used to flagging whether the lattice site should check nearby forces
+    // For runs with multiple ions, each ion should have the same value for this.
+    int hameq_tick = -1;
+    // This is used simlarly to hameq_tick, however is only incremented before the
+    // first call to hameq in the sequence
+    int force_reset_tick = -1;
 
     // Some arrays for stuffing positions and momenta in for easier processing
-    
+
     // This is stuffed with the position pointers for
     // the nearby sites's current and future positions
     // double **near_dists = NULL;
@@ -173,6 +202,16 @@ public:
         return dist_a < dist_b;
     }
 
+    void invalidate(int index)
+    {
+        valid = index;
+    }
+
+    void validate()
+    {
+        valid = -1;
+    }
+
     /**
      * Resets the site to r_0 and p_0.
      * This also then calls thermalize, so
@@ -180,6 +219,19 @@ public:
      * that willl be used for seeding the RNG
      */
     void reset();
+
+    void reset_forces()
+    {
+        dp_dt[0] = 0;
+        dp_dt[1] = 0;
+        dp_dt[2] = 0;
+        V = 0;
+
+        dp_dt_t[0] = 0;
+        dp_dt_t[1] = 0;
+        dp_dt_t[2] = 0;
+        V_t = 0;
+    }
 
     /**
      * Prints some info for this site to debug_file
