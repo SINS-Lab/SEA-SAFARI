@@ -471,9 +471,9 @@ void Atom::init_pots(std::string &filename)
         m++;
     }
     n_rmax = Vr_r_all_cache[0]->size();
-    for(int i = 1; i< num_atoms * num_atoms; i++)
+    for (int i = 1; i < num_atoms * num_atoms; i++)
     {
-        std::vector<double>* arr = Vr_r_all_cache[i];
+        std::vector<double> *arr = Vr_r_all_cache[i];
         int size = arr->size();
         n_rmax = std::min(n_rmax, size);
     }
@@ -484,7 +484,9 @@ double electron_density(Lattice *lattice, Ion &ion, bool predicted)
 {
     //TODO see https://github.com/SINS-Lab/SAFARI/blob/10305e6f9ee597e89a6df7acfede3554371f42bc/src/hameqinel.f
     // it has calculations for electron density.
-    return 0;
+    double z0 = 0.755;
+    double z = predicted ? ion.r_t[2] : ion.r[2];
+    return z < 0.2 ? 0.087 : 0.1104 * std::exp(-z / z0);
 }
 
 double apply_friction(Lattice *lattice, Ion &ion, double *F, double dt, bool predicted)
