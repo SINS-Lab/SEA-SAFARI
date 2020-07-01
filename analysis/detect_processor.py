@@ -74,13 +74,16 @@ def loadFromText(file):
   #      print("Total Errored Lines: {} ({}%)".format(errors, round_n(errors * 100.0/n,2)))
     return data
 
-def load(file):
+def getDataFile(file):
     filename = file
     if not (filename.endswith('.data') or filename.endswith('.sptr')):
         filename = file+'.data'
         if not os.path.exists(filename):
             filename = file+'.sptr'
-    return loadFromText(filename)
+    return filename
+
+def load(file):
+    return loadFromText(getDataFile(file))
 
 def kinematicFactor(theta_final, theta_inc, massProject, massTarget):
     mu = massProject/massTarget
@@ -528,33 +531,23 @@ class Spectrum:
         self.name = None
         self.plots = True
         self.pics = True
-        self.rawData = []
         self.stuck = []
         self.buried = []
         self.other_failed = []
-        self.data = []
         self.crystal = []
 
     def clear(self):
         self.detector = None
         self.box_emin = None
         self.safio = None
-        self.rawData = []
         self.stuck = []
         self.buried = []
-        self.data = []
         self.crystal = []
         self.other_failed = []
 
-    def clean(self, data, detectorType=-1, emin=-1e6, emax=1e6,\
-                                           lmin=1, lmax=20, \
-                                           phimin=-1e6, phimax=1e6, \
-                                           thmin=-1e6, thmax=1e6):
-        self.rawData = data
-        self.data = []
-        for i in range(0, 4):
-            self.data.append(data[i])
-
+    def clean(self, detectorType=-1, emin=-1e6, emax=1e6,\
+                                     phimin=-1e6, phimax=1e6, \
+                                     thmin=-1e6, thmax=1e6):
         # If this is not the case, detector is defined elsewhere.
         if self.detector is None:
             self.detectorType = self.safio.NDTECT
@@ -583,8 +576,38 @@ class Spectrum:
         self.detector.clear()
         start = time.time()
         print("Collecting points")
-        for i in range(len(data)):
-            traj = data[i]
+        filename = getDataFile(self.safio.filename)
+        f = open(filename, 'r', errors='ignore')
+        print("Loading from: "+filename)
+        n = 0
+        tested = 0
+        hit = 0
+        for line in f:
+            if n == 0:
+                n = 1
+                continue
+            arr = line.split()
+            # Errored line?
+            if len(arr)<10:
+                n = n + 1
+                print("Error on line {}".format(n))
+                continue
+            try:
+                # x, y, z_min
+                # E, Theta, Phi
+                # index, weight
+                traj = [float(arr[0]), float(arr[1]),float(arr[2]),\
+                        float(arr[3]),float(arr[4]),float(arr[5]),\
+                        float(arr[6]),1.0]
+                tested = tested + 1
+            except:
+                print("Error on line {}".format(n))
+                # errors = errors + 1
+                n = n + 1
+                continue
+
+            n = n + 1
+
             e = traj[3]
             t = traj[4]
             p = traj[5]
@@ -604,8 +627,8 @@ class Spectrum:
                 continue
             if self.detector.isInDetector(t, p, e):
                 self.detector.addDetection(traj)
-            self.data.append(traj)
-        print("Collected points, sorting now.")
+                hit = hit + 1
+        print("Collected points, sorting now. {} out of {} were in detector".format(hit, tested))
         self.detector.detections = np.array(self.detector.tmp)
         self.tmp = []
         end = time.time()
@@ -628,8 +651,8 @@ class Spectrum:
 
         print("bounds: {} {} {} {}".format(e_min, e_max, t_min, t_max))
         x = 0
-        for i in range(len(self.data)):
-            line = self.data[i]
+        for i in range(len(self.detector.detections)):
+            line = self.detector.detections[i]
             e = line[3]
             t = line[4]
             val = 0
@@ -650,8 +673,8 @@ class Spectrum:
             de = del_e/size
             dt = del_t/size
             print("bounds: {} {} {} {}".format(e_min, e_max, t_min, t_max))
-            for i in range(len(self.data)):
-                line = self.data[i]
+            for i in range(len(self.detector.detections)):
+                line = self.detector.detections[i]
                 e = line[3]
                 t = line[4]
                 val = 0
@@ -700,8 +723,8 @@ class Spectrum:
 
         print("bounds: {} {} {} {}".format(t_min, t_max, p_min, p_max))
         x = 0
-        for i in range(len(self.data)):
-            line = self.data[i]
+        for i in range(len(self.detector.detections)):
+            line = self.detector.detections[i]
             p = line[5]
             t = line[4]
             val = 0
@@ -722,8 +745,8 @@ class Spectrum:
             dp = del_p/size
             dt = del_t/size
             print("bounds: {} {} {} {}".format(t_min, t_max, p_min, p_max))
-            for i in range(len(self.data)):
-                line = self.data[i]
+            for i in range(len(self.detector.detections)):
+                line = self.detector.detections[i]
                 p = line[5]
                 t = line[4]
                 val = 0

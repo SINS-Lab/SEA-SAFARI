@@ -124,9 +124,6 @@ def e_theta_loop(dir, theta1, theta2, theta_step):
         if filename.endswith('.data'):
             file = os.path.join(dir, filename)
             safio = safari_input.SafariInput(file.replace('.data', '.input'))
-            print('loading data')
-            data = detect.load(file.replace('.data',''))
-            print('data loaded')
             fig, ax = plt.subplots()
             num = 0
             for theta in frange(theta1, theta2, theta_step):
@@ -137,7 +134,7 @@ def e_theta_loop(dir, theta1, theta2, theta_step):
                 spectrum.safio = safio
                 spectrum.safio.DTECTPAR[0] = theta
                 spectrum.detector = None
-                spectrum.clean(data)
+                spectrum.clean()
                 energy, intensity = spectrum.detector.spectrum(res=spectrum.safio.ESIZE)
                 intensity = intensity + num
                 ax.plot(energy, intensity, label=str(theta))

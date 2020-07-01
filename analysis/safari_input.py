@@ -66,6 +66,8 @@ class SafariInput:
         self.file_type = ".input"
         if fileIn.endswith(".dbug"):
             self.file_type = ".dbug"
+
+        self.filename = self.fileIn.replace(self.file_type, '')
         
         # Inialize All variables
         self.E0 = 1625.0

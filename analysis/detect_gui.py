@@ -46,13 +46,13 @@ class Spectrum(detect.Spectrum):
         
         # Initialize the box settings
         if self.box_emin is None:
-            self.box_emin = QLineEdit(str(self.data[0][0]))
-            self.box_emax = QLineEdit(str(self.data[0][1]))
+            self.box_emin = QLineEdit(str(self.safio.EMIN))
+            self.box_emax = QLineEdit(str(self.safio.E0))
             self.box_phimin = QLineEdit(str(self.safio.PHI0))
             self.box_phimax = QLineEdit(str(self.safio.PHI0))
             self.box_thetamin = QLineEdit(str(self.safio.DTECTPAR[0]))
             self.box_thetamax = QLineEdit(str(self.safio.DTECTPAR[0]))
-            self.box_eres = QLineEdit(str(self.data[0][2]))
+            self.box_eres = QLineEdit(str(self.safio.ESIZE))
             self.box_ares = QLineEdit(str(self.safio.DTECTPAR[2]))
         
         # Handle the detector types
@@ -86,14 +86,8 @@ class Spectrum(detect.Spectrum):
         window.show()
         return
     
-    def setDetector(self, data):
-        ''' TODO see about doing something here'''
-        return
-        
-
-    def run(self, data):
+    def run(self):
         self.popup = QWidget()
-        self.data = data
         window = self.popup
         layout = QVBoxLayout()
         sublayout = QHBoxLayout()
@@ -139,20 +133,6 @@ class Spectrum(detect.Spectrum):
         sublayout.addWidget(eres)
         ellayout.addLayout(sublayout)
 
-        sublayout = QHBoxLayout()
-        label = QLabel('Lmin')
-        lmin = QLineEdit('0')
-        sublayout.addWidget(label)
-        sublayout.addWidget(lmin)
-        ellayout.addLayout(sublayout)
-
-        sublayout = QHBoxLayout()
-        label = QLabel('Lmax')
-        lmax = QLineEdit('20')
-        sublayout.addWidget(label)
-        sublayout.addWidget(lmax)
-        ellayout.addLayout(sublayout)
-
         layout.addLayout(ellayout)
         
         sublayout = QHBoxLayout()
@@ -196,15 +176,13 @@ class Spectrum(detect.Spectrum):
         runbutton = QPushButton('I vs Energy')
         def runIE():
             try:
-                self.setDetector(data)
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 self.detector.spectrum(res=float(eres.displayText()))
             except Exception as e:
                 print(e)
@@ -224,14 +202,14 @@ class Spectrum(detect.Spectrum):
                                                float(phimin.displayText()),\
                                                dphi)
                 print('clean data')
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
+                self.detector.safio = self.safio
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 print('make spectrum')
                 self.detector.spectrumT(res=float(ares.displayText()))
                 self.detector = detector
@@ -246,15 +224,13 @@ class Spectrum(detect.Spectrum):
         etbutton = QPushButton('E vs Theta')
         def runET():
             try:
-                self.setDetector(data)
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 self.plotThetaE()
             except Exception as e:
                 print(e)
@@ -273,14 +249,14 @@ class Spectrum(detect.Spectrum):
                                                float(thmax.displayText()),\
                                                float(phimin.displayText()),\
                                                dphi)
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
+                self.detector.safio = self.safio
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 self.plotPhiTheta()
                 self.detector = detector
             except Exception as e:
@@ -293,16 +269,13 @@ class Spectrum(detect.Spectrum):
         impbutton = QPushButton('Impact Plot')
         def runIMP():
             try:
-                self.setDetector(data)
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
-                self.detector.safio = self.safio
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 self.detector.impactParam(self.crystal,
                                          self.safio.AX, 
                                          self.safio.AY)
@@ -316,16 +289,13 @@ class Spectrum(detect.Spectrum):
         impbutton2 = QPushButton('Impact Plot No Basis')
         def runIMP2():
             try:
-                self.setDetector(data)
-                self.clean(data,emin=float(emin.displayText()),\
-                                emax=float(emax.displayText()),\
-                                phimin=float(phimin.displayText()),\
-                                phimax=float(phimax.displayText()),\
-                                thmin=float(thmin.displayText()),\
-                                thmax=float(thmax.displayText()),\
-                                lmin=float(lmin.displayText()),\
-                                lmax=float(lmax.displayText()))
-                self.detector.safio = self.safio
+                self.clean(emin=float(emin.displayText()),\
+                           emax=float(emax.displayText()),\
+                           phimin=float(phimin.displayText()),\
+                           phimax=float(phimax.displayText()),\
+                           thmin=float(thmin.displayText()),\
+                           thmax=float(thmax.displayText())\
+                           )
                 self.detector.impactParam(None,
                                          self.safio.AX, 
                                          self.safio.AY)
@@ -408,7 +378,6 @@ def run(directory='.'):
     run = QPushButton('Spectrum')
     def push():
         spectrum = Spectrum()
-        data = detect.load(filebox.currentText())
         spectrum.crystal = detect.loadCrystal(filebox.currentText())
         try:
             app.spectrums.append(spectrum)
@@ -428,7 +397,7 @@ def run(directory='.'):
                     fileA = file + '.dbug'
                 file = fileA
             spectrum.safio = safari_input.SafariInput(file)
-            spectrum.run(data)
+            spectrum.run()
             spectrum.popup.setWindowTitle(file)
         except Exception as e:
             print(e)
@@ -443,7 +412,6 @@ def run(directory='.'):
     def push_2():
         AllItems = [filebox.itemText(i) for i in range(filebox.count())]
         for file in AllItems:
-            data = detect.load(file)
             try:
                 spectrum = Spectrum()
                 app.spectrums.append(spectrum)
@@ -463,7 +431,7 @@ def run(directory='.'):
                         fileA = file + '.dbug'
                     file = fileA
                 spectrum.safio = safari_input.SafariInput(file)
-                spectrum.run(data)
+                spectrum.run()
                 spectrum.popup.setWindowTitle(file)
             except Exception as e:
                 print(e)
