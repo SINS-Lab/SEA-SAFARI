@@ -52,7 +52,7 @@ def loadFromText(file):
                 # Skip, this is header line
                 pass
             else:
-                if len(arr) != 13:
+                if len(arr) < 10:
                 #   print("Error on line {}".format(n))
                     errors = errors + 1
                     continue
@@ -161,6 +161,7 @@ class Detector:
         self.safio = None
         self.plots = True
         self.pics = True
+        self.tmp = []
 
     def clear(self):
         self.detections = np.zeros((0,8))
@@ -169,7 +170,7 @@ class Detector:
         if line[3] < 0:
         #These shouldn't be in detector
             return
-        self.detections = np.vstack((self.detections, line))
+        self.tmp.append(line)
         e = line[3]
         if e < self.emin:
             self.emin  = e
@@ -581,6 +582,7 @@ class Spectrum:
         
         self.detector.clear()
         start = time.time()
+        print("Collecting points")
         for i in range(len(data)):
             traj = data[i]
             e = traj[3]
@@ -603,6 +605,9 @@ class Spectrum:
             if self.detector.isInDetector(t, p, e):
                 self.detector.addDetection(traj)
             self.data.append(traj)
+        print("Collected points, sorting now.")
+        self.detector.detections = np.array(self.detector.tmp)
+        self.tmp = []
         end = time.time()
         print("Time to process data: {:.3f}s".format(end - start))
 
