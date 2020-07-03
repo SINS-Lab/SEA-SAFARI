@@ -24,7 +24,7 @@ std::ofstream crystal_file;
 Detector default_detector;
 std::mutex mutx;
 
-double space_mask[3375][3];
+double space_mask_cube[N_CUBE_MASK][3];
 
 int main(int argc, char *argv[])
 {

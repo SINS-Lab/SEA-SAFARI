@@ -3,7 +3,9 @@
 
 #define CELL_SIZE 5.0
 
-extern double space_mask[3375][3];
+#define N_CUBE_MASK 29791 //This is 31^3, radius 15
+
+extern double space_mask_cube[N_CUBE_MASK][3];
 
 //Populates space_mask.
 void init_lookup();
@@ -47,7 +49,7 @@ void index_to_loc(int radius, int index, int diffSq, int diffCb, Vec3d &location
  * radius from 0, as cubic shells.
  * 
  * The radius of these cubes is 1 unit, and, if using
- * radii less than 7, will be looked up in space_mask
+ * radii less ((than N_CUBE_MASK^1/3)-1)/2, will be looked up in space_mask
  * 
  * @param index - index of this cell, 0 being the origin
  * @param location - vector to fill with the location.

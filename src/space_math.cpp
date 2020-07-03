@@ -151,23 +151,23 @@ bool populated = false;
 void init_lookup()
 {
     populated = false;
-    for (int i = 0; i < 3375; i++)
+    for (int i = 0; i < N_CUBE_MASK; i++)
     {
         Vec3d loc;
         index_to_loc(i, loc);
 
-        space_mask[i][0] = loc[0];
-        space_mask[i][1] = loc[1];
-        space_mask[i][2] = loc[2];
+        space_mask_cube[i][0] = loc[0];
+        space_mask_cube[i][1] = loc[1];
+        space_mask_cube[i][2] = loc[2];
     }
     populated = true;
 }
 
 void index_to_loc(int index, Vec3d &location)
 {
-    if (populated && index < 3375)
+    if (populated && index < N_CUBE_MASK)
     {
-        location.set(space_mask[index]);
+        location.set(space_mask_cube[index]);
     }
     else if (index > 0)
     {
