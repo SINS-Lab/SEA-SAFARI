@@ -406,126 +406,46 @@ def fit_img(file, emin, emax, tmin, tmax):
 
     x=[]
     y=[]
+    # These are the sizes of the points, based on standard deviations
     s=[]
-
-    imgsig = np.zeros((shape[0], shape[1]))
 
     max_points = 0
     img_threshold = 0.7
 
     print("Initializing Fits")
-    for i in range(shape[0]):
-        slyce = img[:,i].transpose()
-        vals = slyce[0]+slyce[1]+slyce[2]
-        noerr, params = fit_esa(vals, axis, prom=0.02, minh=0.1, wid=1)
+    # The 0.002 here should be adjusted based on the expected width of the peaks
+    # for 0K things, 0.002 is fine, for 124K things, 0.01 is more appropriate
+    wid = int(0.002/de_dp)
+    if wid == 0:
+        wid = 1
+    # We expect 1 degree resolution here.
+    w = int(shape[0]/90)
+    if w == 0:
+        w = 1
+    print("energy fit width: {}\ntheta fit width {}".format(wid, w))
+    for i in range(0, shape[0] - w, w):
+        vals = np.zeros(len(img[:,i].transpose()[0]))
+        for l in range(w):
+            slyce = img[:,i + l].transpose()
+            vals = vals + slyce[0]+slyce[1]+slyce[2]
+        noerr, params = fit_esa(vals, axis, prom=0.02, minh=0.1, wid=wid, plot=False)
         if noerr:
             max_points = max(max_points,(len(params) - 2)/3)
             for k in range(2, len(params), 3):
-                x.append(i * dt_dp)
+                x.append((i + w/2.0) * dt_dp)
                 mu = params[k+2]
                 sigma = params[k+1]
                 s.append(sigma * 2)
                 y.append(mu * de_dp)
-                if vals[mu] >= img_threshold:
-                    imgsig[mu][i] = imgsig[mu][i] + 1
-
-    lines = []
-    for i in range(500):
-        lines.append([[],[]])
-    print("Finding Lines on Fits")
-
-    theshold = 10
-    numlines = len(lines)
-
-    next_line = 1
-
-    max_ds = 0
-
-    for i in range(shape[0]):
-        slyce = imgsig[:,i].transpose()
-        for j in range(len(slyce)):
-            if slyce[j] == 0:
-                continue
-            line = lines[0]
-            if len(line[0]) == 0:
-                lines[0][0].append(i)
-                lines[0][1].append(j)
-                continue
-        
-            line_i = 0
-            min_ds = 1e5
-
-            for k in range(numlines):
-                line = lines[k]
-                if len(line[1]) == 0:
-                    continue
-                ind = len(line[1])
-
-                for k1 in range(ind):
-                    i_s = ind-1
-                    xt = line[0][i_s - k1]
-                    yt = line[1][i_s - k1]
-                    dy = abs(yt - j)
-                    dx = abs(xt - i)
-                    ds = math.sqrt(dx*dx + dy*dy)
-                    if ds < min_ds:
-                        line_i = k
-                        min_ds = ds
-            
-            if min_ds >= theshold:
-                line_i = next_line
-                next_line = next_line + 1
-                next_line = min(next_line, numlines-1)
-            else:
-                max_ds = max(max_ds, min_ds)
-
-            line = lines[line_i]
-            line[0].append(i)
-            line[1].append(j)
 
     fig, ax = plt.subplots()
-
     s = np.array(s)
-
     imgplot = ax.imshow(img, interpolation="bicubic", extent=(tmin, tmax, emax, emin))
-    fig.colorbar(imgplot, ax=ax)
+    # fig.colorbar(imgplot, ax=ax)
     ax.invert_yaxis()
     ax.set_aspect(aspect=dt/de)
-
-    index = 0
-    for n in range(len(lines)):
-        if len(lines[n][0]) < 10:
-            continue
-        # x1 = np.array(lines[n][0]) * dt_dp
-        # y0 = np.array(lines[n][1]) * de_dp
-
-        # ax.plot(x1,y0, label="{} Points".format(index))
-
-        # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1])
-        # y1 = n_poly(x1, *popt)
-        # m,b,r,p,err = linregress(y0, y1)
-        # ax.plot(x1,y1, label="{} 1st order R={:.4f}, {:.3e} {:.3e}".format(index, r, *popt))
-
-        # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1])
-        # y1 = n_poly(x1, *popt)
-        # m,b,r,p,err = linregress(y0, y1)
-        # ax.plot(x1,y1, label="{} 2nd order R={:.4f}, {:.3e} {:.3e} {:.3e}".format(index, r, *popt))
-
-        # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1,1])
-        # y1 = n_poly(x1, *popt)
-        # m,b,r,p,err = linregress(y0, y1)
-        # ax.plot(x1,y1, label="{} 3rd order R={:.4f}".format(index, r))
-
-        # popt, pcov = curve_fit(n_poly, x1, y0, p0=[1,1,1,1,1])
-        # m,b,r,p,err = linregress(y0, y1)
-        # y1 = n_poly(x1, *popt)
-        # ax.plot(x1,y1, label="{} 4th order R={:.4f}".format(index, r))
-
-        index = index + 1
     ax.scatter(x,y, c="y", s=s,label="Simulation Peaks")
-
     other = open('./tests/vals.tab', 'r')
-
     dat_x = []
     dat_y = []
 
@@ -533,7 +453,7 @@ def fit_img(file, emin, emax, tmin, tmax):
         vars = line.split()
         dat_x.append(float(vars[0]))
         dat_y.append(float(vars[1]))
-    ax.scatter(dat_x,dat_y, c="r", s=1,label="Data Peaks")
+    ax.scatter(dat_x, dat_y, c="r", s=1, label="Data Peaks")
 
     ax.set_xlabel('Outgoing angle (Degrees)')
     ax.set_ylabel('Outgoing Energy (E/E0)')
@@ -541,6 +461,7 @@ def fit_img(file, emin, emax, tmin, tmax):
 
     ax.legend()
     fig.show()
+    fig.savefig('./tests/combined.png')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
