@@ -472,6 +472,14 @@ class Detector:
         fig.canvas.mpl_connect('button_press_event', onclick)
         
         fig.show()
+
+        if self.pics:
+            file_name = self.outputprefix\
+                  + 'Imapct-'\
+                  + str(self.emin) + '-'\
+                  + str(self.emax)+'_'\
+                  + str(res)
+            fig.savefig(file_name+'.png')
         
 class StripeDetector(Detector):
     
