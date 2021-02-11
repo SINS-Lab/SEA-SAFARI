@@ -62,6 +62,7 @@ class Points:
             if i > cp:
                 colour = self.colour_custom
             pygame.draw.circle(screen, colour, (int(point[0]), int(point[1])), nodeRadius, 0)
+            pygame.draw.circle(screen, (255,155,125), (int(point[0]), int(point[1])), nodeRadius/2, 0)
     
     def applyTransform(self, matrix):
         self.transform = np.dot(self.transform, matrix)
@@ -133,6 +134,7 @@ class PointViewer:
         self.nodeColour = (255,255,255)
         self.nodeRadius = 4
         self.doTick = True
+        self.scale = 1/10
         self.tick_step = 0.01
         self.outputfile = None
         self.load()
@@ -154,8 +156,9 @@ class PointViewer:
     def load(self):
         self.outputfile = open('T.output', 'w')
         self.particles.coupling = False
-        self.particles.steps = False
+        # self.particles.steps = False
         self.particles.load('sample.crys')
+        self.particles.randomizePositions()
         self.points.update(self.particles)
         self.translateAll([self.width/2,self.height/2,0])
         self.scaleAll(15)
@@ -200,7 +203,7 @@ class PointViewer:
     def display(self):
         self.screen.fill(self.background)
 
-        self.points.draw(self.screen, self.nodeRadius)
+        self.points.draw(self.screen, self.nodeRadius*self.scale)
 
         T = math.trunc(self.particles.T() * 10000)/10000
         textsurface = self.myfont.render(str(T), False, (255, 0, 0))
@@ -214,6 +217,7 @@ class PointViewer:
         return
 
     def scaleAll(self, scale):
+        self.scale = scale * self.scale
         self.translateAll([-self.width/2,-self.height/2,0])
         self.temp = Points()
         matrix = self.temp.scaleMatrix(scale,scale,scale)
