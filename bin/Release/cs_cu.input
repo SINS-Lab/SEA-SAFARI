@@ -120,7 +120,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 2
+666 666
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
