@@ -8,13 +8,12 @@ import argparse       # parses command line arguments
 def frange(start, end, step):
     return numpy.arange(start, end, step)
 
-def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025,\
+def generate(basename, tstart, tend, pstart, pend, estart, eend, safio, res=0.025,\
              estep=1, pstep=1, tstep=1, TSA=None):
     
     if TSA is not None:
         TSA = float(TSA)
-
-    safio = safari_input.SafariInput('template.input')
+    
     rundir = os.path.join('.','runs')
     try:
         os.makedirs(rundir)
@@ -25,6 +24,7 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
         os.makedirs(rundir)
     except:
         pass
+        
     for theta in frange(tstart, tend + tstep, tstep):
         for phi in frange(pstart, pend + pstep, pstep):
             for e0 in frange(estart, eend + estep, estep):
@@ -36,15 +36,10 @@ def generate(basename, tstart, tend, pstart, pend, estart, eend, face, res=0.025
                 safio.E0 = e0
                 safio.THETA0 = theta
                 safio.PHI0 = phi
-
+                
                 if TSA is not None:
                     safio.DTECTPAR[0] = 180 - (TSA + safio.THETA0)
                 
-                if face is not None:
-                    safio.face = face
-                    safio.load_crystal = False
-                else:
-                    safio.load_crystal = True
                 # Set energy resolution to 1%
                 safio.ESIZE = e0/100
                 filename = str(e0)+'_'+str(theta)\
@@ -76,6 +71,14 @@ if __name__ == '__main__':
     parser.add_argument("-p", help="Phi (acts for both pi and pf)")
 
     parser.add_argument("-f","--face", help="Surface Face")
+
+    parser.add_argument("-i","--input", help="Input File to use as a Template")
+
+    parser.add_argument("-n","--number", help="Trajectory number (Monte Carlo) or Thermal Iterations (Adaptive Grid)")
+    
+    parser.add_argument("--montecarlo", help="Sets to Monte Carlo mode", action='store_true')
+    parser.add_argument("--adaptivegrid", help="Sets to Adaptive Grid mode, argument of the value to use for depth!")
+    
     args = parser.parse_args()
 
     basename = args.output
@@ -95,6 +98,13 @@ if __name__ == '__main__':
     face_line = args.face
 
     tsa = args.tsa
+    
+    template = 'template.input'
+    
+    if args.input is not None:
+        template = args.input
+        if not '.input' in template:
+            template = template + '.input'
 
     if args.e is not None:
         estart = args.e
@@ -145,7 +155,23 @@ if __name__ == '__main__':
     face = None
     if face_line != '':
         face = safari_input.parseLine(face_line)
+        
+    safio = safari_input.SafariInput(template)
+    
+    if args.number is not None:
+        safio.NUMCHA = int(args.number)
+    
+    if args.adaptivegrid is not None:
+        safio.setAdaptiveGrid(int(adaptivegrid))
+    elif args.montecarlo:
+        safio.setMonteCarlo(True)
+    
+    if face is not None:
+        safio.face = face
+        safio.load_crystal = False
+    else:
+        safio.load_crystal = True
     
     generate(basename, float(tstart), float(tend), float(pstart),\
-                       float(pend), float(estart), float(eend), face,\
+                       float(pend), float(estart), float(eend), safio,\
                        estep=float(estep), pstep=float(pstep), tstep=float(tstep), TSA=tsa)
