@@ -69,6 +69,8 @@ def azimuthal_scan(dir, theta, size=512, res=3, emin=750, emax=1000, norm=True):
     if dir != '.':
         dir = os.path.join('.',dir)
 
+    file_name= "azimuthal_spectrum_{}_{}_{}".format(theta, size, emin)
+
     datafiles = []
 
     for filename in os.listdir(dir):
@@ -94,47 +96,63 @@ def azimuthal_scan(dir, theta, size=512, res=3, emin=750, emax=1000, norm=True):
     e_max = -1
     e_min = 1e20
 
-    i = 0
-    for filename in datafiles:
-        file = os.path.join(dir, '{}.data'.format(filename))
-        safio = safari_input.SafariInput(file.replace('.data', '.input'))
-        print('loading: '+filename)
-        data = detect.load(file.replace('.data',''))
-        data = detect.load(file.replace('.data',''))
-        print('data loaded')
+    if os.path.isfile(os.path.join(dir, file_name+'.npy')):
+        data = np.load(os.path.join(dir, file_name+'.npy'), allow_pickle=True)
+        # data[0] = img
+        # data[1] = [e_min, e_max, p_max, p_min]
+        img = data[0]
+        b = data[1]
+        e_min = b[0]
+        e_max = b[1]
+        p_max = b[2]
+        p_min = b[3]
+    else:
+        i = 0
+        for filename in datafiles:
+            file = os.path.join(dir, '{}.data'.format(filename))
+            safio = safari_input.SafariInput(file.replace('.data', '.input'))
+            print('loading: '+filename)
+            data = detect.load(file.replace('.data',''))
+            data = detect.load(file.replace('.data',''))
+            print('data loaded')
 
-        # Setup the spectrum object for this file
-        spectrum = detect.Spectrum()
-        spectrum.plots = False
-        spectrum.name = ""
-        spectrum.pics = False
-        spectrum.safio = safio
-        spectrum.safio.DTECTPAR[0] = theta
-        spectrum.detector = None
-        phi = safio.PHI0
+            # Setup the spectrum object for this file
+            spectrum = detect.Spectrum()
+            spectrum.plots = False
+            spectrum.name = ""
+            spectrum.pics = False
+            spectrum.safio = safio
+            spectrum.safio.DTECTPAR[0] = theta
+            spectrum.detector = None
+            phi = safio.PHI0
 
-        spectrum.detector = detect.SpotDetector(theta, phi, res)
-        p_max = max(phi, p_max)
-        p_min = min(phi, p_min)
-        if emin_rel!=0:
-            emin = emin_rel * safio.E0
-        e_min = min(emin, e_min)
-        e_max = max(e_max, safio.E0)
-        spectrum.clean(data, emin=emin)
-        axis_orig.append(phi)
-        plot.append(len(spectrum.detector.detections)*1.0)
-        energy, intenisty, scale = spectrum.detector.spectrumE(safio.ESIZE,size,False)
-        print("Scale of {}".format(scale))
-        if norm:
-            scale = 1.0
-        img[i] = intenisty * scale
-        i = i + 1
+            spectrum.detector = detect.SpotDetector(theta, phi, res)
+            p_max = max(phi, p_max)
+            p_min = min(phi, p_min)
+            if emin_rel!=0:
+                emin = emin_rel * safio.E0
+            e_min = min(emin, e_min)
+            e_max = max(e_max, safio.E0)
+            spectrum.clean(data, emin=emin)
+            axis_orig.append(phi)
+            plot.append(len(spectrum.detector.detections)*1.0)
+            energy, intenisty, scale = spectrum.detector.spectrumE(safio.ESIZE,size,False)
+            print("Scale of {}".format(scale))
+            if norm:
+                scale = 1.0
+            img[i] = intenisty * scale
+            i = i + 1
 
-    output = open(os.path.join(dir, "azimuthal_spectrum_{}_{}_{}_raw.txt".format(theta, size, emin)), 'w')
-    output.write('{}\t{}\n'.format('Phi', 'Counts'))
-    for i in range(len(plot)):
-        output.write('{}\t{}\n'.format(str(axis_orig[i]),str(plot[i])))
-    output.close()
+        output = open(os.path.join(dir, file_name + "_raw.txt"), 'w')
+        output.write('{}\t{}\n'.format('Phi', 'Counts'))
+        for i in range(len(plot)):
+            output.write('{}\t{}\n'.format(str(axis_orig[i]),str(plot[i])))
+        output.close()
+        data = []
+        data.append(img)
+        data.append([e_min, e_max, p_max, p_min])
+        data = np.array(data, dtype='object', copy=False)
+        np.save(os.path.join(dir, file_name), data)
 
     img = img / np.max(img)
 
