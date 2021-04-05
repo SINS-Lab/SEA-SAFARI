@@ -150,7 +150,7 @@ def integrate(numpoints, winv, points, areas, axis):
     m = np.max(intensity)
     if m != 0:
         intensity /= m
-    return intensity
+    return intensity, m
 
 class Detector:
 
@@ -164,6 +164,11 @@ class Detector:
         self.safio = None
         self.plots = True
         self.pics = True
+
+        # These two are used for adjusting output file names.
+        self.centre = 0
+        self.width = 0
+
         self.tmp = []
 
     def clear(self):
@@ -195,13 +200,13 @@ class Detector:
         # tfArr = np.sin(tfArr)
         # aArr = np.multiply(eArr, tfArr)
 
-        intensity = integrate(numpoints, winv, tArr, aArr, angles)
+        intensity, scale = integrate(numpoints, winv, tArr, aArr, angles)
 
         file_name = self.outputprefix\
                   + 'Theta-'\
                   + str(self.tmin) + '-'\
                   + str(self.tmax)+'_'\
-                  + str(res)
+                  + str(res)+"_"+str(scale)
         out = open(file_name+'.txt', 'w')
         out.write(str(len(aArr))+'\n')
         #writes the angle 
@@ -242,26 +247,25 @@ class Detector:
         # aArr = np.multiply(efArr, tfArr)
         
         #Convert the points into gaussians
-        intensity = integrate(numpoints, winv, eArr, aArr, energy)
+        intensity, scale = integrate(numpoints, winv, eArr, aArr, energy)
         
         #Calculate the kinematic factor
         k = kinematicFactor(self.tmax, self.safio.THETA0,\
                             self.safio.MASS,self.safio.ATOMS[0][0])
+
+        # Prefix, emin-emax_eres-theta_thetasize
+        template = "{}Energy-{}-{}_{}-{}_{}"
         
-        file_name = self.outputprefix\
-                  + 'Energy-'\
-                  + str(self.emin) + '-'\
-                  + str(self.emax)+'_'\
-                  + str(res)
+        file_name = template.format(self.outputprefix, self.emin, self.emax, res, self.centre, self.width)
         out = open(file_name+'.txt', 'w')
-        out.write('energy\tintensity\tcounts\tk-factor\n')
+        out.write('energy\tintensity\tcounts\tk-factor\tscale\n')
         #This writes out the energy into a text file
         for i in range(numpoints):
             if i == 0:
-                out.write(str(energy[i])+'\t'+str(intensity[i])+'\t'+\
-                          str(len(aArr))+'\t'+str(k)+'\n')
+                out.write("{}\t{}\t{}\t{}\t{}\n".format(energy[i],\
+                    intensity[i], len(aArr), k, scale))
             else:
-                out.write(str(energy[i])+'\t'+str(intensity[i])+'\n')
+                out.write("{}\t{}\n".format(energy[i], intensity[i]))
         out.close()
         
         if self.plots or self.pics:
@@ -505,6 +509,9 @@ class SpotDetector(Detector):
         self.quadDots.append(self.dir.dot(unit(theta + size/2, phi)))
         self.quadDots.append(self.dir.dot(unit(theta, phi - size/2)))
         self.quadDots.append(self.dir.dot(unit(theta, phi + size/2)))
+
+        self.centre = theta
+        self.width = size
 
     def isInDetector(self, theta, phi, e):
         #These are failed trajectories, shouldn't be here!

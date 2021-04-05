@@ -175,18 +175,27 @@ class Spectrum(detect.Spectrum):
         #Button to run the spectrum stuff.
         runbutton = QPushButton('I vs Energy')
         def runIE():
+            _emin=float(emin.displayText())
+            _emax=float(emax.displayText())
+            _phimin=float(phimin.displayText())
+            _phimax=float(phimax.displayText())
+            _thmin=float(thmin.displayText())
+            _thmax=float(thmax.displayText())
+
+            # phi = float(self.box_phimin.displayText())
+            # ares = float(self.box_ares.displayText())
+            # for i in range(50):
+            #     self.detector = detect.SpotDetector(i, phi, ares)
+
             try:
-                self.clean(emin=float(emin.displayText()),\
-                           emax=float(emax.displayText()),\
-                           phimin=float(phimin.displayText()),\
-                           phimax=float(phimax.displayText()),\
-                           thmin=float(thmin.displayText()),\
-                           thmax=float(thmax.displayText())\
-                           )
+                self.clean(emin=_emin,emax=_emax,\
+                        phimin=_phimin,phimax=_phimax,\
+                        thmin=_thmin,thmax=_thmax)
                 self.detector.spectrum(res=float(eres.displayText()))
             except Exception as e:
                 print(e)
                 pass
+
         runbutton.clicked.connect(runIE)
         layout.addWidget(runbutton)
         
