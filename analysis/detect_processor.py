@@ -228,12 +228,13 @@ class Detector:
                 fig.savefig(file_name+'.png')
         return angles, intensity
         
-    def spectrumE(self, res, numpoints=1000):
+    def spectrumE(self, res, numpoints=1000, write_file=True):
     
-        res = res/self.safio.E0
-        step = 1/numpoints
+        res = res / self.safio.E0
+        step = (self.safio.E0 - self.emin)/(numpoints * self.safio.E0)
         winv = 1/res
-        energy = np.array([(x*step) for x in range(numpoints)])
+        e_min = self.emin / self.safio.E0
+        energy = np.array([(e_min + x*step) for x in range(numpoints)])
         
         eArr = self.detections[...,3]/self.safio.E0
         aArr = self.detections[...,7]
@@ -256,17 +257,18 @@ class Detector:
         # Prefix, emin-emax_eres-theta_thetasize
         template = "{}Energy-{}-{}_{}-{}_{}"
         
-        file_name = template.format(self.outputprefix, self.emin, self.emax, res, self.centre, self.width)
-        out = open(file_name+'.txt', 'w')
-        out.write('energy\tintensity\tcounts\tk-factor\tscale\n')
-        #This writes out the energy into a text file
-        for i in range(numpoints):
-            if i == 0:
-                out.write("{}\t{}\t{}\t{}\t{}\n".format(energy[i],\
-                    intensity[i], len(aArr), k, scale))
-            else:
-                out.write("{}\t{}\n".format(energy[i], intensity[i]))
-        out.close()
+        if write_file:
+            file_name = template.format(self.outputprefix, self.emin, self.emax, res, self.centre, self.width)
+            out = open(file_name+'.txt', 'w')
+            out.write('energy\tintensity\tcounts\tk-factor\tscale\n')
+            #This writes out the energy into a text file
+            for i in range(numpoints):
+                if i == 0:
+                    out.write("{}\t{}\t{}\t{}\t{}\n".format(energy[i],\
+                        intensity[i], len(aArr), k, scale))
+                else:
+                    out.write("{}\t{}\n".format(energy[i], intensity[i]))
+            out.close()
         
         if self.plots or self.pics:
             fig, ax = plt.subplots()
@@ -295,7 +297,7 @@ class Detector:
             #The following saves the plot as a png file
             if self.pics:
                 fig.savefig(file_name+'.png')
-        return energy, intensity
+        return energy, intensity, scale
 
     def run_single_shot(self, close, index, args):
         #things default nicely to py on windows, the linux machine like python3

@@ -64,6 +64,95 @@ def process(num, axis_orig, areas, size, filename):
     for i in range(len(points)):
         output.write('{}\t{}\n'.format(str(axis[i]),str(points[i])))
 
+def azimuthal_scan(dir, theta, size=512, res=3, emin=750, emax=1000, norm=True):
+
+    if dir != '.':
+        dir = os.path.join('.',dir)
+
+    datafiles = []
+
+    for filename in os.listdir(dir):
+        if filename.endswith('.data'):
+            name = filename.replace('.data','')
+            args = name.split('_')
+            if len(args) < 3:
+                continue
+            t_arg = args[len(args)-2]
+            if(float(t_arg)!=theta):
+                continue
+            datafiles.append(name)
+
+    datafiles.sort(key=cmp_to_key(compare_file_name))
+
+    plot = []
+    axis_orig = []
+
+    img = np.zeros((len(datafiles),size))
+
+    p_min = 400
+    p_max = -400
+    e_max = -1
+    e_min = 1e20
+
+    i = 0
+    for filename in datafiles:
+        file = os.path.join(dir, '{}.data'.format(filename))
+        safio = safari_input.SafariInput(file.replace('.data', '.input'))
+        print('loading: '+filename)
+        data = detect.load(file.replace('.data',''))
+        data = detect.load(file.replace('.data',''))
+        print('data loaded')
+
+        # Setup the spectrum object for this file
+        spectrum = detect.Spectrum()
+        spectrum.plots = False
+        spectrum.name = ""
+        spectrum.pics = False
+        spectrum.safio = safio
+        spectrum.safio.DTECTPAR[0] = theta
+        spectrum.detector = None
+        phi = safio.PHI0
+
+        spectrum.detector = detect.SpotDetector(theta, phi, res)
+        p_max = max(phi, p_max)
+        p_min = min(phi, p_min)
+        if emin_rel!=0:
+            emin = emin_rel * safio.E0
+        e_min = min(emin, e_min)
+        e_max = max(e_max, safio.E0)
+        spectrum.clean(data, emin=emin)
+        axis_orig.append(phi)
+        plot.append(len(spectrum.detector.detections)*1.0)
+        energy, intenisty, scale = spectrum.detector.spectrumE(safio.ESIZE,size,False)
+        print("Scale of {}".format(scale))
+        if norm:
+            scale = 1.0
+        img[i] = intenisty * scale
+        i = i + 1
+
+    output = open(os.path.join(dir, "azimuthal_spectrum_{}_{}_{}_raw.txt".format(theta, size, emin)), 'w')
+    output.write('{}\t{}\n'.format('Phi', 'Counts'))
+    for i in range(len(plot)):
+        output.write('{}\t{}\n'.format(str(axis_orig[i]),str(plot[i])))
+    output.close()
+
+    img = img / np.max(img)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(img, interpolation="bicubic", extent=(e_min, e_max, p_max, p_min))
+    ax.invert_yaxis()
+    del_p = (p_max - p_min) # len(datafiles) *
+    del_e = (e_max - e_min) # size * (
+    ax.set_aspect(aspect=del_e/del_p)
+    fig.colorbar(im, ax=ax)
+    ax.set_title("Energy vs Phi")
+    ax.set_xlabel('Energy (eV)')
+    ax.set_ylabel('Phi (Degrees)')
+    fig.show()
+
+    input('Press Enter to exit')
+    return img
+
 def azimuthal_spectrum(dir, theta, size=3, emin=0, emin_rel=0):
     if dir != '.':
         dir = os.path.join('.',dir)
@@ -168,7 +257,8 @@ if mode == 'a':
     emin = float(input('Minimum Energy: ')) if not args.emin else float(args.emin)
     emin_rel = 0 if not args.emin_rel else float(args.emin_rel)
     dir = input('Input Directory: ') if not args.directory else args.directory
-    azimuthal_spectrum(dir, theta, size, emin, emin_rel);
+    # azimuthal_spectrum(dir, theta, size, emin, emin_rel)
+    azimuthal_scan(dir, theta, 512, size, emin, emin_rel)
 
 if mode == 'p':
     filename = args.filename
