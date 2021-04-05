@@ -476,23 +476,39 @@ class Detector:
         fig.canvas.mpl_connect('button_press_event', onclick)
         
         fig.show()
+
+        if self.pics:
+            file_name = self.outputprefix\
+                  + 'Imapct-'\
+                  + str(self.emin) + '-'\
+                  + str(self.emax)+'_'\
+                  + str(res)
+            fig.savefig(file_name+'.png')
         
 class StripeDetector(Detector):
     
     def __init__(self, theta1, theta2, phi, width):
         super().__init__()
-        width = abs(width)
+        self.width = abs(width)
         self.tmin = min(theta1, theta2)
         self.tmax = max(theta1, theta2)
-        self.phiMax = phi + width/2
-        self.phiMin = phi - width/2
+        self.phi = (phi + 360) % 360
 
     def isInDetector(self, theta, phi, e):
         #These are failed trajectories, shouldn't be here!
         if e < 0:
             return False
-        return theta > self.tmin and theta < self.tmax\
-             and phi > self.phiMin and phi < self.phiMax
+        inTheta = theta > self.tmin and theta < self.tmax
+        if not inTheta:
+            return False
+        phi = (phi + 360) % 360
+        dphi = abs(phi - self.phi)
+        if dphi < self.width:
+            return True
+        dphi = abs(((360-phi)%360) - self.phi)
+        if dphi < self.width:
+            return True
+        return False
 
 class SpotDetector(Detector):
 

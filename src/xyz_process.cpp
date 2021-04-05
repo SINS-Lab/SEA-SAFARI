@@ -65,13 +65,13 @@ XYZ_Single from_Particles(double time, std::vector<Particle> pset)
     return xyz_single;
 }
 
-Vec3d linear_interpolate(double t, double t_prev, Vec3d prev, double t_next, Vec3d next)
+Vec3d linear_interpolate(double t_rel, double dt, Vec3d& prev, Vec3d& next)
 {
     Vec3d interp;
     for(int i = 0; i<3; i++)
     {
-        double dx_dt = (next[i] - prev[i]) / (t_next - t_prev);
-        double dx = dx_dt * (t - t_prev);
+        double dx_dt = (next[i] - prev[i]) / dt;
+        double dx = dx_dt * t_rel;
         interp[i] = prev[i] + dx;
     }
     return interp;
@@ -98,20 +98,23 @@ std::vector<Particle> interpolate_states(double time, std::vector<double> times,
     double t_prev = times[prev_index];
     double t_next = times[next_index];
 
+    double dt = t_next - t_prev;
+    double t_rel = time - t_prev;
+
     int num = particles[0].size();
     new_particles.resize(num);
     //Otherwise, lets interpolate
     #pragma omp parallel for num_threads(THREADCOUNT)
     for(int i = 0; i<num; i++)
     {
-        Particle prev = particles[prev_index][i];
-        Particle next = particles[next_index][i];
+        Particle& prev = particles[prev_index][i];
+        Particle& next = particles[next_index][i];
 
         //Copy previous into interp
         Particle interp = prev;
-        interp.position = linear_interpolate(time, t_prev, prev.position, t_next, next.position);
-        interp.momentum = linear_interpolate(time, t_prev, prev.momentum, t_next, next.momentum);
-        interp.velocity = linear_interpolate(time, t_prev, prev.velocity, t_next, next.velocity);
+        interp.position = linear_interpolate(t_rel, dt, prev.position, next.position);
+        interp.momentum = linear_interpolate(t_rel, dt, prev.momentum, next.momentum);
+        interp.velocity = linear_interpolate(t_rel, dt, prev.velocity, next.velocity);
         new_particles[i] = interp;
     }
     return new_particles;

@@ -104,8 +104,8 @@ class SafariInput:
         self.MAXDIV = 10
         self.MINDIV = 2
 
-        self.NWRITX = 666
-        self.NWRITY = 666
+        self.NWRITX = 666 # SCAT_FLAG
+        self.NWRITY = 666 # SCAT_MODE
 
         self.RAX = 4
         self.RAY = 4
@@ -437,26 +437,33 @@ class SafariInput:
         return
 
     def isMonteCarlo(self):
-        return self.NWRITX == 666 and self.NWRITY == 666
+        return self.NWRITY == 666 and self.NWRITX == 666
 
     def setMonteCarlo(self, montecarlo):
         if montecarlo:
             self.NWRITX = 666
             self.NWRITY = 666
         else:
-            self.NWRITX = 666
-            self.NWRITY = 888
+            self.NWRITX = 777
+            self.NWRITY = 666
 
     def isGridScat(self):
-        return self.NWRITX == 666 and self.NWRITY == 777
+        return self.NWRITY == 666 and self.NWRITX == 777
 
     def setGridScat(self, grid):
         if grid:
-            self.NWRITX = 666
-            self.NWRITY = 777
+            self.NWRITX = 777
+            self.NWRITY = 666
         else:
             self.NWRITX = 666
-            self.NWRITY = 888
+            self.NWRITY = 666
+
+    def isAdaptiveGrid(self):
+        return self.NWRITY == 666 and self.NWRITX < 100
+        
+    def setAdaptiveGrid(self, depth):
+        self.NWRITX = depth
+        self.NWRITY = 666
 
     def save(self, file=None):
         if file is None:

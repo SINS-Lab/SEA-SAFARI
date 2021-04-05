@@ -41,6 +41,10 @@ public:
         bool inE = E > e_min;
         bool inTheta = diff_theta < dtheta;
         bool inPhi = diff_phi < dphi;
+
+        // This checks for wrapping around of phi
+        inPhi = inPhi || fabs(remainder(360 - test, modulo) - phi) < dphi;
+
         return inE && inTheta && inPhi;
     }
 
