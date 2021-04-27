@@ -2,6 +2,7 @@
 #include "safio.h"
 #include "traj.h"
 #include "temps.h"
+#include <typeinfo> 
 
 /**
  * Fires the given ion at the given lattice->
@@ -37,6 +38,7 @@ void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
     //Make a new RNG instance, and then set the seed to what it should be
     std::default_random_engine rng;
     debug_file << "Initializing RNG, seed: " << seed << '\n';
+    std::cout << typeid(default_detector).name() << '\n'<< std::flush;
     //Initialize the RNG
     rng.seed(make_seed(seed));
 

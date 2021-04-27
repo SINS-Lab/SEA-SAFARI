@@ -21,13 +21,18 @@ std::ofstream debug_file;
 std::ofstream traj_file;
 std::ofstream xyz_file;
 std::ofstream crystal_file;
-Detector default_detector;
 std::mutex mutx;
+
+Detector dtec;
+SpectrumDetector spec;
+SpectrumDetector& spec_detector = spec;
+Detector& default_detector = spec;
 
 double space_mask_cube[N_CUBE_MASK][3];
 
 int main(int argc, char *argv[])
 {
+    std::cout << "Starting SAFARI!\n" << std::flush;
     // Starts total runtime timer.
     double load = clock();
 
@@ -62,6 +67,14 @@ int main(int argc, char *argv[])
     // Load the input file
     settings.load(args);
     debug_file << "Loaded Settings, Initializing Potentials and Temperatures\n";
+    std::cout << "Loaded Settings, Initializing Potentials and Temperatures\n";
+
+    // Initialize detectors if needed
+    //Detector def;
+    //default_detector = def;
+    
+    //SpectrumDetector spec;
+    //spec_detector = spec;
 
     // Initialize potentials
     init_potentials();
@@ -277,6 +290,8 @@ int main(int argc, char *argv[])
             debug_file << "\nMax active sites: " << lattice.max_active << "\n";
             debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";
         }
+
+        default_detector.finish(out_file);
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;

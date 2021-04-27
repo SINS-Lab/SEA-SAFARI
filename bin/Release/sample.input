@@ -103,7 +103,7 @@ t
 # In adaptive grid mode, this number is how many thermal iterations
 # are run, this is only applied if the temperature is not 0
 #
-100000
+10000000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
