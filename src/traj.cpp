@@ -408,7 +408,7 @@ void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 }
 
 void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
-          Detector &detector)
+          Detector *detector)
 {
     if (!settings.useEinsteinSprings)
     {
@@ -784,13 +784,13 @@ end:
             s->index = ion.index;
             s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;
-            detector.log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
             // Revert the change to index.
             s->index = oldIndex;
         }
     }
 
     // Output data
-    detector.log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
     return;
 }

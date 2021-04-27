@@ -24,9 +24,8 @@ std::ofstream crystal_file;
 std::mutex mutx;
 
 Detector dtec;
-SpectrumDetector spec;
-SpectrumDetector& spec_detector = spec;
-Detector& default_detector = spec;
+SpectrumDetector* spec_detector = NULL;
+Detector* default_detector = &dtec;
 
 double space_mask_cube[N_CUBE_MASK][3];
 
@@ -70,11 +69,11 @@ int main(int argc, char *argv[])
     std::cout << "Loaded Settings, Initializing Potentials and Temperatures\n";
 
     // Initialize detectors if needed
-    //Detector def;
-    //default_detector = def;
-    
-    //SpectrumDetector spec;
-    //spec_detector = spec;
+    if(settings.detector_type == 2)
+    {
+        spec_detector = new SpectrumDetector();
+        default_detector = spec_detector;
+    }
 
     // Initialize potentials
     init_potentials();
@@ -163,7 +162,8 @@ int main(int argc, char *argv[])
     double dphi = settings.detect_parameters[2];
 
     // Initialize the detector based on the parameters in the file
-    default_detector.init(e_min, theta, phi, dtheta, dphi);
+    default_detector->init(e_min, theta, phi, dtheta, dphi);
+    default_detector->start();
 
     if (settings.SCAT_FLAG == 666)
     {
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
             debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";
         }
 
-        default_detector.finish(out_file);
+        default_detector->finish(out_file);
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;

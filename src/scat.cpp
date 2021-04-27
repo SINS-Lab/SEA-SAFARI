@@ -38,7 +38,7 @@ void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
     //Make a new RNG instance, and then set the seed to what it should be
     std::default_random_engine rng;
     debug_file << "Initializing RNG, seed: " << seed << '\n';
-    std::cout << typeid(default_detector).name() << '\n'<< std::flush;
+    std::cout << typeid(*default_detector).name() << '\n'<< std::flush;
     //Initialize the RNG
     rng.seed(make_seed(seed));
 
@@ -166,7 +166,7 @@ void chainscat(Lattice *lattice, int *num)
 
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
-                      Lattice *lattice, Detector &detector,
+                      Lattice *lattice, Detector *detector,
                       int max_depth, int current_depth, int *num, int *index, int iter)
 {
     if (current_depth > max_depth)

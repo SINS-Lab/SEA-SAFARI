@@ -4,6 +4,18 @@
 #include <fstream> // For iofstream
 #include <cmath>   // For fabs
 
+struct LogCheck
+{
+public:
+    double E = 0;
+    double theta = 0;
+    double phi = 0;
+
+    void checkConditionsForLog(Site &ion, Lattice *lattice,
+                   bool stuck, bool buried, bool froze, bool off_edge, bool discont,
+                   bool ignore_bounds);
+};
+
 struct Detector
 {
 public:
@@ -53,11 +65,12 @@ public:
              bool ignore_bounds);
 
     virtual void finish(std::ofstream &out_file);
+    virtual void start();
 };
 
 #define ERES 250
-#define TRES 180
-#define PRES 360
+#define TRES 90
+#define PRES 90
 
 struct SpectrumDetector: public Detector
 {
@@ -66,21 +79,32 @@ public:
     int saveNum = 10000;
     int counts[ERES][TRES][PRES];
 
+    std::string file_header;
+
     SpectrumDetector()
     {
+
     }
 
     void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
             bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
             bool ignore_bounds);
 
-    void save(std::ofstream &out_file);
+    int getPhiBin(double theta, double phi);
+
+    int getThetaBin(double theta, double phi);
+
+    int getEnergyBin(double E);
+
+    void save();
+
+    void start();
 
     void finish(std::ofstream &out_file)
     {
-        if(logNum != 0) save(out_file); 
+        if(logNum != 0) save(); 
     }
 };
 
-extern Detector& default_detector;
-extern SpectrumDetector& spec_detector;
+extern Detector* default_detector;
+extern SpectrumDetector* spec_detector;

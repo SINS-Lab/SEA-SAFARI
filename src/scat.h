@@ -53,5 +53,5 @@ void chainscat(Lattice *lattice, int *num);
  */
 void adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
-                      Lattice *lattice, Detector &detector,
+                      Lattice *lattice, Detector *detector,
                       int max_depth, int current_depth, int *num, int *index, int iter);
