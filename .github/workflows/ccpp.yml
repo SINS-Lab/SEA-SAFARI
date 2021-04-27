@@ -11,3 +11,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build Files
       run: make
+    - name: Run Tests
+      run: cd ./bin/Release
+      run: ./test_sample.py
+    

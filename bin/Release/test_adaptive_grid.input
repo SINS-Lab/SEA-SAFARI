@@ -1,0 +1,294 @@
+# This is a sample input file for Sea-Safari.
+# This input file is set up for an adaptive grid run
+# Lines starting with # are comment lines, otherwise
+# All lines must follow the order found here,
+# blank lines are ignored also.
+# 
+# For boolean flags:
+#   t : true
+#   f : false (or anything not t)
+
+# Units used:
+#
+# Distances are in Angstroms, unless specified otherwise.
+# Masses are in AMU
+# Energies are in eV
+# Angles are in Degrees
+# Times are in Angstrom * sqrt(AMU / eV)
+
+# Beam Parameters:
+# E0, Theta0, Phi0, atomic mass, atomic symbol
+#
+250.0 45.0 0.00 22.989 Na
+
+# Most of these are currently unused at present
+# EMIN,EMAX,ERES,ARES
+#
+# EMIN - anything below this will not count as a hit in the detector
+# ERES - if not 0, will "thermalize" the ion as well (not currently implememnted)
+# EMAX - unused
+# ARES - unused
+#
+0.5 250 2.5 0.5
+
+# Detector Type and optional cull flag
+#  <type> <cull flag|optional>
+#
+#   If <type> is not 0, then only trajectories within phi of 10
+#   if PHI0 will be added to the data file, this trims out
+#   the trajectories which are out of bounds of the detector.
+#
+#   if <cull flag> is f, then trajectories which fail will not
+#   be included in the data file, they will only be included
+#   in the final error counts in the debug output file.
+#
+3 f
+
+# Detector parameters, the number of these depends on Detector Type
+#
+# Currently, only 1 detector is implemented, it takes the arugments 
+# in the following order:
+#
+# Detector Theta, Theta size, Phi size
+#
+# This is also only used during adaptive grid
+45.0 45 15.0
+
+# Integration Parameters
+# time steps
+#
+1e-08 10.0
+#
+# Error parameters
+#
+0.3 0.0 1e-06
+
+# max number of atoms to interact with
+#
+12
+
+# this one should always be true.
+# This is whether the surface recoils on impact.
+#
+t
+
+#Initial Z for the ions, this is also when it leaves
+#
+5.0
+
+# Number of allowed integration steps before failing.
+#
+4000
+
+# These are search related, max distances and table steps
+#
+# for r:
+#
+10.0 0.002
+#
+# for z: (not yet implemented)
+#
+0.0 0.0003
+
+# These are more search and failure conditions.
+# max distance to search, threshold for failing due to energy change
+# Max distance is in "cells", each of which is roughly 5 angstroms across
+#
+# The energy change error for each hit is listed in the data file, this
+# can be used to determine a good value for this second parameter
+#
+2 100
+
+# This is how many runs to do for Montecarlo or Chainscat modes.
+# If this is 1, it will run a single shot run at x:min y:min.
+#
+# This value is the number of thermal iterations for this run
+#
+10
+
+# Range of the crystal to scatter off
+# Montecarlo mode ignores the step, and chainscat
+# will run from xmin, ymin to xmax, ymax, with the above
+# number of trajectories.
+#
+# Any values after this, will be applied as a mask for the surface
+# These values should be the coordinates of the corners of a polygon
+# In a closed order for that polygon.
+#
+# x:(min, step, max) (Optional polygon)
+#
+0 0.040786 4.0786
+# y:(min, step, max) (Optional polygon)
+#
+0 0.040786 4.0786
+
+# These flags control the mode of operation (unless single shot mode)
+# SCAT_FLAG of 666 means we are doing normal scattering, anything else
+# is a debug flag for running tests.
+#
+# SCAT_FLAG values:
+#   555 - Run performance test on cached values vs computed ones
+#   666 - Run normal scattering routine, defined by SCAT_TYPE/number
+#   777 - Run tests of lattice copying speeds.
+#   888 - Run tests of reliablity of RNG
+#   999 - Test whether the space mask is working correctly.
+#
+# SCAT_TYPE values:
+#   666 - Montecarlo - N Random shots in the range
+#   777 - Grid Scat - Shots in a grid, with the given steps
+#   888 - Chainscat - N shots in a line from min to max
+#  <100 - Adaptive Grid, with this value being the max depth
+
+# SCAT_FLAG, SCAT_TYPE
+#
+666 2
+
+# These are the number of unit cells to generate for the crystal.
+# These are also used to cull trajectories which leave the crystal
+# The bounds of the crystal are these values multiplied by AX and AY
+#
+# RAX, RAY
+#
+5.0 5.0
+
+# These parameters are for the radial ion-atom potentials
+# The first number is how many parameters there are,
+# The second is the type of potential, currently only 1 is implemented.
+#
+#   1 - double exponential function - has 4 parameters per lattice atom type.
+#       this is of form: a * exp(-b * r) + c * exp(-d * r)
+#       where a, b, c, d are the 4 parameters per lattice atom
+#
+#   [a] = eV
+#   [b] = 1/Angstrom
+#   [c] = eV
+#   [d] = 1/Angstrom
+#
+# The third parameter is the type of inter-lattice forces to use
+#
+#   0 - default if not present, use einstien springs
+#   1 - Use springs between nearest neighbours
+#   2 - Use lennard Jones, in this case, 
+#       needs additional parameters after
+#       the 4 parameters below
+#
+4 1 0
+
+# The parameters for the potentials
+#
+# If the interlattice force option is 2, there then needed
+# to be additional lennard jones parameters added after these
+#
+4153.6 3.625 27017.57 7.286
+
+# These parameters are for the image charge.
+# The first is how many parameters, the second is the type.
+# Only image potential types 0 and 1 are implemented
+#
+#   0 - Entry/Exit only image, only has 2 parameters:
+#       1: z_min, potential is constant v_min below this.
+#       2: v_min, this is the minimum value for the potential
+#
+#   1 - Flat image potential, only has 2 parameters:
+#       1: z_min, potential is constant v_min below this.
+#       2: v_min, this is the minimum value for the potential
+#
+2 0
+
+# The parameters for the image potential
+#
+1.26 2.0
+
+# These are parameters for temperature and randomization.
+# They are: Temperature, Seed, initial ion_index
+# Seed is used for both temperature and Montecarlo mode.
+# Initial Ion Index allows repeating runs done on thermalized surfaces.
+#
+300.0 0.9436337324 1
+
+# This is a flag that controls whether image charge effects are included
+#
+f
+
+# These control failure conditions for the code
+# They are: Stuck Energy, Buried Distance
+#
+# Stuck energy is the amount of total energy for the ion to be considered
+# bound to the surface, and not leaving.
+# Buried Distance is the minimum distance below Z=0 before failing
+#
+-1.5 8.1
+
+# This section controls the lattice to scatter off.
+# First is the basis to generate the lattice from.
+#
+# These 3 values are AX, AY, AZ, the lattice constants for the basis.
+#
+4.0786 4.0786 4.0786
+
+# This line is how many sites are in the basis
+4
+# Below are the above number of lines, each defining a basis site.
+# These are in the format: X, Y, Z, Type.
+# Type corresponds to one of the atoms defined below, and X,Y,Z are
+# the coordinates of this site, to be scaled by AX,AY,AZ.
+# these distances are unitless
+#
+1.0 1.0 1.0 1
+1.0 0.5 0.5 1
+0.5 1.0 0.5 1
+0.5 0.5 1.0 1
+
+# Here we define the atoms in the lattice.
+# First we start with how many atoms there are.
+#
+1
+
+# Next we have pairs of lines, containing the following information:
+# Atomic Mass, Atomic Number, Atomic Symbol
+# Spring Constants (kx, ky, kz)
+#
+196.967 79 Au
+5.0 5.0 5.0
+
+# These control inter-atomic forces
+# 
+# Parameters:
+# 
+# 1. Whether interatomic forces occur at all.
+#
+# 2. k factor for interatomic springs.
+#
+# 3. this is breaking condition for interatomic springs,
+#    if using einstien, this is value in eV for where they break
+#    for interatomic springs, this is scaled by 1/r^2 for the initial
+#    seperation of the lattice sites
+#
+# 4. Number of nearest neighbours to consider for interaction,
+#    This defaults to 1 if the argument is not present.
+#
+t 1.5 10 2
+
+# This line defines the surface face of the crystal to generate.
+# The first three parameters are nessisary, they are the 
+# miller indecies of the surface face of the crystal.
+# If the 4th parameter is t, then an existing crystal will be loaded.
+# The existing crystal needs to be in a file with extension "crys_in", with
+# the same name as the input file.
+# the crystal loading is enabled, then 3 more parameters are also needed.
+# These are to define the surface face of the loaded crystal, to be used
+# to rotate the crystal to the requested surface face.
+#
+0 0 1 f 1 1 1
+
+# The next line is frictional force coefficients.
+# Friction is modelled as |F| = av + bv^2,
+# where v is the velocity of the ion, and the direction of F
+# is opposite to the direction of the velocity
+# 
+# [a] = sqrt(eV * AMU) * Angstrom^2
+# [b] =  AMU * Angstrom^2
+#
+# These are only checked if they are not both 0
+# 
+0 0
