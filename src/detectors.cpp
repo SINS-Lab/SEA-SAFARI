@@ -313,7 +313,7 @@ void SpectrumDetector::save()
         out_file << (dE * i + e_min);
         for(int j = 0; j < TRES + 1;j++)
         {
-            int t_bin = j-i;
+            int t_bin = j-1;
             out_file << "\n\t";
             if(j != 0)
             {
