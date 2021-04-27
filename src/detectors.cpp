@@ -300,8 +300,8 @@ void SpectrumDetector::save()
 
     sprintf(buffer, 
     "Total Counts: %d\n"
-    "Largest Bin: %d\n
-    \t(%.2feV, Theta: %.1f Degrees, Phi: %.1f Degrees)\n"
+    "Largest Bin: %d\n"
+    "\t(%.2feV, Theta: %.1f Degrees, Phi: %.1f Degrees)\n"
     "\n"
     "--------------------------------------------------------\n", 
     total_counts, big_bin[0], (dE * big_bin[1] + e_min), (dT * big_bin[2] + theta - dtheta), (dP * big_bin[3] + phi - dphi));
