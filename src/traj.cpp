@@ -784,13 +784,15 @@ end:
             s->index = ion.index;
             s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;
-            detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            if(settings.main_detector) detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            if(settings.spectra_detector) spec_detector->log(sptr_file, *s, settings.main_detector?NULL:lattice, false, false, false, false, false, true);
             // Revert the change to index.
             s->index = oldIndex;
         }
     }
 
     // Output data
-    detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    if(settings.main_detector) detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    if(settings.spectra_detector) spec_detector->log(out_file, ion, settings.main_detector?NULL:lattice, stuck, buried, froze, off_edge, discont, false);
     return;
 }

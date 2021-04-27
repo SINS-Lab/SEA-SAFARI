@@ -77,6 +77,8 @@ struct SpectrumDetector: public Detector
 public:
     int logNum = 0;
     int saveNum = 10000;
+    int total_counts = 0;
+    int big_bin[4];
     int counts[ERES][TRES][PRES];
 
     std::string file_header;
@@ -102,7 +104,7 @@ public:
 
     void finish(std::ofstream &out_file)
     {
-        if(logNum != 0) save(); 
+        if(logNum != 0) save();
     }
 };
 

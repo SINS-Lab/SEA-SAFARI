@@ -69,10 +69,9 @@ int main(int argc, char *argv[])
     std::cout << "Loaded Settings, Initializing Potentials and Temperatures\n";
 
     // Initialize detectors if needed
-    if(settings.detector_type == 2)
+    if(settings.spectra_detector)
     {
         spec_detector = new SpectrumDetector();
-        default_detector = spec_detector;
     }
 
     // Initialize potentials
@@ -162,8 +161,17 @@ int main(int argc, char *argv[])
     double dphi = settings.detect_parameters[2];
 
     // Initialize the detector based on the parameters in the file
-    default_detector->init(e_min, theta, phi, dtheta, dphi);
-    default_detector->start();
+    if(settings.main_detector)
+    {
+        default_detector->init(e_min, theta, phi, dtheta, dphi);
+        default_detector->start();
+    }
+
+    if(settings.spectra_detector)
+    {
+        spec_detector->init(e_min, theta, phi, dtheta, dphi);
+        spec_detector->start();
+    }
 
     if (settings.SCAT_FLAG == 666)
     {
@@ -291,7 +299,9 @@ int main(int argc, char *argv[])
             debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";
         }
 
-        default_detector->finish(out_file);
+        
+        if(settings.main_detector) default_detector->finish(out_file);
+        if(settings.spectra_detector) spec_detector->finish(out_file);
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;
@@ -345,10 +355,10 @@ int main(int argc, char *argv[])
     }
 
     // Close files.
-    out_file.close();
-    debug_file.close();
-    traj_file.close();
-    sptr_file.close();
+    if(out_file.is_open()) out_file.close();
+    if(debug_file.is_open()) debug_file.close();
+    if(traj_file.is_open()) traj_file.close();
+    if(sptr_file.is_open()) sptr_file.close();
     return 0;
 }
 
@@ -360,10 +370,10 @@ void exit_fail(std::string reason)
     debug_file << reason << "\n";
 
     // Close files.
-    out_file.close();
-    debug_file.close();
-    traj_file.close();
-    sptr_file.close();
+    if(out_file.is_open()) out_file.close();
+    if(debug_file.is_open()) debug_file.close();
+    if(traj_file.is_open()) traj_file.close();
+    if(sptr_file.is_open()) sptr_file.close();
 
     // Exit
     exit(EXIT_FAILURE);

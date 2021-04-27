@@ -51,12 +51,15 @@ struct Safio
     double ASIZE; // Angular Resolution
     // Detector index
     int detector_type;
-    // Parameters for detector
-    double *detect_parameters;
 
+    bool main_detector = true;
+    bool spectra_detector = false;
     // Whether to save the errored trajectories,
     // Otherwise only the total counts of each error is saved.
     bool save_errored = true;
+
+    // Parameters for detector
+    double *detect_parameters;
 
     // Integration parameters
     // Minimum time step

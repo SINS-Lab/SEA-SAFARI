@@ -28,7 +28,6 @@ void LogCheck::checkConditionsForLog(Site &ion, Lattice *lattice,
      * -400 : off edge, ie left crystal via x or y
      * -500 : discont, had a discontinuity in E, so was dropped.
      * 
-     * Note that -5 condition is only applied if settings.detector_type is greater than 0
      */
     if (stuck)
     {
@@ -38,12 +37,12 @@ void LogCheck::checkConditionsForLog(Site &ion, Lattice *lattice,
         if (ion.r[2] > 0)
         {
             E = -10;
-            lattice->trapped_num++;
+            if(lattice != NULL) lattice->trapped_num++;
         }
         else
         {
             E = -100;
-            lattice->stuck_num++;
+            if(lattice != NULL) lattice->stuck_num++;
         }
     }
     else if (buried)
@@ -51,35 +50,35 @@ void LogCheck::checkConditionsForLog(Site &ion, Lattice *lattice,
         theta = 0;
         phi = 90;
         E = -200;
-        lattice->buried_num++;
+        if(lattice != NULL) lattice->buried_num++;
     }
     else if (froze)
     {
         theta = 0;
         phi = 90;
         E = -300;
-        lattice->froze_num++;
+        if(lattice != NULL) lattice->froze_num++;
     }
     else if (off_edge)
     {
         theta = 0;
         phi = 90;
         E = -400;
-        lattice->left_num++;
+        if(lattice != NULL) lattice->left_num++;
     }
     else if (discont)
     {
         theta = 0;
         phi = 90;
         E = -500;
-        lattice->err_num++;
+        if(lattice != NULL) lattice->err_num++;
     }
     else if (ion.site_site_intersects)
     {
         theta = 0;
         phi = 90;
         E = -900;
-        lattice->intersections++;
+        if(lattice != NULL) lattice->intersections++;
     }
     else
     {
@@ -110,7 +109,7 @@ void LogCheck::checkConditionsForLog(Site &ion, Lattice *lattice,
             theta = 0;
             phi = 90;
             E = -10;
-            lattice->trapped_num++;
+            if(lattice != NULL) lattice->trapped_num++;
         }
         else
         {
@@ -152,7 +151,7 @@ void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         theta = 0;
         phi = 90;
         E = -5;
-        lattice->undetectable_num++;
+        if(lattice != NULL) lattice->undetectable_num++;
         did_hit = false;
     }
     if (did_hit || settings.save_errored)
@@ -188,26 +187,12 @@ int SpectrumDetector::getThetaBin(double _theta, double _phi)
 }
 int SpectrumDetector::getPhiBin(double _theta, double _phi)
 {
-    if(theta - dtheta < 0)
-    {
-        modulo = 180;
-    }
-    else
-    {
-        modulo = 360;
-    }
-    double phi_ = _phi;
-    
-    while(phi_ < 0) phi_ += modulo;
-
     double phi_min = phi - dphi;
     double phi_max = phi + dphi;
 
-    if(phi_ < phi_min || phi_ > phi_max) return -1;
-
+    if(_phi < phi_min || _phi > phi_max) return -1;
     double dP = (2 * dphi / PRES);
-
-    return (phi_ - phi_min) / dP;
+    return (_phi - phi_min) / dP;
 }
 int SpectrumDetector::getEnergyBin(double E)
 {
@@ -239,13 +224,21 @@ void SpectrumDetector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         {
             did_hit = true;
             logNum++;
+            total_counts++;
             int num = counts[E_bin][theta_bin][phi_bin] + 1;
+            if(num > big_bin[0])
+            {
+                 big_bin[0] = num;
+                 big_bin[1] = E_bin;
+                 big_bin[2] = theta_bin;
+                 big_bin[3] = phi_bin;
+            }
             counts[E_bin][theta_bin][phi_bin] = num;
             //if(num > 3) std::cout << "Another one! "<<num<<"\n" << std::flush;
         }
         else
         {
-            lattice->undetectable_num++;
+            if(lattice != NULL) lattice->undetectable_num++;
         }
         if(logNum > saveNum)
         {
@@ -280,8 +273,7 @@ void SpectrumDetector::start()
     "This file is split into blocks for each energy section\n"
     "Each block contains a header row and column, which states\n"
     "the theta and phi angles for those blocks respectively\n"
-    "\n"
-    "--------------------------------------------------------\n";
+    "\n";
 
     sprintf(buffer, format, 
     e_min, settings.E0,
@@ -296,47 +288,57 @@ void SpectrumDetector::save()
     // Then save it
     mutx.lock();
 
-    std::ofstream out_file;
+    std::ofstream file;
     std::string filename = settings.output_name + ".spec";
-    out_file.open(filename, std::ofstream::trunc);
-    out_file << file_header;
+    file.open(filename, std::ofstream::trunc);
+    file << file_header;
+    char buffer[2048];
 
     float dE = settings.E0 / ERES;
     double dT = (2 * dtheta / TRES);
     double dP = (2 * dphi / PRES);
 
-    char buffer[20];
+    sprintf(buffer, 
+    "Total Counts: %d\n"
+    "Largest Bin: %d\n
+    \t(%.2feV, Theta: %.1f Degrees, Phi: %.1f Degrees)\n"
+    "\n"
+    "--------------------------------------------------------\n", 
+    total_counts, big_bin[0], (dE * big_bin[1] + e_min), (dT * big_bin[2] + theta - dtheta), (dP * big_bin[3] + phi - dphi));
+
+    file << buffer;
+
 
     // We will do this the long way for now, can speed it up later I guess?
     for(int i = 0; i < ERES; i++)
     {
-        out_file << (dE * i + e_min);
+        file << (dE * i + e_min);
         for(int j = 0; j < TRES + 1;j++)
         {
             int t_bin = j-1;
-            out_file << "\n\t";
+            file << "\n\t";
             if(j != 0)
             {
                 sprintf(buffer, "%.0f", (dT * t_bin + theta - dtheta));
-                out_file << buffer;
+                file << buffer;
             }
             for(int k = 0; k < PRES; k++)
             {
-                out_file << '\t';
+                file << '\t';
                 // Header row
                 if(j==0)
                 {
                     sprintf(buffer, "%.0f", (dP * k + phi - dphi));
-                    out_file << buffer;
+                    file << buffer;
                 }
                 else
                 {
-                    out_file << counts[i][t_bin][k];
+                    file << counts[i][t_bin][k];
                 }
             }
         }
-        out_file << '\n';
+        file << '\n';
     }
-    out_file << std::flush;
+    file << std::flush;
     mutx.unlock();
 }
