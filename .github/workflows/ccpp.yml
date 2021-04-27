@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - run: make
-    - run: ./bin/Release/test_sample.py
-    
+    - name: Build
+      run: make
+    - name: Run Tests
+      working-directory: ./bin/Release
+      run: ./test_sample.py
