@@ -185,15 +185,23 @@ int main(int argc, char *argv[])
         }
 
         // Log some debug info from the lattice
-        debug_file << "Total Out of Phi  (-5): " << lattice.undetectable_num << "\n";
-        debug_file << "Total Trapped     (-10): " << lattice.trapped_num << "\n";
-        debug_file << "Total Stuck       (-100): " << lattice.stuck_num << "\n";
-        debug_file << "Total Buried      (-200): " << lattice.buried_num << "\n";
-        debug_file << "Total Froze       (-300): " << lattice.froze_num << "\n";
-        debug_file << "Total OOB         (-400): " << lattice.left_num << "\n";
-        debug_file << "Total Errored     (-500): " << lattice.err_num << "\n";
-        debug_file << "Total Intersected (-600): " << lattice.intersections << "\n";
-        debug_file << "Total Out of Mask: " << lattice.out_of_mask << "\n";
+        const char* debugInfo = "\n"
+        "Total Out of Phi  (-5):   %d\n"
+        "Total Trapped     (-10):  %d\n"
+        "Total Stuck       (-100): %d\n"
+        "Total Buried      (-200): %d\n"
+        "Total Froze       (-300): %d\n"
+        "Total OOB         (-400): %d\n"
+        "Total Errored     (-500): %d\n"
+        "Total Intersected (-600): %d\n"
+        "Total Out of Mask: %d\n";
+
+        char buffer[1024];
+        sprintf(buffer, debugInfo, lattice.undetectable_num, lattice.trapped_num, 
+               lattice.stuck_num, lattice.buried_num, lattice.froze_num, lattice.left_num, 
+               lattice.err_num, lattice.intersections, lattice.out_of_mask);
+
+        debug_file << buffer;
 
         if (settings.dynamicNeighbours)
         {
@@ -207,8 +215,7 @@ int main(int argc, char *argv[])
         // Convert to ms;
         dt *= 1000;
 
-        std::cout << "\nFinished Running " << safio_file << "\n"
-                  << "\n";
+        std::cout << "\nFinished Running " << safio_file << "\n";
         std::cout << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
         debug_file << "\nTotal number particles: " << n << "\n";
         debug_file << "Time per particle: " << std::setprecision(4) << dt << "ms\n";
