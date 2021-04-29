@@ -84,6 +84,7 @@ public:
     int counts[ERES][TRES][PRES];
 
     std::string file_header;
+    std::string file_suffix;
 
     void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
             bool stuck, bool buried, bool froze, bool off_edge, bool discont, 

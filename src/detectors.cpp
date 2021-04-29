@@ -242,8 +242,10 @@ void SpectrumDetector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
         }
         if(logNum > saveNum)
         {
-            save();
+            // clear the number
             logNum = 0;
+            // then save the data
+            save();
         }
     }
     // We use this as a after saving.
@@ -287,15 +289,16 @@ void SpectrumDetector::start(Ion &ion)
     (phi - dphi), (phi + dphi), ion.E0, ion.Theta0, ion.Phi0);
 
     file_header = buffer;
+    file_suffix = ".spec";
 }
 
 void SpectrumDetector::save()
 {
-    // Then save it
+    // Tlock the mutx so things don't try writing
     mutx.lock();
 
     std::ofstream file;
-    std::string filename = settings.output_name + ".spec";
+    std::string filename = settings.output_name + file_suffix;
     file.open(filename, std::ofstream::trunc);
     file << file_header;
     char buffer[2048];
@@ -314,8 +317,10 @@ void SpectrumDetector::save()
 
     file << buffer;
 
-
     // We will do this the long way for now, can speed it up later I guess?
+    // Due to only saving every few tens of thousands of detections,
+    // this currently does not significantly contribute to the runtime per
+    // particle, so we will leave this long way until improvements are needed.
     for(int i = 0; i < ERES; i++)
     {
         file << (dE * i + e_min);
@@ -345,6 +350,8 @@ void SpectrumDetector::save()
         }
         file << '\n';
     }
+    // flush the file
     file << std::flush;
+    // unlock the mutx so others can write if needed
     mutx.unlock();
 }
