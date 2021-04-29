@@ -23,10 +23,6 @@ std::ofstream xyz_file;
 std::ofstream crystal_file;
 std::mutex mutx;
 
-Detector dtec;
-SpectrumDetector* spec_detector = NULL;
-Detector* default_detector = &dtec;
-
 double space_mask_cube[N_CUBE_MASK][3];
 
 int main(int argc, char *argv[])
@@ -67,12 +63,6 @@ int main(int argc, char *argv[])
     settings.load(args);
     debug_file << "Loaded Settings, Initializing Potentials and Temperatures\n";
     std::cout << "Loaded Settings, Initializing Potentials and Temperatures\n";
-
-    // Initialize detectors if needed
-    if(settings.spectra_detector)
-    {
-        spec_detector = new SpectrumDetector();
-    }
 
     // Initialize potentials
     init_potentials();
@@ -154,132 +144,44 @@ int main(int argc, char *argv[])
     double start = clock();
     int n = 0;
 
-    double e_min = settings.EMIN;
-    double theta = settings.detect_parameters[0];
-    double phi = settings.PHI0;
-    double dtheta = settings.detect_parameters[1];
-    double dphi = settings.detect_parameters[2];
-
-    // Initialize the detector based on the parameters in the file
-    if(settings.main_detector)
-    {
-        default_detector->init(e_min, theta, phi, dtheta, dphi);
-        default_detector->start();
-    }
-
-    if(settings.spectra_detector)
-    {
-        spec_detector->init(e_min, theta, phi, dtheta, dphi);
-        spec_detector->start();
-    }
-
     if (settings.SCAT_FLAG == 666)
     {
         settings.scat_started = true;
-        out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
+        if(out_file.is_open())
+            out_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tweight\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
         if (settings.saveSputter)
             sptr_file << "X0\tY0\tZm\tE\tTHETA\tPHI\tion index\tion err flag\tmax_n\tmin_r\tsteps\tMax Error\ttotal time" << std::endl;
 
+        ScatRoutine* toRun = NULL;
+
         if (settings.singleshot)
         {
-            debug_file << "Running Single Shot"
-                       << "\n";
-            std::cout << "Running Single Shot"
-                      << "\n"
-                      << std::flush;
-            singleshot(&lattice, &n);
+            toRun = new SingleShot();
         }
         else if (settings.adaptivegrid)
         {
-            // Otherwise this is an adaptive scat, with arguments of
-            // the maximum depth to persue.
-            debug_file << "Running Adaptive Grid\n";
-            std::cout << "Running Adaptive Grid\n"
-                      << std::flush;
-
-            // We use numcha for the number of iterations of adaptive grid.
-            // If temperature is 0, we only need 1 run.
-            int runs = settings.TEMP > 0.0001 ? settings.NUMCHA : 1;
-            int ind = 0;
-
-            if (runs == 1)
-            {
-                adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
-                                 settings.YSTART, settings.YSTEP, settings.YSTOP,
-                                 &lattice, default_detector, settings.SCAT_TYPE, 0, &n, &ind, 0);
-            }
-            else
-            {
-                #pragma omp parallel for num_threads(THREADCOUNT)
-                for (int i = 0; i < runs; i++)
-                {
-                    //Copy the lattice
-                    Lattice *toUse = new Lattice(lattice);
-                    toUse->clear_stats();
-                    adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
-                                     settings.YSTART, settings.YSTEP, settings.YSTOP,
-                                     toUse, default_detector, settings.SCAT_TYPE, 0, &n, &ind, i);
-                    lattice.add_stats(toUse);
-                    delete toUse;
-                }
-            }
+            toRun = new AdaptiveGrid();
         }
         else if (settings.gridscat)
         {
-            debug_file << "Running Grid Scat"
-                       << "\n";
-            std::cout << "Running Grid Scat "
-                      << "\n"
-                      << std::flush;
-            gridscat(&lattice, &n);
+            toRun = new GridScat();
         }
         else if (settings.montecarlo)
         {
-            debug_file << "Running Montecarlo "
-                       << "\n";
-            std::cout << "Running Montecarlo "
-                      << "\n"
-                      << std::flush;
-
-            double seeds[THREADCOUNT];
-            std::default_random_engine rng;
-            //Initialize the RNG
-            rng.seed(make_seed(settings.SEED));
-            for (int i = 0; i < THREADCOUNT; i++)
-            {
-                seeds[i] = frand(rng);
-            }
-            int ions_per_thread = settings.NUMCHA / THREADCOUNT;
-
-            #pragma omp parallel for num_threads(THREADCOUNT)
-            for (int i = 0; i < THREADCOUNT; i++)
-            {
-                int start = i * ions_per_thread;
-                //Copy the lattice
-                Lattice *toUse = new Lattice(lattice);
-                mutx.lock();
-                std::cout << "Starting Thread " << i << "\n"
-                          << std::flush;
-                mutx.unlock();
-                toUse->clear_stats();
-                montecarloscat(toUse, start, ions_per_thread, seeds[i]);
-                lattice.add_stats(toUse);
-                mutx.lock();
-                std::cout << "Finished Thread " << i << "\n"
-                          << std::flush;
-                mutx.unlock();
-                delete toUse;
-            }
-            n = ions_per_thread * THREADCOUNT;
+            toRun = new MonteCarlo();
         }
         else if (settings.chainscat)
         {
-            debug_file << "Running Chainscat"
-                       << "\n";
-            std::cout << "Running Chainscat"
-                      << "\n"
-                      << std::flush;
-            chainscat(&lattice, &n);
+            toRun = new ChainScat();
+        }
+
+        if(toRun != NULL)
+        {
+            toRun->run(&lattice, &n);
+        }
+        else
+        {
+            exit_fail("Unkown Scat Mode??\n");
         }
 
         // Log some debug info from the lattice
@@ -298,10 +200,6 @@ int main(int argc, char *argv[])
             debug_file << "\nMax active sites: " << lattice.max_active << "\n";
             debug_file << "Mean active sites: " << (lattice.sum_active / lattice.count_active) << "\n\n";
         }
-
-        
-        if(settings.main_detector) default_detector->finish(out_file);
-        if(settings.spectra_detector) spec_detector->finish(out_file);
 
         // Compute time per trajectory.
         double dt = (clock() - start) / CLOCKS_PER_SEC;

@@ -250,15 +250,15 @@ void SpectrumDetector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
     ion.index = did_hit;
 }
 
-void Detector::finish(std::ofstream &out_file)
+void Detector::finish()
 {
 }
 
-void Detector::start()
+void Detector::start(Ion &ion)
 {
 }
 
-void SpectrumDetector::start()
+void SpectrumDetector::start(Ion &ion)
 {
     char buffer[1000];
     const char *format = 
@@ -273,12 +273,18 @@ void SpectrumDetector::start()
     "This file is split into blocks for each energy section\n"
     "Each block contains a header row and column, which states\n"
     "the theta and phi angles for those blocks respectively\n"
+    "\n"
+    "Ion Initial Conditions:\n"
+    "\n"
+    "Energy: %.2f eV\n"
+    "Theta: %.2f Degrees\n"
+    "Phi: %.2f Degrees\n"
     "\n";
 
     sprintf(buffer, format, 
     e_min, settings.E0,
     (theta - dtheta), (theta + dtheta),
-    (phi - dphi), (phi + dphi));
+    (phi - dphi), (phi + dphi), ion.E0, ion.Theta0, ion.Phi0);
 
     file_header = buffer;
 }
@@ -298,7 +304,7 @@ void SpectrumDetector::save()
     double dT = (2 * dtheta / TRES);
     double dP = (2 * dphi / PRES);
 
-    sprintf(buffer, 
+    sprintf(buffer,
     "Total Counts: %d\n"
     "Largest Bin: %d\n"
     "\t(%.2feV, Theta: %.1f Degrees, Phi: %.1f Degrees)\n"

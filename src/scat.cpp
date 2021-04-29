@@ -2,38 +2,50 @@
 #include "safio.h"
 #include "traj.h"
 #include "temps.h"
-#include <typeinfo> 
+#include "safari.h"
 
-/**
- * Fires the given ion at the given lattice->
- * This also initializes the ions kinetic energy, and sets the
- * impact parameters to the given coordinates. 
- * The ion is assigned an index as well.
- * 
- * @param lattice - The lattice to shoot at
- * @param ion - The ion to shoot at the lattice
- * @param x - the x-impact parameter for the ion
- * @param y - the y-impact parameter for the ion
- * @param index - the index for this ion
- * @param log - whether to log the trajectory
- * @param xyz - whether to log xyz file version of the trajectory.
- * 
- */
-bool fire(Lattice *lattice, Ion &ion, double x, double y, int index, bool log, bool xyz)
+void MonteCarlo::run(Lattice *lattice, int *num)
 {
-    if (!lattice->mask.inside(x, y))
+    debug_file << "Running Montecarlo\n";
+    std::cout << "Running Montecarlo\n"<< std::flush;
+
+    double seeds[THREADCOUNT];
+    std::default_random_engine rng;
+    //Initialize the RNG
+    rng.seed(make_seed(settings.SEED));
+    for (int i = 0; i < THREADCOUNT; i++)
     {
-        lattice->out_of_mask++;
-        return false;
+        seeds[i] = frand(rng);
     }
-    ion.set_KE(settings.E0, settings.THETA0, settings.PHI0, x, y);
-    ion.index = index;
-    ion.thermal_seed = index;
-    traj(ion, lattice, log, xyz, default_detector);
-    return true;
+    int ions_per_thread = settings.NUMCHA / THREADCOUNT;
+
+    setupDetector();
+
+    #pragma omp parallel for num_threads(THREADCOUNT)
+    for (int i = 0; i < THREADCOUNT; i++)
+    {
+        int start = i * ions_per_thread;
+        //Copy the lattice
+        Lattice *toUse = new Lattice(*lattice);
+        mutx.lock();
+        std::cout << "Starting Thread " << i << "\n"
+                    << std::flush;
+        mutx.unlock();
+        toUse->clear_stats();
+        montecarloscat(toUse, start, ions_per_thread, seeds[i]);
+        lattice->add_stats(toUse);
+        mutx.lock();
+        std::cout << "Finished Thread " << i << "\n"
+                    << std::flush;
+        mutx.unlock();
+        delete toUse;
+    }
+    *num = ions_per_thread * THREADCOUNT;
+
+    cleanUpDetector();
 }
 
-void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
+void MonteCarlo::montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
 {
     //Make a new RNG instance, and then set the seed to what it should be
     mutx.lock();
@@ -63,8 +75,13 @@ void montecarloscat(Lattice *lattice, int ionStart, int numcha, double seed)
     }
 }
 
-void gridscat(Lattice *lattice, int *num)
+void GridScat::run(Lattice *lattice, int *num)
 {
+    debug_file << "Running Grid Scat\n";
+    std::cout << "Running Grid Scat\n" << std::flush;
+
+    setupDetector();
+    
     int n = 0;
 	for (double y = settings.YSTART; y <= settings.YSTOP; y += settings.YSTEP)
 		for (double x = settings.XSTART; x <= settings.XSTOP; x += settings.XSTEP)
@@ -74,12 +91,17 @@ void gridscat(Lattice *lattice, int *num)
 				n++;
 		}
     *num = n;
-    return;
+
+    cleanUpDetector();
 }
 
-
-void singleshot(Lattice *lattice, int *num)
+void SingleShot::run(Lattice *lattice, int *num)
 {
+    debug_file << "Running Single Shot\n";
+    std::cout << "Running Single Shot\n" << std::flush;
+
+    setupDetector();
+
     //If we are in log mode, we only run this for the first coord
     Ion ion;
     //We also use the settings ion_index for single shot mode, to
@@ -132,10 +154,17 @@ void singleshot(Lattice *lattice, int *num)
     }
     else
         std::cout << "Ion Escaped!\n" << std::flush;
+
+    cleanUpDetector();
 }
 
-void chainscat(Lattice *lattice, int *num)
-{
+void ChainScat::run(Lattice *lattice, int *num)
+{            
+    debug_file << "Running Chainscat\n";
+    std::cout << "Running Chainscat\n" << std::flush;
+
+    setupDetector();
+
     double dx = settings.XSTART - settings.XSTOP;
     double dy = settings.YSTART - settings.YSTOP;
 
@@ -162,12 +191,52 @@ void chainscat(Lattice *lattice, int *num)
     }
     std::cout << "\n";
     *num = n;
-    return;
+
+    cleanUpDetector();
 }
 
-void adaptivegridscat(double xstart, double xstep, double xstop,
+void AdaptiveGrid::run(Lattice *lattice, int *num)
+{
+    // Otherwise this is an adaptive scat, with arguments of
+    // the maximum depth to persue.
+    debug_file << "Running Adaptive Grid\n";
+    std::cout << "Running Adaptive Grid\n" << std::flush;
+
+    // We use numcha for the number of iterations of adaptive grid.
+    // If temperature is 0, we only need 1 run.
+    int runs = settings.TEMP > 0.0001 ? settings.NUMCHA : 1;
+    int ind = 0;
+
+    setupDetector();
+
+    if (runs == 1)
+    {
+        adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
+                            settings.YSTART, settings.YSTEP, settings.YSTOP,
+                            lattice, settings.SCAT_TYPE, 0, num, &ind, 0);
+    }
+    else
+    {
+        #pragma omp parallel for num_threads(THREADCOUNT)
+        for (int i = 0; i < runs; i++)
+        {
+            //Copy the lattice
+            Lattice *toUse = new Lattice(*lattice);
+            toUse->clear_stats();
+            adaptivegridscat(settings.XSTART, settings.XSTEP, settings.XSTOP,
+                                settings.YSTART, settings.YSTEP, settings.YSTOP,
+                                toUse, settings.SCAT_TYPE, 0, num, &ind, i);
+            lattice->add_stats(toUse);
+            delete toUse;
+        }
+    }
+
+    cleanUpDetector();
+}
+
+void AdaptiveGrid::adaptivegridscat(double xstart, double xstep, double xstop,
                       double ystart, double ystep, double ystop,
-                      Lattice *lattice, Detector *detector,
+                      Lattice *lattice,
                       int max_depth, int current_depth, int *num, int *index, int iter)
 {
     if (current_depth > max_depth)
@@ -187,7 +256,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                 *index = ion.index;
                 ion.weight = current_depth;
                 ion.thermal_seed = iter;
-                traj(ion, lattice, log, xyz, detector);
+                traj(ion, lattice, log, xyz, spot_detector, area_detector);
                 *num = *num + 1;
                 if (ion.index)
                 {
@@ -208,7 +277,7 @@ void adaptivegridscat(double xstart, double xstep, double xstop,
                     double y_max = y + dy;
                     adaptivegridscat(x_min, dx, x_max,
                                      y_min, dy, y_max,
-                                     lattice, detector,
+                                     lattice,
                                      max_depth, d, num, index, iter);
                 }
                 else if (print)

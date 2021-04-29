@@ -12,11 +12,9 @@ import hashlib      # Used to check if the files matched the old hashes
 # If you make a change which affects output, you need
 # to update these file hashes as well, otherwise
 # the automated build will fail!
-MonteCarloHash = '085cfa7165309e489ee805873c1cac4a'
-AdaptiveGridHash = '29868be762053fc6a1d481ba4066ec80'
-ChainScatHash = 'e9c5057efd45618e460a0246ba78c5c9'
-
-
+MonteCarloHash = 'c16764d9923d585458179c411967e414'
+AdaptiveGridHash = 'f047dfd2ae0cd3405644222937802f84'
+ChainScatHash = 'df5d62ef9713cf7471e4e057878e8413'
 
 def test_montecarlo(template):
     command = template.format('test_montecarlo', 'tests/test_montecarlo')

@@ -408,7 +408,7 @@ void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 }
 
 void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
-          Detector *detector)
+          Detector *spot_detector, Detector *area_detector)
 {
     if (!settings.useEinsteinSprings)
     {
@@ -784,15 +784,15 @@ end:
             s->index = ion.index;
             s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;
-            if(settings.main_detector) detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
-            if(settings.spectra_detector) spec_detector->log(sptr_file, *s, settings.main_detector?NULL:lattice, false, false, false, false, false, true);
+            if(spot_detector) spot_detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            if(area_detector) area_detector->log(sptr_file, *s, spot_detector?NULL:lattice, false, false, false, false, false, true);
             // Revert the change to index.
             s->index = oldIndex;
         }
     }
 
     // Output data
-    if(settings.main_detector) detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
-    if(settings.spectra_detector) spec_detector->log(out_file, ion, settings.main_detector?NULL:lattice, stuck, buried, froze, off_edge, discont, false);
+    if(spot_detector) spot_detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    if(area_detector) area_detector->log(out_file, ion, spot_detector?NULL:lattice, stuck, buried, froze, off_edge, discont, false);
     return;
 }

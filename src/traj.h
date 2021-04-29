@@ -51,4 +51,4 @@ bool validate(Ion &ion, bool *buried, bool *off_edge, bool *stuck,
  * @param log - log the trajectory to .traj file
  * @param xyz - log the xyz trajectory
  */ 
-void traj(Ion &ion, Lattice *lattice, bool& log, bool& xyz, Detector *detector);
+void traj(Ion &ion, Lattice *lattice, bool& log, bool& xyz, Detector *spot_detector, Detector *area_detector);

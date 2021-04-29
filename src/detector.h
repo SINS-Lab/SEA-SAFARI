@@ -27,6 +27,8 @@ public:
 
     int modulo = 360;
 
+    virtual ~Detector(){}
+
     virtual void init(double e_min_, double theta_, double phi_, double dtheta_, double dphi_)
     {
         e_min = e_min_;
@@ -64,8 +66,8 @@ public:
              bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
              bool ignore_bounds);
 
-    virtual void finish(std::ofstream &out_file);
-    virtual void start();
+    virtual void finish();
+    virtual void start(Ion &ion);
 };
 
 #define ERES 250
@@ -83,30 +85,36 @@ public:
 
     std::string file_header;
 
-    SpectrumDetector()
-    {
-
-    }
-
     void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
             bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
             bool ignore_bounds);
 
+    /**
+    * Converts the given phi into the bin index for this location
+    */
     int getPhiBin(double theta, double phi);
-
+    /**
+    * Converts the given theta into the bin index for this location
+    */
     int getThetaBin(double theta, double phi);
-
+    /**
+    * Computes the energy bin for the given energy E
+    */
     int getEnergyBin(double E);
-
+    /**
+    * Actually saves the data to the file
+    */
     void save();
-
-    void start();
-
-    void finish(std::ofstream &out_file)
+    /**
+    * Initialzes the file header for the save file
+    */
+    void start(Ion &ion);
+    /**
+    * If there are any new things to log since the last save, this will
+    * save them as well.
+    */
+    void finish()
     {
         if(logNum != 0) save();
     }
 };
-
-extern Detector* default_detector;
-extern SpectrumDetector* spec_detector;
