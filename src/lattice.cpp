@@ -115,7 +115,7 @@ void Lattice::build_lattice()
             {
                 cell_pos[2] = ez[0] * x + ez[1] * y + ez[2] * z;
                 //Check if entire basis cell will fit
-                if (cell_pos[2] + basis[maxZI]->r_0[2] > zTop)
+                if (settings.flat_by_cells && cell_pos[2] + basis[maxZI]->r_0[2] > zTop)
                     continue;
 
                 cell_pos[0] = ex[0] * x + ex[1] * y + ex[2] * z;
@@ -127,7 +127,8 @@ void Lattice::build_lattice()
                     pz = cell_pos[2] + old->r_0[2];
 
                     //Cut off bottom of the crystal at some point.
-                    if (pz < zBottom)
+                    // also cut off the top for if flat_by_cells is false
+                    if (pz < zBottom || pz > zTop)
                         continue;
 
                     px = cell_pos[0] + old->r_0[0];

@@ -344,6 +344,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             {
                 face = to_double_array(line_args, 0, 2);
                 load_crystal = line_args.size() > 3 and line_args[3] == "t";
+                flat_by_cells = line_args.size() < 8 or line_args[7] == "t";
+
+                if (prog_args["--flat_by_cells"])
+                    flat_by_cells = prog_args["--flat_by_cells"].as_bool();
+
                 if (load_crystal)
                 {
                     loaded_face = to_double_array(line_args, 4, 6);

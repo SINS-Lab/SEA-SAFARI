@@ -170,6 +170,11 @@ struct Safio
     // The surface face of the loaded crystal
     double *loaded_face;
 
+    // If true, the surface will be polished such that unit cells
+    // make the topmost surface, if false, instead it will do a
+    // simple culling of atoms above that top layer.
+    bool flat_by_cells = false;
+
     // Basis Atoms
 
     // Number of types of atoms in basis
