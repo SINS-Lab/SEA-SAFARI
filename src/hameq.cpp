@@ -6,6 +6,8 @@
 #include "vec_math.h"   // General maths help
 #include "safari.h"     // for exit_fail
 #include <cmath>        // sqrt
+#include <algorithm>    // quick array sums
+#include <functional>   // quick array sums
 
 /**
  * This updates the current location/momentum of
@@ -85,14 +87,14 @@ void update_sites(Site &s, int last_update, double dt)
 void predict_site_location(Site &s, double dt)
 {
     Atom *atom = s.atom;
-    double mass = atom->mass;
+    double mass_inv = atom->mass_inv;
 
     // v = p/m
     // a = F/m, F = dp/dt
     // r_t = r + vdt + 0.5adt^2 = r + dt(p + 0.5*F*dt) / m
-    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5 * s.dp_dt[0] * dt) / mass;
-    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5 * s.dp_dt[1] * dt) / mass;
-    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) / mass;
+    s.r_t[0] = s.r[0] + dt * (s.p[0] + 0.5 * s.dp_dt[0] * dt) * mass_inv;
+    s.r_t[1] = s.r[1] + dt * (s.p[1] + 0.5 * s.dp_dt[1] * dt) * mass_inv;
+    s.r_t[2] = s.r[2] + dt * (s.p[2] + 0.5 * s.dp_dt[2] * dt) * mass_inv;
 }
 
 void check_sputter(Ion &ion, Site *s)
@@ -361,13 +363,18 @@ void apply_lattice_lattice(Site *s, Site *s2, Ion &ion, double *F_at, double ato
     // Note, fx = -dV_dr * 2dx, however,
     // we set the force to half of this
     // Apply to us
-    F_at[0] += dx_hat * dV_dr;
-    F_at[1] += dy_hat * dV_dr;
-    F_at[2] += dz_hat * dV_dr;
+
+    dx1 = dx_hat * dV_dr;
+    dy1 = dy_hat * dV_dr;
+    dz1 = dz_hat * dV_dr;
+
+    F_at[0] += dx1;
+    F_at[1] += dy1;
+    F_at[2] += dz1;
     // Apply to other
-    F_at2[0] -= dx_hat * dV_dr;
-    F_at2[1] -= dy_hat * dV_dr;
-    F_at2[2] -= dz_hat * dV_dr;
+    F_at2[0] -= dx1;
+    F_at2[1] -= dy1;
+    F_at2[2] -= dz1;
 
 end:
     if (recoil)
