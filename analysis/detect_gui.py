@@ -23,6 +23,14 @@ class Spectrum(detect.Spectrum):
     def __init__(self):
         super().__init__()
         self.popup = None
+
+    def clean(self, detectorType=-1, emin=-1e6, emax=1e6,\
+                                     phimin=-1e6, phimax=1e6, \
+                                     thmin=-1e6, thmax=1e6):
+        argset = '{}_{}_{}_{}_{}_{}_{}'.format(detectorType, emin, emax, phimin, phimax, thmin, thmax)
+        if self.last_set is None or self.last_set != argset:
+            super().clean(detectorType, emin, emax, phimin, phimax, thmin, thmax)
+        self.last_set = argset
         
     def detectorSelection(self):
         '''This makes the dropdown menu for detectors.'''
@@ -44,17 +52,6 @@ class Spectrum(detect.Spectrum):
         self.popup2 = QWidget()
         window = self.popup2
         
-        # Initialize the box settings
-        if self.box_emin is None:
-            self.box_emin = QLineEdit(str(self.safio.EMIN))
-            self.box_emax = QLineEdit(str(self.safio.E0))
-            self.box_phimin = QLineEdit(str(self.safio.PHI0))
-            self.box_phimax = QLineEdit(str(self.safio.PHI0))
-            self.box_thetamin = QLineEdit(str(self.safio.DTECTPAR[0]))
-            self.box_thetamax = QLineEdit(str(self.safio.DTECTPAR[0]))
-            self.box_eres = QLineEdit(str(self.safio.ESIZE))
-            self.box_ares = QLineEdit(str(self.safio.DTECTPAR[2]))
-        
         # Handle the detector types
         if dtype == 'Spot':
             layout.addWidget(QLabel('phi'))
@@ -65,7 +62,6 @@ class Spectrum(detect.Spectrum):
             layout.addWidget(self.box_ares)
         elif dtype == 'Stripe':
             print(dtype)
-            
             
         # Button to close the window
         close = QPushButton('Done')
@@ -94,6 +90,19 @@ class Spectrum(detect.Spectrum):
         dtectlayout = QHBoxLayout()
         ellayout = QHBoxLayout()
         anglelayout = QHBoxLayout()
+
+        self.last_set = None
+        
+        # Initialize the box settings
+        if self.box_emin is None:
+            self.box_emin = QLineEdit(str(self.safio.EMIN))
+            self.box_emax = QLineEdit(str(self.safio.E0))
+            self.box_phimin = QLineEdit(str(self.safio.PHI0))
+            self.box_phimax = QLineEdit(str(self.safio.PHI0))
+            self.box_thetamin = QLineEdit(str(self.safio.DTECTPAR[0]))
+            self.box_thetamax = QLineEdit(str(self.safio.DTECTPAR[0]))
+            self.box_eres = QLineEdit(str(self.safio.ESIZE))
+            self.box_ares = QLineEdit(str(1))
         
         # Dropdown selector for detector types
         dtectlayout.addWidget(self.detectorSelection())
@@ -172,6 +181,12 @@ class Spectrum(detect.Spectrum):
 
         layout.addLayout(anglelayout)
 
+        # Initialize the detector to defaults:
+        phi = float(self.box_phimin.displayText())
+        theta = float(self.box_thetamin.displayText())
+        ares = float(self.box_ares.displayText())
+        self.detector = detect.SpotDetector(theta, phi, ares)
+
         #Button to run the spectrum stuff.
         runbutton = QPushButton('I vs Energy')
         def runIE():
@@ -212,6 +227,7 @@ class Spectrum(detect.Spectrum):
                                                dphi)
                 print('clean data')
                 self.detector.safio = self.safio
+                self.last_set = None
                 self.clean(emin=float(emin.displayText()),\
                            emax=float(emax.displayText()),\
                            phimin=float(phimin.displayText()),\
@@ -219,6 +235,7 @@ class Spectrum(detect.Spectrum):
                            thmin=float(thmin.displayText()),\
                            thmax=float(thmax.displayText())\
                            )
+                self.last_set = None
                 print('make spectrum')
                 self.detector.spectrumT(res=float(ares.displayText()))
                 self.detector = detector
@@ -233,6 +250,7 @@ class Spectrum(detect.Spectrum):
         etbutton = QPushButton('E vs Theta')
         def runET():
             try:
+                self.last_set = None
                 self.clean(emin=float(emin.displayText()),\
                            emax=float(emax.displayText()),\
                            phimin=float(phimin.displayText()),\
@@ -240,6 +258,7 @@ class Spectrum(detect.Spectrum):
                            thmin=float(thmin.displayText()),\
                            thmax=float(thmax.displayText())\
                            )
+                self.last_set = None
                 self.plotThetaE()
             except Exception as e:
                 print(e)
@@ -259,6 +278,7 @@ class Spectrum(detect.Spectrum):
                                                float(phimin.displayText()),\
                                                dphi)
                 self.detector.safio = self.safio
+                self.last_set = None
                 self.clean(emin=float(emin.displayText()),\
                            emax=float(emax.displayText()),\
                            phimin=float(phimin.displayText()),\
@@ -266,6 +286,7 @@ class Spectrum(detect.Spectrum):
                            thmin=float(thmin.displayText()),\
                            thmax=float(thmax.displayText())\
                            )
+                self.last_set = None
                 self.plotPhiTheta()
                 self.detector = detector
             except Exception as e:
