@@ -153,7 +153,7 @@ if __name__ == '__main__':
         face_line = input("Surface Face (h k l)? ")
     
     face = None
-    if face_line != '':
+    if face_line != '' and face_line != "none":
         face = safari_input.parseLine(face_line)
         
     safio = safari_input.SafariInput(template)
