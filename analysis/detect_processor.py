@@ -238,14 +238,6 @@ class Detector:
         
         eArr = self.detections[...,3]/self.safio.E0
         aArr = self.detections[...,7]
-
-
-        # tArr = self.detections[...,4]
-        # efArr = np.sqrt(self.detections[...,3])
-        # efArr = self.detections[...,3]
-        # tfArr = np.multiply(tArr, math.pi/180)
-        # tfArr = np.sin(tfArr)
-        # aArr = np.multiply(efArr, tfArr)
         
         #Convert the points into gaussians
         intensity, scale = integrate(numpoints, winv, eArr, aArr, energy)
@@ -271,7 +263,7 @@ class Detector:
             out.close()
         
         if self.plots or self.pics:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(8.0, 6.0))
             
             ax.plot(energy, intensity)
             #ax.set_xlim(0,self.safio.E0)
@@ -281,8 +273,10 @@ class Detector:
             ax2 = ax.twiny()
             ax2.set_xlim(0,self.safio.E0)
             
-            # kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
-            
+            identification = self.outputprefix
+            fig.text(0.0, 0.975, identification, fontsize=9)
+
+            print(identification)
             print("I_E, Detections: "+str(len(aArr)))
             
             ax.set_xlabel('Energy (E/E0)')
@@ -291,9 +285,28 @@ class Detector:
             ax2.tick_params(axis="x", direction="in")
 
             ax.set_ylabel('Intensity')
-            # ax.legend(handles=[kplot], loc='upper left')
+
+            self.added_kplot = True
+
             if self.plots:
+
+                self.kplot, = ax.plot([k,k],[-1,2], label='k-Factor', c='orange')
+                ax.legend(handles=[self.kplot], loc='upper left')
+
+                def on_click(event):
+                    if self.added_kplot:
+                        self.kplot.remove()
+                        ax.get_legend().remove()
+                    else:
+                        self.kplot, = ax.plot([k,k],[-1,2], label='k-Factor', c='orange')
+                        ax.legend(handles=[self.kplot], loc='upper left')
+                    self.added_kplot = not self.added_kplot
+                    fig.canvas.draw()
+                    return
+
+                fig.canvas.mpl_connect('button_press_event', on_click)
                 fig.show()
+                
             #The following saves the plot as a png file
             if self.pics:
                 fig.savefig(file_name+'.png')
