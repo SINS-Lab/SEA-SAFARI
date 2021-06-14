@@ -1,312 +1,77 @@
-from scipy.stats import maxwell
-import pygame
-import pygame.color
-from pygame.locals import *
-import particles
-import helpers
-import numpy as np
-import math
-from PyQt5.QtWidgets import *
+#!/usr/bin/env python3
 
-key_to_function = {
-    pygame.K_LEFT:   (lambda x: x.translateAll([-10,0,0])),
-    pygame.K_RIGHT:  (lambda x: x.translateAll([ 10,0,0])),
-    pygame.K_DOWN:   (lambda x: x.translateAll([0, 10,0])),
-    pygame.K_UP:     (lambda x: x.translateAll([0,-10,0])),
-    pygame.K_EQUALS: (lambda x: x.scaleAll(1.25)),
-    pygame.K_MINUS:  (lambda x: x.scaleAll( 0.8)),
-    pygame.K_q:      (lambda x: x.rotateAll([ 0.0005,0,0])),
-    pygame.K_w:      (lambda x: x.rotateAll([-0.0005,0,0])),
-    pygame.K_a:      (lambda x: x.rotateAll([0, 0.0005,0])),
-    pygame.K_s:      (lambda x: x.rotateAll([0,-0.0005,0])),
-    pygame.K_z:      (lambda x: x.rotateAll([0,0, 0.0005])),
-    pygame.K_x:      (lambda x: x.rotateAll([0,0,-0.0005]))}
+import argparse     # Parsing input arguments
+import subprocess   # Runs VMD
+import platform     # Linux vs Windows check
 
-class Points:
-    def __init__(self):
-        # These are the points that render on the screen
-        self.points = []
-        self.custom_points = []
+import os           # os.remove is used for .vmd file
+import time         # sleeps before removing file
 
-        self.printed = False
-        self.points_render = np.zeros((0,4))
+from mendeleev import element # Lookup atomic symbol from number
 
-        self.colour = (255,255,125)
-        self.colour_custom = (255,55,0)
-        
-        self.transform = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
-    
-    def update(self, particles):
-        r = particles.positions
-        if(len(self.custom_points)) > 0:
-            r = np.vstack((r, self.custom_points))
+elements = {}
 
-        i = np.ones((len(r),1))
-        
-        self.points_render = np.hstack((r, i))
+def find(number_str):
+    if number_str in elements:
+        return elements[number_str]
+    num = int(float(number_str))
+    A = element(num)
+    sym = A.symbol
+    elements[number_str] = sym
+    return sym
 
-        trans = np.copy(self.transform)
-        self.transform = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
-        self.applyTransform(trans)
-        return
+def make_xyz(file_in, file_out):
+    lines = []
+    file = open(file_in, 'r')
+    for line in file:
+        args = line.split()
+        if len(args)==5:
+            lines.append(line.split())
+    file.close()
 
-    def addPoint(self, point):
-        self.custom_points.append(point)
+    elements = {}
 
-    def draw(self, screen, nodeRadius):
-        num = len(self.points_render)
-        cp = num - len(self.custom_points)
-        for i in range(num):
-            point = self.points_render[i]
-            colour = self.colour;
-            if i > cp:
-                colour = self.colour_custom
-            pygame.draw.circle(screen, colour, (int(point[0]), int(point[1])), nodeRadius, 0)
-            pygame.draw.circle(screen, (255,155,125), (int(point[0]), int(point[1])), nodeRadius/2, 0)
-    
-    def applyTransform(self, matrix):
-        self.transform = np.dot(self.transform, matrix)
-        self.points_render = np.dot(self.points_render,matrix)
-    
-    def translate(self, dx=0, dy=0, dz=0):
-        self.applyTransform(self.translationMatrix(dx,dy,dz))
-        
-    def rotate(self, rx, ry, rz):
-        self.applyTransform(self.rotateMatrix(rx, ry, rz))
-        
-    def findCentre(self):
-        num = len(self.points_render)
-        meanX = sum([point[0] for point in self.points_render]) / num
-        meanY = sum([point[1] for point in self.points_render]) / num
-        meanZ = sum([point[2] for point in self.points_render]) / num
-        var = True
-        if var:
-            return (0,0,0)
-        return (meanX, meanY, meanZ)
-        
-    def scaleMatrix(self,sx=0, sy=0, sz=0):
-        return np.array([[sx, 0,  0,  0],
-                         [0,  sy, 0,  0],
-                         [0,  0,  sz, 0],
-                         [0,  0,  0,  1]])
-    
-    def translationMatrix(self,dx=0, dy=0, dz=0):
-        return np.array([[1,0,0,0],
-                         [0,1,0,0],
-                         [0,0,1,0],
-                         [dx,dy,dz,1]])
-    
-    def rotateXMatrix(self,radians):
-        c = np.cos(radians)
-        s = np.sin(radians)
-        return np.array([[1, 0, 0, 0],
-                         [0, c,-s, 0],
-                         [0, s, c, 0],
-                         [0, 0, 0, 1]])
-    def rotateYMatrix(self,radians):
-        c = np.cos(radians)
-        s = np.sin(radians)
-        return np.array([[ c, 0, s, 0],
-                         [ 0, 1, 0, 0],
-                         [-s, 0, c, 0],
-                         [ 0, 0, 0, 1]])
-    def rotateZMatrix(self,radians):
-        c = np.cos(radians)
-        s = np.sin(radians)
-        return np.array([[c,-s, 0, 0],
-                         [s, c, 0, 0],
-                         [0, 0, 1, 0],
-                         [0, 0, 0, 1]])
-        
-    def rotateMatrix(self,rx,ry,rz):
-        return self.rotateXMatrix(rx).dot(self.rotateYMatrix(ry).dot(self.rotateZMatrix(rz)))
 
-class PointViewer:
-    """ Displays 3D objects on a Pygame screen """
+    xyz_lines = []
+    # Write the number of particles
+    xyz_lines.append('{}\n'.format(len(lines)))
+    # Write the blank comment line
+    xyz_lines.append('\n'.format(len(lines)))
+    # Now we write each particle line
+    for line in lines:
+        sym = find(line[3])
+        xyz_lines.append('{} {} {} {}\n'.format(sym, line[0], line[1], line[2]))
+    file = open(file_out, 'w')
+    file.writelines(xyz_lines)
+    file.close()
 
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.background = (10,10,10)
-        self.points = Points()
-        self.lines = Points()
-        self.particles = particles.Particles()
-        self.nodeColour = (255,255,255)
-        self.nodeRadius = 4
-        self.doTick = True
-        self.scale = 1/10
-        self.tick_step = 0.01
-        self.outputfile = None
-        self.load()
-        pygame.font.init() 
-        self.myfont = pygame.font.SysFont('Arial', 30)
 
-    def tick(self):
-        if self.doTick:
-            self.particles.step(self.tick_step)
-            self.points.update(self.particles)
-            self.outputfile.write(str(self.particles.T())+'\n')
-        return
-
-    def save(self):
-        if self.particles.steps:
-            self.particles.save('sample.crys')
-        self.outputfile.close()
-
-    def load(self):
-        self.outputfile = open('T.output', 'w')
-        self.particles.coupling = False
-        # self.particles.steps = False
-        self.particles.load('sample.crys')
-        self.particles.randomizePositions()
-        self.points.update(self.particles)
-        self.translateAll([self.width/2,self.height/2,0])
-        self.scaleAll(15)
-
-    def onEvent(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key in key_to_function:
-                key_to_function[event.key](self)
-            if event.key == pygame.K_KP8:
-                self.particles.couplingMult *= 2
-            if event.key == pygame.K_KP2:
-                self.particles.couplingMult /= 2
-            if event.key == pygame.K_KP6:
-                self.particles.latticeMult *= 2
-            if event.key == pygame.K_KP4:
-                self.particles.latticeMult /= 2
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            #scroll in
-            if event.button == 4:
-                self.scaleAll(1.05)
-            # scroll out
-            elif event.button == 5:
-                self.scaleAll(1/1.05)
-        if event.type == pygame.MOUSEMOTION:
-            if pygame.mouse.get_pressed()[0]:
-                rel = event.rel
-                if rel[0] != 0:
-                    self.rotateAll([0,-0.001*rel[0],0])
-                if rel[1] != 0:
-                    self.rotateAll([0.001 * rel[1],0,0])
-            if pygame.mouse.get_pressed()[2]:
-                rel = event.rel
-                if rel[0] != 0:
-                    self.translateAll([1*rel[0],0,0])
-                if rel[1] != 0:
-                    self.translateAll([0, 1*rel[1],0])
-            if pygame.mouse.get_pressed()[1]:
-                rel = event.rel
-                if rel[0] != 0:
-                    self.rotateAll([0,0,0.001 * rel[0]])
-
-    def display(self):
-        self.screen.fill(self.background)
-
-        self.points.draw(self.screen, self.nodeRadius*self.scale)
-
-        T = math.trunc(self.particles.T() * 10000)/10000
-        textsurface = self.myfont.render(str(T), False, (255, 0, 0))
-        self.screen.blit(textsurface,(5,0))
-        pygame.display.flip()
-
-    def translateAll(self, vector):
-        self.temp = Points()
-        matrix = self.temp.translationMatrix(*vector)
-        self.points.applyTransform(matrix)
-        return
-
-    def scaleAll(self, scale):
-        self.scale = scale * self.scale
-        self.translateAll([-self.width/2,-self.height/2,0])
-        self.temp = Points()
-        matrix = self.temp.scaleMatrix(scale,scale,scale)
-        shift = self.points.findCentre()
-        offset = self.points.translationMatrix(-shift[0],-shift[1],-shift[2])
-        self.points.applyTransform(offset)
-        self.points.applyTransform(matrix)
-        offset = self.points.translationMatrix(shift[0],shift[1],shift[2])
-        self.points.applyTransform(offset)
-        self.translateAll([self.width/2,self.height/2,0])
-        return
-    
-    def rotateAll(self, vector):
-        self.translateAll([-self.width/2, -self.height/2, 0])
-        self.temp = Points()
-        matrix = self.temp.rotateMatrix(*vector)
-        shift = self.points.findCentre()
-        offset = self.points.translationMatrix(-shift[0],-shift[1],-shift[2])
-        self.points.applyTransform(offset)
-        self.points.applyTransform(matrix)
-        offset = self.points.translationMatrix(shift[0],shift[1],shift[2])
-        self.points.applyTransform(offset)
-        self.translateAll([self.width/2, self.height/2, 0])
-        return
-
-class App:
-    def __init__(self):
-        self._running = True
-        self._display_surf = None
-        self.size = self.weight, self.height = 800, 800
-        self.view = PointViewer(800,800)
-
-    def on_init(self):
-        pygame.init()
-        self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        self.view.screen = self._display_surf
-        self._running = True
- 
-    def on_event(self, event):
-        self.view.onEvent(event)
-        if event.type == pygame.QUIT:
-            self._running = False
-
-    def on_loop(self):
-        self.view.tick()
-
-    def on_render(self):
-        self.view.display()
-
-    def on_cleanup(self):
-        self.view.save()
-        pygame.quit()
- 
-    def on_execute(self):
-        if self.on_init() == False:
-            self._running = False
- 
-        while( self._running ):
-            for event in pygame.event.get():
-                self.on_event(event)
-            self.on_loop()
-            self.on_render()
-
-        self.on_cleanup()
-
-def makeInputBoxes(theApp):
-    
-    app = QApplication([])
-    window = QWidget()
-    layout = QGridLayout()
-
-    #Make some buttons
-    run = QPushButton('Button')
-    def push():
-        #Replace with whatever for running safari later.
-        print(theApp.view.particles.temp())
-    run.clicked.connect(push)
-    
-    box = QVBoxLayout()
-    box.addWidget(run)
-
-    x = 0
-    y = 0
-    layout.addLayout(box, x, y + 00)
-    
-    window.setLayout(layout)
-    window.show()
-    app.exec_()
- 
 if __name__ == "__main__" :
-    theApp = App()
-    theApp.on_execute()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", help="Input .crys or .crys_in file")
+    args = parser.parse_args()
+
+    file_out = args.input.replace('.crys_in', '').replace('.crys', '') + '.xyz'
+
+    print(args.input)
+    print(file_out)
+
+    make_xyz(args.input, file_out)
+
+    commands = []
+    
+    commands.append("color Display Background white\n")
+    commands.append("display depthcue off\n") # This fixes washed out colours on white background
+    commands.append("mol default style {VDW 1.0 10.0}\n")
+    commands.append("mol new {}\n".format(file_out))
+    commands.append("display rendermode GLSL\n")
+    commands.append("display update\n")
+    commands.append("display update ui\n")
+
+    try:
+        with open("commands.vmd", "w") as file:
+            file.writelines(commands)
+        subprocess.run(["vmd", "-e", "commands.vmd"])
+    finally:
+        time.sleep(5)
+        os.remove("commands.vmd")

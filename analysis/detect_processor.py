@@ -2,6 +2,7 @@ import math                                          # Used for sin/cos/etc
 import numpy as np                                   # General array stuff.
 import platform                                      # Linux vs Windows Checks
 import os                                            # Path related stuff
+import shutil                                        # Used to copy files.
 #if you utilize the following two lines you will be able to run 
 #the figures in here. This requires changing the backend of the fig.show()
 #for more backend choices please see https://matplotlib.org/tutorials/introductory/usage.html#what-is-a-backend
@@ -238,14 +239,6 @@ class Detector:
         
         eArr = self.detections[...,3]/self.safio.E0
         aArr = self.detections[...,7]
-
-
-        # tArr = self.detections[...,4]
-        # efArr = np.sqrt(self.detections[...,3])
-        # efArr = self.detections[...,3]
-        # tfArr = np.multiply(tArr, math.pi/180)
-        # tfArr = np.sin(tfArr)
-        # aArr = np.multiply(efArr, tfArr)
         
         #Convert the points into gaussians
         intensity, scale = integrate(numpoints, winv, eArr, aArr, energy)
@@ -271,7 +264,7 @@ class Detector:
             out.close()
         
         if self.plots or self.pics:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(8.0, 6.0))
             
             ax.plot(energy, intensity)
             #ax.set_xlim(0,self.safio.E0)
@@ -281,8 +274,10 @@ class Detector:
             ax2 = ax.twiny()
             ax2.set_xlim(0,self.safio.E0)
             
-            # kplot, = ax.plot([k,k],[-1,2], label='k-Factor')
-            
+            identification = self.outputprefix
+            fig.text(0.0, 0.975, identification, fontsize=9)
+
+            print(identification)
             print("I_E, Detections: "+str(len(aArr)))
             
             ax.set_xlabel('Energy (E/E0)')
@@ -291,9 +286,28 @@ class Detector:
             ax2.tick_params(axis="x", direction="in")
 
             ax.set_ylabel('Intensity')
-            # ax.legend(handles=[kplot], loc='upper left')
+
+            self.added_kplot = True
+
             if self.plots:
+
+                self.kplot, = ax.plot([k,k],[-1,2], label='k-Factor', c='orange')
+                ax.legend(handles=[self.kplot], loc='upper left')
+
+                def on_click(event):
+                    if self.added_kplot:
+                        self.kplot.remove()
+                        ax.get_legend().remove()
+                    else:
+                        self.kplot, = ax.plot([k,k],[-1,2], label='k-Factor', c='orange')
+                        ax.legend(handles=[self.kplot], loc='upper left')
+                    self.added_kplot = not self.added_kplot
+                    fig.canvas.draw()
+                    return
+
+                fig.canvas.mpl_connect('button_press_event', on_click)
                 fig.show()
+                
             #The following saves the plot as a png file
             if self.pics:
                 fig.savefig(file_name+'.png')
@@ -303,7 +317,19 @@ class Detector:
         #things default nicely to py on windows, the linux machine like python3
         if platform.system() != 'Linux':
             args = args.replace('python3', 'py')
-        self.safio.fileIn = self.safio.fileIn.replace('_mod.input', '_ss.input')
+        new_input = self.safio.fileIn.replace('_mod.input', '_ss.input')
+
+        if self.safio.load_crystal:
+            old_crys = new_input.replace('_ss.input', '.crys_in')
+            new_crys = old_crys.replace('.crys_in', '_ss.crys_in')
+            try:
+                shutil.copy(old_crys, new_crys)
+            except:
+                print("Error copying the crystal file over!")
+                print(crys_file_in)
+                print(crys_file_out)
+        
+        self.safio.fileIn = new_input
         self.safio.setGridScat(True)
         self.safio.NUMCHA = 1
         self.safio.XSTART = close[0]
@@ -312,9 +338,11 @@ class Detector:
         self.safio.genInputFile(fileIn=self.safio.fileIn)
         imp_x = round(close[0],3)
         imp_y = round(close[1],3)
+
         input_file = self.safio.fileIn.replace('.input', '')
         output_file = self.safio.fileIn.replace('.input', '') + \
                         '{}_{}'.format(imp_x, imp_y)
+
         cmd = [args.format(input_file, output_file, close[0], close[1], index)]
         if platform.system() != 'Linux':
             cmd = cmd[0] #Not sure why this was needed on windows...

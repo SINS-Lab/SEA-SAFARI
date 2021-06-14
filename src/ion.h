@@ -12,6 +12,10 @@ class Ion : public Site
 public:
     // The initial energy of this ion
     double E0 = 0;
+    // The initialTheta Angle for the ion
+    double Theta0 = 0;
+    // The initial Phi Angle for the ion
+    double Phi0 = 0;
     // potential energy the particle is in.
     double V = 0;
     // Used to track maximum number of active sites when in dynamic

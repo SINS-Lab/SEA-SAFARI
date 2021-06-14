@@ -1,6 +1,10 @@
 #include "vec_math.h"
 #include <vector>
 #include <math.h>
+#include <algorithm>      // quick array sums
+#include <functional>     // quick array sums
+
+#define ARRSIZE 3
 
 double sqr(double *V)
 {
@@ -14,19 +18,24 @@ double sqr(const double *V)
 
 double diff_sqr(double *X, double *Y)
 {
-    double dx = X[0] - Y[0];
-    double dy = X[1] - Y[1];
-    double dz = X[2] - Y[2];
-    return dx * dx + dy * dy + dz * dz;
+    double v[3];
+    // Populate V with the difference between the two
+    std::transform(X, X + ARRSIZE, Y, v, std::minus<double>());
+    // Repopulate V with the product of each value
+    std::transform(v, v + ARRSIZE, v, v, std::multiplies<double>());
+    // Compute the sum
+    return v[0] + v[1] + v[2];
 }
 
 double diff_sqr(const double *X, const double *Y)
 {
-    double dx = X[0] - Y[0];
-    double dy = X[1] - Y[1];
-    double dz = X[2] - Y[2];
-
-    return dx * dx + dy * dy + dz * dz;
+    double v[3];
+    // Populate V with the difference between the two
+    std::transform(X, X + ARRSIZE, Y, v, std::minus<double>());
+    // Repopulate V with the product of each value
+    std::transform(v, v + ARRSIZE, v, v, std::multiplies<double>());
+    // Compute the sum
+    return v[0] + v[1] + v[2];
 }
 
 void Mat3d::identity()
@@ -150,51 +159,39 @@ double Vec3d::operator*(Vec3d b)
 Vec3d Vec3d::operator+(Vec3d b)
 {
     Vec3d sum;
-    sum[0] = v[0] + b[0];
-    sum[1] = v[1] + b[1];
-    sum[2] = v[2] + b[2];
+    std::transform(v, v + ARRSIZE, b.v, sum.v, std::plus<double>());
     return sum;
 }
 
 Vec3d Vec3d::operator+(double *b)
 {
     Vec3d sum;
-    sum[0] = v[0] + b[0];
-    sum[1] = v[1] + b[1];
-    sum[2] = v[2] + b[2];
+    std::transform(v, v + ARRSIZE, b, sum.v, std::plus<double>());
     return sum;
 }
 
 Vec3d Vec3d::operator-(Vec3d b)
 {
     Vec3d diff;
-    diff[0] = v[0] - b[0];
-    diff[1] = v[1] - b[1];
-    diff[2] = v[2] - b[2];
+    std::transform(v, v + ARRSIZE, b.v, diff.v, std::minus<double>());
     return diff;
 }
 
 Vec3d &Vec3d::operator+=(const Vec3d &b)
 {
-    v[0] = v[0] + b.v[0];
-    v[1] = v[1] + b.v[1];
-    v[2] = v[2] + b.v[2];
+    std::transform(v, v + ARRSIZE, b.v, v, std::plus<double>());
     return *this;
 }
 
 Vec3d &Vec3d::operator+=(const double *b)
 {
-    v[0] = v[0] + b[0];
-    v[1] = v[1] + b[1];
-    v[2] = v[2] + b[2];
+    std::transform(v, v + ARRSIZE, b, v, std::plus<double>());
     return *this;
 }
 
 Vec3d &Vec3d::operator-=(const Vec3d &b)
 {
-    v[0] = v[0] - b.v[0];
-    v[1] = v[1] - b.v[1];
-    v[2] = v[2] - b.v[2];
+    std::transform(v, v + ARRSIZE, b.v, v, std::minus<double>());
     return *this;
 }
 
@@ -217,9 +214,7 @@ Vec3d &Vec3d::operator/=(const double &b)
 Vec3d Vec3d::operator-(double b[])
 {
     Vec3d diff;
-    diff[0] = v[0] - b[0];
-    diff[1] = v[1] - b[1];
-    diff[2] = v[2] - b[2];
+    std::transform(v, v + ARRSIZE, b, diff.v, std::minus<double>());
     return diff;
 }
 

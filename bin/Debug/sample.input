@@ -41,7 +41,7 @@
 #   be included in the data file, they will only be included
 #   in the final error counts in the debug output file.
 #
-1 f
+3 f
 
 # Detector parameters, the number of these depends on Detector Type
 #
@@ -50,7 +50,7 @@
 #
 # Detector Theta, Theta size, Phi size
 #
-45.0 45.0 10.0
+45.0 45.0 18.0
 
 # Integration Parameters
 # time steps
@@ -103,7 +103,7 @@ t
 # In adaptive grid mode, this number is how many thermal iterations
 # are run, this is only applied if the temperature is not 0
 #
-100000
+1000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat

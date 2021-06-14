@@ -7,6 +7,9 @@ Safari2.layout
 
 # Don't need anything in here, this compiles.
 obj/*
+bin/Release/Sea-Safari*
+bin/Debug/Sea-Safari*
+analysis/XYZ*
 
 # Don't include all the random test data
 analysis/tests/*
@@ -27,4 +30,4 @@ tests/*
 # profiling output stuff not needed.
 *.out
 *.stats
-
+*callgrind.*

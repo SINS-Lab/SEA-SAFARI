@@ -21,17 +21,6 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
     }
     std::cout << "Output files: " << output_name << std::endl;
 
-    //Only open these if flagged,
-    //this allows modules to use safio, but not open the files
-    if (prog_args["-f"])
-    {
-        filename = output_name + ".data";
-        out_file.open(filename);
-
-        filename = output_name + ".crys";
-        crystal_file.open(filename);
-    }
-
     //Open the debug file, this is alway used.
     filename = output_name + ".dbug";
     debug_file.open(filename);
@@ -103,6 +92,8 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             if (n == 3)
             {
                 detector_type = atoi(line_args[0].c_str());
+                main_detector = detector_type & 1;
+                spectra_detector = detector_type & 2;
                 if (line_args.size() > 1 && line_args[1] == "f")
                     save_errored = false;
             }
@@ -353,6 +344,11 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             {
                 face = to_double_array(line_args, 0, 2);
                 load_crystal = line_args.size() > 3 and line_args[3] == "t";
+                flat_by_cells = line_args.size() < 8 or line_args[7] == "t";
+
+                if (prog_args["--flat_by_cells"])
+                    flat_by_cells = prog_args["--flat_by_cells"].as_bool();
+
                 if (load_crystal)
                 {
                     loaded_face = to_double_array(line_args, 4, 6);
@@ -376,6 +372,21 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             // Only increment this if not in a sub-line section.
             if (o <= 0)
                 n++;
+        }
+
+        
+        //Only open these if flagged,
+        //this allows modules to use safio, but not open the files
+        if (prog_args["-f"])
+        {
+            if(main_detector)
+            {
+                filename = output_name + ".data";
+                out_file.open(filename);
+            }
+
+            filename = output_name + ".crys";
+            crystal_file.open(filename);
         }
 
         //Populate basis atoms indecies

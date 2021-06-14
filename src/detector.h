@@ -4,18 +4,32 @@
 #include <fstream> // For iofstream
 #include <cmath>   // For fabs
 
-class Detector
+struct LogCheck
 {
 public:
-    double e_min;
-    double theta;
-    double phi;
+    double E = 0;
+    double theta = 0;
+    double phi = 0;
+
+    void checkConditionsForLog(Site &ion, Lattice *lattice,
+                   bool stuck, bool buried, bool froze, bool off_edge, bool discont,
+                   bool ignore_bounds);
+};
+
+struct Detector
+{
+public:
+    double e_min = 0;
+    double theta = 45;
+    double phi = 0;
     double dtheta = 90;
     double dphi = 5;
 
     int modulo = 360;
 
-    void init(double e_min_, double theta_, double phi_, double dtheta_, double dphi_)
+    virtual ~Detector(){}
+
+    virtual void init(double e_min_, double theta_, double phi_, double dtheta_, double dphi_)
     {
         e_min = e_min_;
         theta = theta_;
@@ -32,7 +46,7 @@ public:
         phi = remainder(phi_ + 360, modulo);
     }
 
-    bool hit(double E, double theta_in, double phi_in)
+    virtual bool hit(double E, double theta_in, double phi_in)
     {
         // The +360 to avoid issues with negative comparisons
         double test = remainder(phi_in + 360, modulo);
@@ -48,9 +62,60 @@ public:
         return inE && inTheta && inPhi;
     }
 
-    void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
+    virtual void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
              bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
              bool ignore_bounds);
+
+    virtual void finish();
+    virtual void start(Ion &ion);
 };
 
-extern Detector default_detector;
+#define ERES 250
+#define TRES 90
+#define PRES 90
+
+struct SpectrumDetector: public Detector
+{
+public:
+    int logNum = 0;
+    int saveNum = 10000;
+    int total_counts = 0;
+    int big_bin[4];
+    int counts[ERES][TRES][PRES];
+
+    std::string file_header;
+    std::string file_suffix;
+
+    void log(std::ofstream &out_file, Site &ion, Lattice *lattice, 
+            bool stuck, bool buried, bool froze, bool off_edge, bool discont, 
+            bool ignore_bounds);
+
+    /**
+    * Converts the given phi into the bin index for this location
+    */
+    int getPhiBin(double theta, double phi);
+    /**
+    * Converts the given theta into the bin index for this location
+    */
+    int getThetaBin(double theta, double phi);
+    /**
+    * Computes the energy bin for the given energy E
+    */
+    int getEnergyBin(double E);
+    /**
+    * Actually saves the data to the file
+    */
+    void save();
+    /**
+    * Initialzes the file header for the save file
+    */
+    void start(Ion &ion);
+    /**
+    * If there are any new things to log since the last save, this will
+    * save them as well.
+    */
+    void finish()
+    {
+        if(logNum != 0) save();
+    }
+};

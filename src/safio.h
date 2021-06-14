@@ -51,12 +51,15 @@ struct Safio
     double ASIZE; // Angular Resolution
     // Detector index
     int detector_type;
-    // Parameters for detector
-    double *detect_parameters;
 
+    bool main_detector = true;
+    bool spectra_detector = false;
     // Whether to save the errored trajectories,
     // Otherwise only the total counts of each error is saved.
     bool save_errored = true;
+
+    // Parameters for detector
+    double *detect_parameters;
 
     // Integration parameters
     // Minimum time step
@@ -166,6 +169,11 @@ struct Safio
     bool load_crystal;
     // The surface face of the loaded crystal
     double *loaded_face;
+
+    // If true, the surface will be polished such that unit cells
+    // make the topmost surface, if false, instead it will do a
+    // simple culling of atoms above that top layer.
+    bool flat_by_cells = false;
 
     // Basis Atoms
 

@@ -12,7 +12,7 @@ OUTDIR_R = bin/Release
 _FILES_SAFARI_R = main.cpp \
                 safio.cpp string_utils.cpp \
                 vec_math.cpp space_math.cpp \
-                lattice.cpp ion.cpp \
+                lattice.cpp ion.cpp detectors.cpp \
                 potentials.cpp hameq.cpp \
                 scat.cpp traj.cpp tests.cpp temps.cpp
 FILES_SAFARI_R = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_R))
@@ -20,7 +20,7 @@ FILES_SAFARI_R = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_R))
 _FILES_SAFARI_D = main.cpp \
                 safio.cpp string_utils.cpp \
                 vec_math.cpp space_math.cpp \
-                lattice.cpp ion.cpp \
+                lattice.cpp ion.cpp detectors.cpp \
                 potentials.cpp hameq.cpp \
                 scat.cpp traj.cpp tests.cpp temps.cpp
 FILES_SAFARI_D = $(patsubst %,$(SRCDIR)/%,$(_FILES_SAFARI_D))

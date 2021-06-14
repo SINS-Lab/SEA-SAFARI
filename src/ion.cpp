@@ -21,6 +21,8 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
     {
         thermaize_ion(*this);
     }
+    this->Theta0 = theta0;
+    this->Phi0 = phi0;
 
     atom = &settings.ion;
     //TODO lookup table for atomic symbols...
@@ -70,6 +72,8 @@ void Ion::set_KE(double E0, double theta0, double phi0, double x, double y)
 void Ion::reset()
 {
     E0 = 0;
+    Theta0 = 0;
+    Phi0 = 0;
     steps = 0;
     time = 0;
     max_n = 0;

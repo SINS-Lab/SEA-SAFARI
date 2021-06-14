@@ -50,7 +50,8 @@
 #
 # Detector Theta, Theta size, Phi size
 #
-45.0 45.0 18.0
+# This is also only used during adaptive grid
+45.0 45.0 15.0
 
 # Integration Parameters
 # time steps
@@ -76,7 +77,7 @@ t
 
 # Number of allowed integration steps before failing.
 #
-4000
+2000
 
 # These are search related, max distances and table steps
 #
@@ -103,7 +104,7 @@ t
 # In adaptive grid mode, this number is how many thermal iterations
 # are run, this is only applied if the temperature is not 0
 #
-1000000
+100000
 
 # Range of the crystal to scatter off
 # Montecarlo mode ignores the step, and chainscat
@@ -119,7 +120,7 @@ t
 0 0.1 4.0786
 # y:(min, step, max) (Optional polygon)
 #
-0 0.1 4.0786
+0 0.1 0
 
 # These flags control the mode of operation (unless single shot mode)
 # SCAT_FLAG of 666 means we are doing normal scattering, anything else
@@ -140,7 +141,7 @@ t
 
 # SCAT_FLAG, SCAT_TYPE
 #
-666 666
+666 888
 
 # These are the number of unit cells to generate for the crystal.
 # These are also used to cull trajectories which leave the crystal
@@ -266,7 +267,7 @@ f
 # 4. Number of nearest neighbours to consider for interaction,
 #    This defaults to 1 if the argument is not present.
 #
-t 1.5 10 2
+f 1.5 10 2
 
 # This line defines the surface face of the crystal to generate.
 # The first three parameters are nessisary, they are the 

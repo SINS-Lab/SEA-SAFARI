@@ -408,7 +408,7 @@ void log_xyz(Ion &ion, Lattice *lattice, int &lattice_num, char *buffer)
 }
 
 void traj(Ion &ion, Lattice *lattice, bool &log, bool &xyz,
-          Detector &detector)
+          Detector *spot_detector, Detector *area_detector)
 {
     if (!settings.useEinsteinSprings)
     {
@@ -784,175 +784,15 @@ end:
             s->index = ion.index;
             s->Eerr_max = ion.Eerr_max;
             s->time = ion.time;
-            detector.log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            if(spot_detector) spot_detector->log(sptr_file, *s, lattice, false, false, false, false, false, true);
+            if(area_detector) area_detector->log(sptr_file, *s, spot_detector?NULL:lattice, false, false, false, false, false, true);
             // Revert the change to index.
             s->index = oldIndex;
         }
     }
 
     // Output data
-    detector.log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    if(spot_detector) spot_detector->log(out_file, ion, lattice, stuck, buried, froze, off_edge, discont, false);
+    if(area_detector) area_detector->log(out_file, ion, spot_detector?NULL:lattice, stuck, buried, froze, off_edge, discont, false);
     return;
-}
-
-void Detector::log(std::ofstream &out_file, Site &ion, Lattice *lattice,
-                   bool stuck, bool buried, bool froze, bool off_edge, bool discont,
-                   bool ignore_bounds)
-{
-    double psq = sqr(ion.p);
-    double mx2 = ion.atom->two_mass;
-    double E = psq / mx2;
-    // z-momentum squared, exit theta, exit phi
-    double pzz = 0, theta, phi;
-    /**
-     * Checks failure flags, and sets energy accordingly
-     * 
-     * In all failure cases, theta = 0, phi = 90
-     * 
-     * Energy failure flags as follows:
-     * 
-     * -5   : Ion exited at phi out of absolute max detector bounds
-     * -10  : ion got stuck due to image charge.
-     * -100 : got stuck, ie E too low
-     * -200 : got buried, ie z below -BDIST
-     * -300 : froze, ie took too many steps
-     * -400 : off edge, ie left crystal via x or y
-     * -500 : discont, had a discontinuity in E, so was dropped.
-     * 
-     * Note that -5 condition is only applied if settings.detector_type is greater than 0
-     */
-    if (stuck)
-    {
-        theta = 0;
-        phi = 90;
-
-        if (ion.r[2] > 0)
-        {
-            E = -10;
-            lattice->trapped_num++;
-        }
-        else
-        {
-            E = -100;
-            lattice->stuck_num++;
-        }
-    }
-    else if (buried)
-    {
-        theta = 0;
-        phi = 90;
-        E = -200;
-        lattice->buried_num++;
-    }
-    else if (froze)
-    {
-        theta = 0;
-        phi = 90;
-        E = -300;
-        lattice->froze_num++;
-    }
-    else if (off_edge)
-    {
-        theta = 0;
-        phi = 90;
-        E = -400;
-        lattice->left_num++;
-    }
-    else if (discont)
-    {
-        theta = 0;
-        phi = 90;
-        E = -500;
-        lattice->err_num++;
-    }
-    else if (ion.site_site_intersects)
-    {
-        theta = 0;
-        phi = 90;
-        E = -900;
-        lattice->intersections++;
-    }
-    else
-    {
-        double px = ion.p[0];
-        double py = ion.p[1];
-        double pz = ion.p[2];
-        // Find the momentum at infinity
-        if (settings.use_image and ion.q != 0)
-        {
-            // Image charge would pull it towards surface, this accounts
-            // for that effect.
-            pzz = (pz * pz) + (mx2 * Vi_z(settings.Z1, ion.q));
-            pzz = pzz < 0 ? -sqrt(-pzz) : sqrt(pzz);
-            // Recalulate this, as pz has changed
-            // We are fine with pzz being -ve, as that case
-            // will be dropped due to ion not escaping.
-            psq = pzz * pzz + px * px + py * py;
-        }
-        else
-        {
-            // No image, so this is the same as it was.
-            pzz = pz;
-        }
-        double p = sqrt(psq);
-        // Ion is not escaping.
-        if (pzz <= 0 || p <= 0)
-        {
-            theta = 0;
-            phi = 90;
-            E = -10;
-            lattice->trapped_num++;
-        }
-        else
-        {
-            // Recalculate E, incase image affected it
-            E = psq / mx2;
-
-            // calculate theta, depends on pz
-            theta = acos(pzz / p) * RAD2DEG;
-
-            if (px == 0 && py == 0)
-            {
-                // phi isn't well defined here,
-                // so just set it as same as incoming
-                phi = settings.PHI0;
-            }
-            else
-            {
-                // Calculate phi, depends on px, py
-                phi = atan2(py, px) * RAD2DEG;
-            }
-        }
-    }
-
-    bool did_hit = E > -10;
-
-    if (did_hit && !hit(E, theta, phi) && !ignore_bounds)
-    {
-        theta = 0;
-        phi = 90;
-        E = -5;
-        lattice->undetectable_num++;
-        did_hit = false;
-    }
-    if (did_hit || settings.save_errored)
-    {
-        /**
-             * This uses the default saving behaviour
-             */
-        char buffer[200];
-        // first stuff it in the buffer
-        sprintf(buffer, "%f\t%f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%d\t%.3f\t%d\t%.3f\t%.3f\n",
-                ion.r_0[0], ion.r_0[1], ion.r_0[2],
-                E, theta, phi,
-                ion.thermal_seed, ion.weight,
-                ion.max_n, ion.r_min, ion.steps,
-                ion.Eerr_max, ion.time);
-        // Then save it
-        mutx.lock();
-        out_file << buffer << std::flush;
-        mutx.unlock();
-    }
-    // We use this as a after saving.
-    ion.index = did_hit;
 }
