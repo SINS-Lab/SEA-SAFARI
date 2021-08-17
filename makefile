@@ -6,7 +6,7 @@ CXXFLAGS_R = -Wall -std=c++11 -O4 -fopenmp -march=native -m64 -msse4.2 -mavx2 -f
 
 SRCDIR = src
 OUTDIR_D = bin/Debug
-OUTDIR_A = analysis
+OUTDIR_A = utility_scripts
 OUTDIR_R = bin/Release
 
 _FILES_SAFARI_R = main.cpp \

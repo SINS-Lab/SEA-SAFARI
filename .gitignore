@@ -9,13 +9,13 @@ Safari2.layout
 obj/*
 bin/Release/Sea-Safari*
 bin/Debug/Sea-Safari*
-analysis/XYZ*
+utility_scripts/XYZ*
 
 # Don't include all the random test data
-analysis/tests/*
+utility_scripts/tests/*
 bin/Release/tests/*
 bin/Debug/tests/*
-analysis/safari.input
+utility_scripts/safari.input
 *_pycache_*
 tests/*
 
