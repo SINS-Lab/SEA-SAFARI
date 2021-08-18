@@ -420,8 +420,8 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
         if (prog_args["-p"])
         {
             settings.ion.init_pots(input_name);
-            debug_file << "Loading from override Potentials" << '\n';
-            std::cout << "Loading from override Potentials" << std::endl;
+            debug_file << "Loaded override Potentials" << '\n';
+            std::cout << "Loaded override Potentials" << std::endl;
         }
 
         if (cascadeMode)
@@ -458,6 +458,12 @@ void Safio::load(std::map<std::string, ArgValue> &prog_args)
             debug_file << "XSTART: " << XSTART << '\n';
             debug_file << "YSTART: " << YSTART << '\n';
             debug_file << "SCAT_TYPE: " << SCAT_TYPE << '\n';
+        }
+
+        if (saveSputter)
+        {
+            debug_file << "Running Sputter Mode!" << '\n';
+            std::cout << "Running Sputter Mode!" << std::endl;
         }
 
         safio_input.close();

@@ -85,9 +85,12 @@ void print_pots()
     if (n_rmax == -1)
         n_rmax = r_max / dr_min;
 
+    debug_file << "Saving Potentials" << std::endl;
+
     std::ofstream pots_file;
-    std::string filename = settings.output_name + ".pots";
+    std::string filename = settings.output_name + "_generated.pots";
     pots_file.open(filename);
+    pots_file << "# SAFARI Potentials and Forces File\n" << std::flush;
     //Start at 1, as these guys are not defined for r=0 anyway.
     for (int i = 1; i < n_rmax; i++)
     {
@@ -101,7 +104,7 @@ void print_pots()
             sprintf(buffer, "%s\t%s\t%.5f\t%.5f\n",
                     settings.ion.symbol.c_str(), a->symbol.c_str(), V, F);
             pots_file << buffer << std::flush;
-            if (settings.lattice_potential_type)
+            if (settings.useLennardJones)
             {
                 F = -dVr_dr(r, n + 1, n + 1);
                 V = Vr_r(r, n + 1, n + 1);
@@ -176,7 +179,7 @@ void init_potentials()
         {
             dVr_dr_cache[n][i] = dVr_dr_init(r, n + 1);
             Vr_r_cache[n][i] = Vr_r_init(r, n + 1);
-            if (settings.lattice_potential_type)
+            if (settings.useLennardJones)
             {
                 L_J_dV_dr_cache[n][i] = L_J_dV_dr_init(r, n + 1, n + 1);
             }
@@ -337,6 +340,7 @@ void Atom::init_pots(std::string &filename)
     std::ifstream input;
     filename = filename + ".pots";
     input.open(filename);
+    debug_file << "Opened File "<< filename << std::endl;
 
     std::map<std::string, Atom *> atoms;
     std::map<std::string, Pots *> pots;
@@ -347,63 +351,41 @@ void Atom::init_pots(std::string &filename)
     atoms[settings.ion.symbol] = &settings.ion;
     pots[settings.ion.symbol] = new Pots();
     pots[settings.ion.symbol]->A = settings.ion.symbol;
-    for (auto b : settings.ATOMS)
-    {
-        pots[settings.ion.symbol]->V[b->symbol] = new std::vector<double>();
-        pots[settings.ion.symbol]->F[b->symbol] = new std::vector<double>();
-
-        // Put a 0 for the first entry here,
-        // our first distance index is 1, as these functions
-        // are not defined at 0 distance anyway
-        pots[settings.ion.symbol]->V[b->symbol]->push_back(0);
-        pots[settings.ion.symbol]->F[b->symbol]->push_back(0);
-    }
-
+    
     for (auto a : settings.ATOMS)
     {
         atoms[a->symbol] = a;
         pots[a->symbol] = new Pots();
         pots[a->symbol]->A = a->symbol;
-
-        for (auto b : settings.ATOMS)
-        {
-            pots[a->symbol]->V[b->symbol] = new std::vector<double>();
-            pots[a->symbol]->F[b->symbol] = new std::vector<double>();
-
-            // Put a 0 for the first entry here,
-            // our first distance index is 1, as these functions
-            // are not defined at 0 distance anyway
-            pots[a->symbol]->V[b->symbol]->push_back(0);
-            pots[a->symbol]->F[b->symbol]->push_back(0);
-        }
     }
 
     // Cleanup the maps so no duplicates (ie A-B = B-A)
-    Pots *potI = pots[settings.ion.symbol];
-    for (auto b : settings.ATOMS)
+    for(auto const& a: pots)
     {
-        Pots *potB = pots[b->symbol];
-        potB->V[potI->A] = potI->V[b->symbol];
-        potB->F[potI->A] = potI->F[b->symbol];
-    }
-
-    for (auto a : settings.ATOMS)
-    {
-        Pots *potA = pots[a->symbol];
-        for (auto b : settings.ATOMS)
+        Pots *potA = pots[a.first];
+        for(auto const& b: pots)
         {
-            if (b == a)
-                continue;
-            Pots *potB = pots[b->symbol];
-            potB->V[potA->A] = potA->V[b->symbol];
-            potB->F[potA->A] = potA->F[b->symbol];
+            Pots *potB = pots[b.first];
+            if(!potA->V[b.first])
+            {
+                potA->V[b.first] = new std::vector<double>();
+                pots[a.first]->F[b.first] = new std::vector<double>();
+
+                // Put a 0 for the first entry here,
+                // our first distance index is 1, as these functions
+                // are not defined at 0 distance anyway
+                pots[a.first]->V[b.first]->push_back(0);
+                pots[a.first]->F[b.first]->push_back(0);
+            }
+            potB->V[potA->A] = potA->V[b.first];
+            potB->F[potA->A] = potA->F[b.first];
         }
     }
 
     if (input.is_open())
     {
         std::string line;
-
+        debug_file << "Reading Potentials" << std::endl;
         while (getline(input, line))
         {
             findAndReplaceAll(line, "\r", "");
@@ -435,6 +417,7 @@ void Atom::init_pots(std::string &filename)
     // Arrays are now populated with some tables, ideally they are ordered such that the entire
     // table for each atom is set up correctly, and no redundant tables, ie only one table
     // for each pair.
+    debug_file << "Processing Potentials" << std::endl;
 
     num_atoms = settings.ATOMS.size() + 1;
 
@@ -448,6 +431,11 @@ void Atom::init_pots(std::string &filename)
 
     // Starts at 1, as index 0 is the ion
     int n = 1;
+    Pots *potI = pots[settings.ion.symbol];
+
+    Vr_r_all_cache[0] = potI->V[settings.ion.symbol];
+    dVr_dr_all_cache[0] = potI->F[settings.ion.symbol];
+
     for (auto b : settings.ATOMS)
     {
         Vr_r_all_cache[m + n * num_atoms] = potI->V[b->symbol];
@@ -457,6 +445,7 @@ void Atom::init_pots(std::string &filename)
         n++;
     }
     m = 1;
+    
     for (auto a : settings.ATOMS)
     {
         Pots *potA = pots[a->symbol];
@@ -466,16 +455,12 @@ void Atom::init_pots(std::string &filename)
         {
             Vr_r_all_cache[m + n * num_atoms] = potA->V[b->symbol];
             dVr_dr_all_cache[m + n * num_atoms] = potA->F[b->symbol];
+
+            Vr_r_all_cache[n + m * num_atoms] = potA->V[b->symbol];
+            dVr_dr_all_cache[n + m * num_atoms] = potA->F[b->symbol];
             n++;
         }
         m++;
-    }
-    n_rmax = Vr_r_all_cache[0]->size();
-    for (int i = 1; i < num_atoms * num_atoms; i++)
-    {
-        std::vector<double> *arr = Vr_r_all_cache[i];
-        int size = arr->size();
-        n_rmax = std::min(n_rmax, size);
     }
     print_pots();
 }
