@@ -201,12 +201,12 @@ void apply_ion_lattice(Ion &ion, Site *s, double *F_at, double *r_i, double ax, 
         s->r_min = std::min(r, s->r_min);
 
         // Magnitude of force for this location.
-        double dV_dr = dVr_dr(r, s->atom->index);
+        double dV_dr = dVr_dr(r, ion.atom->index, s->atom->index);
 
         // Potential for this location.
         if (predicted)
         {
-            ion.V += Vr_r(r, s->atom->index);
+            ion.V += Vr_r(r, ion.atom->index, s->atom->index);
         }
         // Scaled by 1/r for converting to cartesian
         dV_dr /= r;

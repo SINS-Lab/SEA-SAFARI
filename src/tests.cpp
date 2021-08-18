@@ -25,8 +25,8 @@ void test_cache()
 	for (int i = 1; i <= 1e8; i++)
 	{
 		r = 1 + i * r_min;
-		v_tot += Vr_r(r, 1);
-		v_r_tot += dVr_dr(r, 1);
+		v_tot += Vr_r(r, 0, 1);
+		v_r_tot += dVr_dr(r, 0, 1);
 		n++;
 	}
 	dt_cache = (clock() - timer) / CLOCKS_PER_SEC;
