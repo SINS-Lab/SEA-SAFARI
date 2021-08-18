@@ -91,6 +91,8 @@ ax2.tick_params(direction="in", which='both')
 
 fig.show()
 
-print_pots('test_pots', V_r, dV_dr)
+print_pots('tests/test_pots_a_b', V_r, dV_dr)
+print_pots('tests/test_pots_a_a', zbl(Z_0, Z_0, r), d_zbl_dr(Z_0, Z_0, r))
+print_pots('tests/test_pots_b_b', zbl(Z_1, Z_1, r), d_zbl_dr(Z_1, Z_1, r))
 
 input("Enter to exit")
