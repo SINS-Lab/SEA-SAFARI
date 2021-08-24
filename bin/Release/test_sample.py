@@ -68,6 +68,8 @@ if __name__ == '__main__':
     if not os.path.exists('./tests'):
         os.makedirs('./tests')
 
+    print("Note: If safari.h's THREADCOUNT is not 5, then this will fail! Please ensure THREADCOUNT is 5 before running this test.")
+
     result = test_montecarlo(template)
     result = result + test_adaptive_grid(template)
     result = result + test_chainscat(template)
