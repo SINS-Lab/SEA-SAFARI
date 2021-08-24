@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib                                    # Main plotting
 import matplotlib.pyplot as plt                      # More plotting stuff
 
-r_max = 10
-r_step = 0.002
+r_max = 20
+r_step = 0.004
 r_min = r_step
 
 # These are the atoms to generate for, by atomic number
@@ -60,7 +60,9 @@ def d_zbl_dr(Z_i, Z_j, r):
     zz = Z_i * Z_j
     return -zz * esqr * (phiprime_vals * x - phi_vals) / (r*r)
 
-def print_pots(name, V_r, dV_dr):
+def print_pots(name, Z_0, Z_1, r):
+    V_r = zbl(Z_0, Z_1, r)
+    dV_dr = d_zbl_dr(Z_0, Z_1, r)
     fmt = '{}\t{}\t{:.5f}\t{:.5f}\n'
     pots_file = open(name+'.pots', 'w')
     A = element(Z_0).symbol
@@ -91,8 +93,8 @@ ax2.tick_params(direction="in", which='both')
 
 fig.show()
 
-print_pots('tests/test_pots_a_b', V_r, dV_dr)
-print_pots('tests/test_pots_a_a', zbl(Z_0, Z_0, r), d_zbl_dr(Z_0, Z_0, r))
-print_pots('tests/test_pots_b_b', zbl(Z_1, Z_1, r), d_zbl_dr(Z_1, Z_1, r))
+print_pots('tests/test_pots_a_b', Z_0, Z_1, r)
+print_pots('tests/test_pots_a_a', Z_0, Z_0, r)
+print_pots('tests/test_pots_b_b', Z_1, Z_1, r)
 
 input("Enter to exit")

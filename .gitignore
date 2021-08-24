@@ -12,6 +12,7 @@ bin/Debug/Sea-Safari*
 utility_scripts/XYZ*
 
 # Don't include all the random test data
+utility_scripts/*/tests/*
 utility_scripts/tests/*
 bin/Release/tests/*
 bin/Debug/tests/*
