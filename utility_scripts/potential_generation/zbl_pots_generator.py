@@ -83,12 +83,18 @@ ax1.set_title("V_r")
 ax1.set_xlabel('r (Angstroms)')
 ax1.set_ylabel('V (eV)')
 ax1.tick_params(direction="in", which='both')
+y_max = zbl(Z_0, Z_1, 0.5)
+ax1.set_xlim([0.5, 5])
+ax1.set_ylim([min(V_r)-1, y_max])
 
 ax2.plot(r, dV_dr)
 ax2.set_title("dV_dr")
 ax2.set_xlabel('r (Angstroms)')
 ax2.set_ylabel('dV_dr (eV/A)')
 ax2.tick_params(direction="in", which='both')
+y_max = d_zbl_dr(Z_0, Z_1, 0.5)
+ax2.set_xlim([0.5, 5])
+ax2.set_ylim([min(dV_dr)-1, y_max])
 
 
 fig.show()
