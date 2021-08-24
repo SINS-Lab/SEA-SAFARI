@@ -52,7 +52,7 @@ def dV_dr(A, B, r):
 def print_pots(name, A, B, r):
     V_r_ = V_r(A, B, r)
     dV_dr_ = dV_dr(A, B, r)
-    fmt = '{}\t{}\t{:.5f}\t{:.5f}\n'
+    fmt = '{}\t{}\t{:.5e}\t{:.5e}\n'
     pots_file = open(name+'.pots', 'w')
     for i in range(len(V_r_)):
         pots_file.write(fmt.format(A, B, V_r_[i], dV_dr_[i]))

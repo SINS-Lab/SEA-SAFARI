@@ -63,7 +63,7 @@ def d_zbl_dr(Z_i, Z_j, r):
 def print_pots(name, Z_0, Z_1, r):
     V_r = zbl(Z_0, Z_1, r)
     dV_dr = d_zbl_dr(Z_0, Z_1, r)
-    fmt = '{}\t{}\t{:.5f}\t{:.5f}\n'
+    fmt = '{}\t{}\t{:.5e}\t{:.5e}\n'
     pots_file = open(name+'.pots', 'w')
     A = element(Z_0).symbol
     B = element(Z_1).symbol
@@ -99,8 +99,10 @@ ax2.set_ylim([min(dV_dr)-1, y_max])
 
 fig.show()
 
-print_pots('tests/test_pots_a_b', Z_0, Z_1, r)
-print_pots('tests/test_pots_a_a', Z_0, Z_0, r)
-print_pots('tests/test_pots_b_b', Z_1, Z_1, r)
+A = element(Z_0).symbol
+B = element(Z_1).symbol
+print_pots('tests/ZBL_pots_{}_{}'.format(A,B), Z_0, Z_1, r)
+print_pots('tests/ZBL_pots_{}_{}'.format(A,A), Z_0, Z_0, r)
+print_pots('tests/ZBL_pots_{}_{}'.format(B,B), Z_1, Z_1, r)
 
 input("Enter to exit")
