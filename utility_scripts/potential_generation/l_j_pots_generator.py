@@ -54,6 +54,11 @@ def print_pots(name, A, B, r):
     dV_dr_ = dV_dr(A, B, r)
     fmt = '{}\t{}\t{:.5e}\t{:.5e}\n'
     pots_file = open(name+'.pots', 'w')
+    header = '# Generated Lennard Jones Potentials for {}-{}.\n#\n'+\
+             '# Table Range in file (min, step, max): {}-{}-{}\n#\n'+\
+             '# Atom1\tAtom2\tV_r\t-dV_dr\n'
+    header = header.format(A, B, r_min, r_step, r_max)
+    pots_file.write(header)
     for i in range(len(V_r_)):
         pots_file.write(fmt.format(A, B, V_r_[i], dV_dr_[i]))
     pots_file.close()

@@ -67,6 +67,11 @@ def print_pots(name, Z_0, Z_1, r):
     pots_file = open(name+'.pots', 'w')
     A = element(Z_0).symbol
     B = element(Z_1).symbol
+    header = '# Generated Lennard Jones Potentials for {}-{}.\n#\n'+\
+             '# Table Range in file (min, step, max): {}-{}-{}\n#\n'+\
+             '# Atom1\tAtom2\tV_r\t-dV_dr\n'
+    header = header.format(A, B, r_min, r_step, r_max)
+    pots_file.write(header)
     for i in range(len(V_r)):
         pots_file.write(fmt.format(A, B, V_r[i], dV_dr[i]))
     pots_file.close()
