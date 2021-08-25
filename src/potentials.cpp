@@ -102,14 +102,14 @@ void print_pots()
             double V = Vr_r(r, 0, n + 1);
             Atom *a = settings.ATOMS[n];
             char buffer[200];
-            sprintf(buffer, "%s\t%s\t%.5f\t%.5f\n",
+            sprintf(buffer, "%s\t%s\t%.5e\t%.5e\n",
                     settings.ion.symbol.c_str(), a->symbol.c_str(), V, F);
             pots_file << buffer << std::flush;
             if (settings.useLennardJones)
             {
                 F = -dVr_dr(r, n + 1, n + 1);
                 V = Vr_r(r, n + 1, n + 1);
-                sprintf(buffer, "%s\t%s\t%.5f\t%.5f\n",
+                sprintf(buffer, "%s\t%s\t%.5e\t%.5e\n",
                         a->symbol.c_str(), a->symbol.c_str(), V, F);
                 pots_file << buffer << std::flush;
             }
