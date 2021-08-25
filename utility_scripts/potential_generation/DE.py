@@ -11,6 +11,8 @@ DE_Params = {}
 
 # Here are some example parameters
 DE_Params['Au-Au'] = [44.691, 1.164, 40987.591, 4.537]
+DE_Params['Na-Au'] = [4153.6, 3.625, 27017.57, 7.286]
+DE_Params['Na-Cu'] = [2051.73, 3.753, 11163.2, 6.877]
 
 class DE(PotProvider):
 
