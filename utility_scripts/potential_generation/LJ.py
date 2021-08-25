@@ -22,6 +22,8 @@ class LJ(PotProvider):
 
     def V_r(self, A, B, r):
         pair = A+'-'+B
+        if not pair in DE_Params:
+            pair = B+'-'+A
         params = LJ_Params[pair]
         epsilon = params[0]
         sigma = params[1]
@@ -33,6 +35,8 @@ class LJ(PotProvider):
 
     def dV_dr(self, A, B, r):
         pair = A+'-'+B
+        if not pair in DE_Params:
+            pair = B+'-'+A
         params = LJ_Params[pair]
         epsilon = params[0]
         sigma = params[1]

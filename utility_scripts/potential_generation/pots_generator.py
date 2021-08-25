@@ -10,8 +10,9 @@ import matplotlib.pyplot as plt                      # More plotting stuff
 # Here we have the list of currently supported potentials
 from LJ import LJ
 from ZBL import ZBL
+from DE import DE
 
-supported = [LJ, ZBL]
+supported = [LJ, ZBL, DE]
 
 pots = {}
 for var in supported:
