@@ -20,6 +20,9 @@ class DE(PotProvider):
         pair = A+'-'+B
         if not pair in DE_Params:
             pair = B+'-'+A
+        if not pair in DE_Params:
+            print("Unknown Pair {}".format(pair))
+            exit()
         params = DE_Params[pair]
         a = params[0]
         b = params[1]
@@ -31,6 +34,9 @@ class DE(PotProvider):
         pair = A+'-'+B
         if not pair in DE_Params:
             pair = B+'-'+A
+        if not pair in DE_Params:
+            print("Unknown Pair {}".format(pair))
+            exit()
         params = DE_Params[pair]
         a = params[0]
         b = params[1]

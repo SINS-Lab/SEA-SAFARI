@@ -24,6 +24,9 @@ class LJ(PotProvider):
         pair = A+'-'+B
         if not pair in DE_Params:
             pair = B+'-'+A
+        if not pair in DE_Params:
+            print("Unknown Pair {}".format(pair))
+            exit()
         params = LJ_Params[pair]
         epsilon = params[0]
         sigma = params[1]
@@ -37,6 +40,9 @@ class LJ(PotProvider):
         pair = A+'-'+B
         if not pair in DE_Params:
             pair = B+'-'+A
+        if not pair in DE_Params:
+            print("Unknown Pair {}".format(pair))
+            exit()
         params = LJ_Params[pair]
         epsilon = params[0]
         sigma = params[1]
