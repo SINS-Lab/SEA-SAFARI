@@ -90,7 +90,8 @@ void print_pots()
     std::ofstream pots_file;
     std::string filename = settings.output_name + "_generated.pots";
     pots_file.open(filename);
-    pots_file << "# SAFARI Potentials and Forces File\n" << std::flush;
+    // Print out a header, as well as info on ranges in the file
+    pots_file << "# SAFARI Potentials and Forces File\n#\n# Table Range in file (min, step, max): " << dr_min << "-" << dr_min << "-" << r_max << "\n#\n# Atom1\tAtom2\tV_r\t-dV_dr\n" << std::flush;
     //Start at 1, as these guys are not defined for r=0 anyway.
     for (int i = 1; i < n_rmax; i++)
     {
