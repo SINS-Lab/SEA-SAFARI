@@ -102,6 +102,36 @@ void SingleShot::run(Lattice *lattice, int *num)
 
     setupDetector();
 
+    // We want to print out a copy of the lattice with the given thermalisation, if T > 0.
+    if (settings.TEMP > 0)
+    {
+        std::ofstream crys_xyz_file;
+        std::ofstream debug_file;
+        crys_xyz_file.open(settings.output_name + "_thermalised.crys.xyz");
+        crystal_file.open(settings.output_name + "_thermalised.crys");
+        debug_file << "Printing Lattice\n";
+        std::cout << "Printing Lattice\n"
+                << std::flush;
+        int num = lattice->sites.size();
+        crys_xyz_file << num << "\n\n";
+        char buffer[200];
+        for (int i = 0; i < num; i++)
+        {
+            Site &s = *(lattice->sites[i]);
+            s.thermal_seed = settings.ion_index;
+            s.reset();
+            Atom *a = s.atom;
+            sprintf(buffer, "%f\t%f\t%f\t%f\t%f\n",
+                    s.r[0], s.r[1], s.r[2], a->charge, a->mass);
+            crystal_file << buffer;
+            sprintf(buffer, "%s\t%f\t%f\t%f\n",
+                    a->symbol.c_str(), s.r[0], s.r[1], s.r[2]);
+            crys_xyz_file << buffer;
+        }
+        crys_xyz_file.close();
+        crystal_file.close();
+    }
+
     //If we are in log mode, we only run this for the first coord
     Ion ion;
     //We also use the settings ion_index for single shot mode, to
