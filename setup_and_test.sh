@@ -25,6 +25,8 @@ CopyRunScripts() {
     cp SAFARI/utility_scripts/safari_input.py "$1/safari_input.py"
     cp SAFARI/utility_scripts/run_all.py "$1/run_all.py"
     cp SAFARI/utility_scripts/run_generator.py "$1/run_generator.py"
+    
+    cp SAFARI/bin/Release/sample.input "$1/template.input"
 }
 
 if [[ -d "./analysis" && -d "./bin" && -d "./src" ]]
@@ -72,7 +74,7 @@ CopyExecutables tests
 cp SAFARI/bin/Release/test_sample.py tests/test_sample.py
 cp SAFARI/bin/Release/test_montecarlo.input tests/test_montecarlo.input
 cp SAFARI/bin/Release/test_adaptive_grid.input tests/test_adaptive_grid.input
-cp SAFARI/bin/Release/sample_chain.input tests/test_chain.input
+cp SAFARI/bin/Release/test_chain.input tests/test_chain.input
 
 cd tests
 
