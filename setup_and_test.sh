@@ -10,21 +10,21 @@
 #
 #
 
-CopyFiles() {
+CopyExecutables() {
 
     mkdir -p "$1"
 
     cp SAFARI/bin/Release/Sea-Safari "$1/Sea-Safari"
-    cp SAFARI/bin/Release/sample.input "$1/sample.input"
-    cp SAFARI/analysis/XYZ "$1/XYZ"
+    cp SAFARI/utility_scripts/XYZ "$1/XYZ"
+}
 
-    cp SAFARI/analysis/safari_input.py "$1/safari_input.py"
-    cp SAFARI/analysis/run_all.py "$1/run_all.py"
-    cp SAFARI/analysis/run_generator.py "$1/run_generator.py"
+CopyRunScripts() {
 
-    cp SAFARI/analysis/detect_processor.py "$1/detect_processor.py"
-    cp SAFARI/analysis/detect_impact.py "$1/detect_impact.py"
-    cp SAFARI/analysis/detect_gui.py "$1/detect_gui.py"
+    mkdir -p "$1"
+
+    cp SAFARI/utility_scripts/safari_input.py "$1/safari_input.py"
+    cp SAFARI/utility_scripts/run_all.py "$1/run_all.py"
+    cp SAFARI/utility_scripts/run_generator.py "$1/run_generator.py"
 }
 
 if [[ -d "./analysis" && -d "./bin" && -d "./src" ]]
@@ -42,6 +42,16 @@ else
     git clone https://github.com/SINS-Lab/SEA-SAFARI.git SAFARI
 fi
 
+# Clone the SAFARI-ANALYSIS as well
+if [ -d "./SAFARI-ANALYSIS" ] 
+then
+    echo "Cleaning up Previous installation"
+    rm -rf "./SAFARI-ANALYSIS"
+else
+    echo "No Previous installation."
+fi
+git clone https://github.com/SINS-Lab/SAFARI-ANALYSIS.git SAFARI-ANALYSIS
+
 cd SAFARI
 make
 
@@ -52,25 +62,26 @@ echo ""
 echo "Copying required files to runs and tests"
 echo ""
 
-CopyFiles runs
-CopyFiles tests
+CopyExecutables runs
+CopyRunScripts runs
+
+CopyExecutables SAFARI-ANALYSIS
+CopyExecutables tests
 
 # Copy some extra files for tests as well
-cp SAFARI/bin/Release/run_tests.py tests/run_tests.py
-cp SAFARI/bin/Release/sample_ag.input tests/sample_ag.input
-cp SAFARI/bin/Release/sample_chain.input tests/sample_chain.input
+cp SAFARI/bin/Release/test_sample.py tests/test_sample.py
+cp SAFARI/bin/Release/test_montecarlo.input tests/test_montecarlo.input
+cp SAFARI/bin/Release/test_adaptive_grid.input tests/test_adaptive_grid.input
+cp SAFARI/bin/Release/sample_chain.input tests/test_chain.input
 
 cd tests
-
-# tests folder inside tests for data output
-mkdir -p tests
 
 echo ""
 echo "Running standardized test set."
 echo ""
 
 # Run the tests
-python3 run_tests.py
+./test_sample.py
 
 # Return back up to root directory
 cd ..
