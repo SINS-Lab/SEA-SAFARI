@@ -29,7 +29,7 @@ CopyRunScripts() {
     cp SAFARI/bin/Release/sample.input "$1/template.input"
 }
 
-if [[ -d "./analysis" && -d "./bin" && -d "./src" ]]
+if [[ -d "./utility_scripts" && -d "./bin" && -d "./src" ]]
 then
     echo "Running from source!"
     cd ..
@@ -91,6 +91,6 @@ cd ..
 
 echo ""
 echo ""
-echo "Finished install and tests, there should be output files in tests/tests, if not, something went wrong!"
+echo "Finished build and tests, there should be output files in tests/tests, if not, something went wrong!"
 echo ""
 echo ""
