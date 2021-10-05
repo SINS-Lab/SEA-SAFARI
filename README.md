@@ -25,10 +25,10 @@ For using on Windows, use the Windows Subsystem for Linux, and make sure you hav
 
 Analysing results is generally done using the safari_detect gui found in SAFARI-ANALYSIS, which the above setup will automatically download. This requires the following:
 
-Python3
-numpy
-matplotlib
-scipy
-mendeleev
+- Python3
+- numpy
+- matplotlib
+- scipy
+- mendeleev
 
 Commandline analysis scripts can also be made if needed, as all of the output is in a relatively straight-forwards plain-text format.
