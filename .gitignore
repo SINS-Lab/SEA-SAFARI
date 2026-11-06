@@ -10,6 +10,7 @@ obj/*
 bin/Release/Sea-Safari*
 bin/Debug/Sea-Safari*
 utility_scripts/XYZ*
+utility_scripts/potential_generation/pyscf/generated*
 
 # Don't include all the random test data
 utility_scripts/*/tests/*

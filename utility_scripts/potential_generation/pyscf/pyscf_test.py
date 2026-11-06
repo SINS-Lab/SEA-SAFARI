@@ -18,6 +18,8 @@ def run_dft_mol(mol):
     return hf.e_tot, hf.converged
 
 def test_scf(mol_src, dir):
+    if not "./generated/" in dir:
+        dir = f"./generated/{dir}"
     if not os.path.exists(dir):
         os.makedirs(dir)
 
@@ -55,6 +57,8 @@ def test_scf(mol_src, dir):
             file.write(f"{r}\t{E}\t{1.0 if converged else 0.0:.1f}\n")
 
 def test_dft(mol_src, dir):
+    if not "./generated/" in dir:
+        dir = f"./generated/{dir}"
     if not os.path.exists(dir):
         os.makedirs(dir)
 
@@ -158,8 +162,8 @@ def Cu_K_2(r):
     return mol
 
 if __name__ == "__main__":
-    test_scf(Xe_C, "Xe_C_1")
-    # test_scf(Cu_Na, "Cu_Na")
+    # test_scf(Xe_C, "Xe_C_1")
+    test_scf(Cu_Na, "Cu_Na")
     # test_scf(Cu_Ga, "Cu_Ga_1")
     # test_dft(Cu_Ga, "Cu_Ga_2")
     # test_scf(Cu_Ar, "Cu_Ar_2")
